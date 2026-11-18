@@ -171,7 +171,7 @@ function gearArt(g, size) { return g.id.startsWith("pala_") ? palaArt(g, size) :
 
 // ---------- Precio y compra ----------
 // Cuando Awin apruebe los programas, se rellena AFFIL y los enlaces pasan a ser de afiliado.
-const AFFIL = { activo: false, affid: "", tiendas: [] /* {n, mid, buscar: q => url} */ };
+const AFFIL = { activo: false, affid: "3159710", tiendas: [] /* {n, mid, buscar: q => url} */ };
 function priceLinks(g) {
   const q = `${g.marca} ${g.modelo}`;
   if (AFFIL.activo && AFFIL.tiendas.length) return AFFIL.tiendas.map(t => ({ n: t.n, url: `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&ued=${encodeURIComponent(t.buscar(q))}` }));
