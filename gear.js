@@ -170,6 +170,12 @@ function shoeArt(g, size = 120) {
 function gearArt(g, size) { return g.id.startsWith("pala_") ? palaArt(g, size) : shoeArt(g, size); }
 
 // ---------- Precio y compra ----------
+// PVP orientativo (precio oficial de lanzamiento visto en tiendas; las ofertas suelen ser más bajas)
+const PVP = { pala_vertex05hybrid: 339.95, pala_techviper3: 370, pala_pegasuspro: 349.9, pala_diablopro: 349.9, pala_drax: 270, pala_arkos: 150, pala_patronkore: 260,
+  pala_radicalpro: 240, pala_radicallight: 150, pala_vertex05w: 269.95, pala_neuron02: 269.95, pala_coelloteam: 191, pala_trilogypro: 179.9,
+  zp_noxat10pro: 120, zp_noxnerbo: 140, zp_premura3: 159.95, zp_xplovibram: 174.95, zp_crazyquickls: 120, zp_barricade14: 160 };
+const RANGO = ["", "menos de 100 €", "100 – 200 €", "más de 200 €"];
+const priceTxt = g => PVP[g.id] ? `${Math.round(PVP[g.id])} €` : RANGO[g.precio];
 // Cuando Awin apruebe los programas, se rellena AFFIL y los enlaces pasan a ser de afiliado.
 const AFFIL = { activo: false, affid: "3159710", tiendas: [] /* {n, mid, buscar: q => url} */ };
 function priceLinks(g) {
@@ -177,7 +183,7 @@ function priceLinks(g) {
   if (AFFIL.activo && AFFIL.tiendas.length) return AFFIL.tiendas.map(t => ({ n: t.n, url: `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&ued=${encodeURIComponent(t.buscar(q))}` }));
   return [{ n: "Comparar precios", url: `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}` }];
 }
-function priceBtns(g) { return `<div class="row" style="margin:4px 0 12px">${priceLinks(g).map(l => `<a class="btn block" href="${l.url}" target="_blank" rel="noopener sponsored" style="text-decoration:none;color:inherit">${svg("cart")}${esc(l.n)}</a>`).join("")}</div>${AFFIL.activo ? `<p class="tiny mute" style="margin:-6px 0 12px">Si compras desde aquí, Pádel+ puede llevarse una pequeña comisión. A ti no te cuesta más y no cambia nuestras recomendaciones.</p>` : ""}`; }
+function priceBtns(g) { return `<div class="stat" style="margin:4px 0 10px;display:flex;align-items:center;justify-content:space-between"><div><div class="k">${PVP[g.id] ? "Precio oficial (PVP)" : "Precio orientativo"}</div><div class="num" style="font-size:26px;color:#facc15">${priceTxt(g)}</div></div><div class="tiny mute" style="text-align:right;max-width:52%">En tiendas suele haber descuentos. Compara antes de comprar.</div></div><div class="row" style="margin:4px 0 12px">${priceLinks(g).map(l => `<a class="btn block" href="${l.url}" target="_blank" rel="noopener sponsored" style="text-decoration:none;color:inherit">${svg("cart")}${esc(l.n)}</a>`).join("")}</div>${AFFIL.activo ? `<p class="tiny mute" style="margin:-6px 0 12px">Si compras desde aquí, Pádel+ puede llevarse una pequeña comisión. A ti no te cuesta más y no cambia nuestras recomendaciones.</p>` : ""}`; }
 
 // ---------- Filas y fichas ----------
 function gearRow(g, tag = null, why = null) {
@@ -185,7 +191,7 @@ function gearRow(g, tag = null, why = null) {
   const isP = g.id.startsWith("pala_"); const st = shoeStats[g.id];
   const chips = isP ? [g.forma, perfilTxt(g.perfil), `balance ${blTxt(g.balance).toLowerCase()}`, `~${g.peso} g`] : [`suela ${g.suela}`, `~${g.peso} g`, g.horma !== "normal" ? `horma ${g.horma}` : null].filter(Boolean);
   return `<button class="card shoe" data-gear="${g.id}" style="display:block;width:100%;text-align:left;padding:14px">${tag ? `<div class="tiny" style="color:#facc15;font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
-    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${gearArt(g, isP ? 64 : 70)}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right"><div class="small" style="color:#facc15">${PRECIO[g.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${gearArt(g, isP ? 64 : 70)}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right;flex:none"><div class="small" style="color:#facc15;font-weight:700;white-space:nowrap">${PVP[g.id] ? priceTxt(g) : PRECIO[g.precio]}</div>${PVP[g.id] ? `<div class="tiny mute">PVP</div>` : `<div class="tiny mute" style="white-space:nowrap">${RANGO[g.precio]}</div>`}${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px">${isP ? `<span class="chip" style="color:#facc15">${nivTxt(g.nivel)}</span>` : ""}${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
     ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}</button>`;
 }

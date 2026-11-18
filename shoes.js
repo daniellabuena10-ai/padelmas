@@ -118,7 +118,7 @@ function shoeRow(sh, tag = null, why = null) {
     ${tag ? `<div class="tiny" style="color:var(--volt);font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
     <div style="display:flex;align-items:center;gap:12px"><div class="gart">${shoeArt(sh, 70)}</div>
       <div style="min-width:0;flex:1"><div class="small mute">${sh.marca}</div><div style="font-weight:700;font-size:16px">${sh.modelo}</div></div>
-      <div style="text-align:right"><div class="small" style="color:var(--volt)">${PRECIO[sh.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
+      <div style="text-align:right;flex:none"><div class="small" style="color:var(--volt)">${PRECIO[sh.precio]}</div><div class="tiny mute" style="white-space:nowrap">${["", "menos de 100 €", "100 – 160 €", "más de 160 €"][sh.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px"><span class="chip" style="color:${SHOE_CAT_C[sh.cat]}">${SHOE_CATS[sh.cat]}</span><span class="chip">${sh.peso} g</span><span class="chip">drop ${sh.drop} mm</span>${sh.placa !== "no" ? `<span class="chip">placa ${sh.placa}</span>` : ""}</div>
     ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}</button>`;
 }
