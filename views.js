@@ -1,4 +1,4 @@
-// ===== Ritmo+ · vistas: Inicio, Entrenos, Progreso, Perfil, detalle =====
+// ===== Pádel+ · vistas: Inicio, Entrenos, Progreso, Perfil, detalle =====
 
 function weekStats(from) {
   const to = addDays(from, 7); const acts = actList().filter(a => { const d = new Date(a.fecha); return d >= from && d < to; });
@@ -222,7 +222,7 @@ function openPerfil() {
       <a class="item" href="mailto:soporte.ahorra@gmail.com?subject=Ritmo%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
       <button class="item" id="pOut">${svg("logout")}Cerrar sesión${svg("chev", "chev")}</button>
       <button class="item" id="pDel" style="color:var(--neg)">${svg("trash")}Borrar mi cuenta${svg("chev", "chev")}</button>
-    </div><p class="tiny mute" style="text-align:center;margin-top:8px">Ritmo+ · versión 1.0</p>`, s => {
+    </div><p class="tiny mute" style="text-align:center;margin-top:8px">Pádel+ · versión 1.0</p>`, s => {
     $$("[data-m]", s).forEach(b => b.onclick = () => { savePerfil({ metaMin: +b.dataset.m }); $$("[data-m]", s).forEach(x => x.classList.toggle("on", x === b)); toast("Meta actualizada"); });
     $("#pName", s).onclick = () => openSheet("Tu nombre", `<label class="field">Nombre<input id="nN" value="${esc(name)}" maxlength="40"></label><button class="btn pri block" id="nOk">Guardar</button>`, s2 => $("#nOk", s2).onclick = async () => { const n = $("#nN", s2).value.trim(); if (!n) return; me.name = n; savePerfil({ nombre: n }); try { store.auth && await store.auth.currentUser.updateProfile({ displayName: n }); } catch {} closeSheet(); toast("Nombre guardado"); });
     $("#pWatch", s).onclick = openImport; $("#pFis", s).onclick = () => { closeSheet(); setView("progreso"); };

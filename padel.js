@@ -1,4 +1,4 @@
-// ===== Ritmo+ · Pádel: nivel, partidos con amigos, estadísticas y buscar partido =====
+// ===== Pádel+ · Pádel: nivel, partidos con amigos, estadísticas y buscar partido =====
 const NIVEL_TXT = [[1.5, "Iniciación"], [2.5, "Principiante"], [3.5, "Intermedio"], [4.5, "Intermedio alto"], [5.5, "Avanzado"], [8, "Competición"]];
 const nivelTxt = n => (NIVEL_TXT.find(x => n < x[0]) || NIVEL_TXT[NIVEL_TXT.length - 1])[1];
 const fmtNivel = n => nf(n, 2);
@@ -190,7 +190,7 @@ function openPadelMatch(base = {}) {
     <datalist id="pl"></datalist>
     <div class="field">Resultado <span class="tiny mute">(juegos de tu equipo – rivales)</span><div id="pmS"></div></div>
     <div class="field">Tipo<div class="seg" id="pmT"><button data-v="amistoso" class="on">Amistoso</button><button data-v="liga">Liga</button><button data-v="torneo">Torneo</button></div></div>
-    ${socialOn() ? `<p class="tiny mute">Si etiquetas a amigos de Ritmo+ (con @), les llegará el partido para que lo confirmen y se les sume a ellos también.</p>` : ""}
+    ${socialOn() ? `<p class="tiny mute">Si etiquetas a amigos de Pádel+ (con @), les llegará el partido para que lo confirmen y se les sume a ellos también.</p>` : ""}
     <div class="err" id="pmE"></div><button class="btn block" id="pmOk" style="background:#facc15;color:#1a1500;border:0">Guardar partido</button>`, async s => {
     const dl = $("#pl", s); const opts = [];
     if (people.length) { await fetchProfiles(people); people.forEach(u => { const p = profCache[u]; if (p) opts.push(`@${p.usuario}`); }); }

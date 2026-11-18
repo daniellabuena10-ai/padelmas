@@ -1,4 +1,4 @@
-// ===== Ritmo+ · Material de pádel: palas y zapatillas (recomendador, fichas, opiniones, preguntas) =====
+// ===== Pádel+ · Material de pádel: palas y zapatillas (recomendador, fichas, opiniones, preguntas) =====
 // Datos orientativos de cada modelo; las marcas sacan versión nueva cada temporada.
 // Palas: [id, marca, modelo, forma, balance(1 bajo-3 alto), dureza(1 blanda-3 dura), peso g, cara, nivel(1 inic-3 avanz), perfil(1 control-3 potencia), precio(1-3), descripción]
 const PALAS_RAW = [
@@ -76,7 +76,7 @@ const NIVL = ["", "Iniciación", "Intermedio", "Avanzado"];
 const nivTxt = n => n < 1.5 ? "Iniciación" : n < 2.4 ? "Intermedio" : n < 2.8 ? "Intermedio-avanzado" : "Avanzado";
 const perfilTxt = v => v < 1.7 ? "Control" : v < 2.4 ? "Polivalente" : "Potencia";
 const blTxt = v => v < 1.7 ? "Bajo" : v < 2.4 ? "Medio" : "Alto";
-const durTxt = v => v < 1.7 ? "Blanda" : v < 2.4 ? "Media" : "Dura";
+const durTxt = v => v < 1.7 ? "Blando" : v < 2.4 ? "Medio" : "Duro";
 
 // ---------- Recomendador de palas ----------
 function myPadelBand() { const r = (state.perfil.padel || {}).nivel0 ? computeNivel() : null; if (!r) return 2; return r.nivel < 2.6 ? 1 : r.nivel < 4.1 ? 2 : 3; }
@@ -98,7 +98,7 @@ function recPala(q) {
 function openRecPala() {
   const P = state.perfil.padel || {}; const q = { nivel: myPadelBand(), estilo: 2, lado: P.lado || null, brazo: false, ligera: false, precio: 0 };
   openSheet("¿Qué pala me compro?", `
-    <div class="field">Tu nivel ${(P.nivel0 ? `<span class="tiny mute">(según tu nivel en Ritmo+: ${fmtNivel(computeNivel().nivel)})</span>` : "")}<div class="seg" id="rpN">${[[1, "Iniciación"], [2, "Intermedio"], [3, "Avanzado"]].map(([k, n]) => `<button data-v="${k}" class="${q.nivel === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
+    <div class="field">Tu nivel ${(P.nivel0 ? `<span class="tiny mute">(según tu nivel en Pádel+: ${fmtNivel(computeNivel().nivel)})</span>` : "")}<div class="seg" id="rpN">${[[1, "Iniciación"], [2, "Intermedio"], [3, "Avanzado"]].map(([k, n]) => `<button data-v="${k}" class="${q.nivel === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <div class="field">¿Cómo te gusta jugar?<div class="seg" id="rpE">${[[1, "Control y colocación"], [2, "Un poco de todo"], [3, "Atacar y rematar"]].map(([k, n]) => `<button data-v="${k}" class="${q.estilo === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <div class="field">Tu lado<div class="seg" id="rpL">${[["drive", "Drive"], ["reves", "Revés"], ["", "Los dos"]].map(([k, n]) => `<button data-v="${k}" class="${(q.lado || "") === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <label class="check"><input type="checkbox" id="rpB"> <span>Tengo o he tenido molestias de <b>codo u hombro</b></span></label>
@@ -231,7 +231,7 @@ function materialView() {
     <div class="seg">${cats.map(([k, n]) => `<button data-gf="${k}" class="${gearFilter === k ? "on" : ""}">${n}</button>`).join("")}</div>
     <div class="seg">${["todas", ...new Set(all.map(g => g.marca))].map(m => `<button data-gb="${m}" class="${gearBrand === m ? "on" : ""}" style="padding:7px 10px;font-size:13px">${m === "todas" ? "Todas las marcas" : m}</button>`).join("")}</div>
     ${list.map(g => gearRow(g)).join("") || `<p class="small mute">No hay modelos con ese filtro.</p>`}
-    <p class="tiny mute" style="text-align:center;line-height:1.5">Datos aproximados y orientativos. Ritmo+ no cobra de ninguna marca.</p>`;
+    <p class="tiny mute" style="text-align:center;line-height:1.5">Datos aproximados y orientativos. Pádel+ no cobra de ninguna marca.</p>`;
 }
 function wireMaterial(root) {
   $$("[data-gs]", root).forEach(b => b.onclick = () => { gearSeg = b.dataset.gs; gearFilter = "todas"; gearBrand = "todas"; render(); });

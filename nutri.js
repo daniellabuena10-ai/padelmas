@@ -1,4 +1,4 @@
-// ===== Ritmo+ · nutrición =====
+// ===== Pádel+ · nutrición =====
 const ACT_LV = [[1.2, "Sedentario", "Trabajo sentado, poco movimiento"], [1.375, "Ligero", "Entreno 1–3 días por semana"], [1.55, "Moderado", "Entreno 3–5 días por semana"], [1.725, "Alto", "Entreno 6–7 días por semana"], [1.9, "Muy alto", "Doble sesión o trabajo físico"]];
 const OBJ = [["perder", "Perder grasa"], ["mantener", "Mantenerme"], ["ganar", "Ganar músculo"]];
 
@@ -119,7 +119,7 @@ function openShopping() {
   openSheet("Lista de la compra", `<p class="small mute" style="margin-bottom:10px">Para los 7 días de tu plan. Toca para tachar.</p>${Object.entries(tot).sort((a, b) => a[0].localeCompare(b[0])).map(([n, g]) => `<button class="item" data-sh="${esc(n)}" style="${got[n] ? "opacity:.4;text-decoration:line-through" : ""}"><span style="color:${got[n] ? "var(--volt)" : "var(--mute2)"}">${svg(got[n] ? "check" : "cart")}</span><span>${esc(n.replace(/ \(.*\)/, ""))}</span><span class="num" style="margin-left:auto;font-size:18px">${fmtQ(n, g)}</span></button>`).join("")}
     <button class="btn block" id="shCopy" style="margin-top:14px">Copiar lista</button>`, s => {
     $$("[data-sh]", s).forEach(b => b.onclick = () => { const n = b.dataset.sh; const c = { ...(state.perfil.compra || {}) }; c[n] = !c[n]; savePerfil({ compra: c }); b.style.opacity = c[n] ? .4 : 1; b.style.textDecoration = c[n] ? "line-through" : "none"; b.querySelector("span").innerHTML = svg(c[n] ? "check" : "cart"); b.querySelector("span").style.color = c[n] ? "var(--volt)" : "var(--mute2)"; });
-    $("#shCopy", s).onclick = async () => { const t = "🛒 Lista de la compra (Ritmo+)\n" + Object.entries(tot).map(([n, g]) => `- ${n.replace(/ \(.*\)/, "")}: ${fmtQ(n, g)}`).join("\n"); try { await navigator.clipboard.writeText(t); toast("Lista copiada"); } catch { toast("No se pudo copiar"); } };
+    $("#shCopy", s).onclick = async () => { const t = "🛒 Lista de la compra (Pádel+)\n" + Object.entries(tot).map(([n, g]) => `- ${n.replace(/ \(.*\)/, "")}: ${fmtQ(n, g)}`).join("\n"); try { await navigator.clipboard.writeText(t); toast("Lista copiada"); } catch { toast("No se pudo copiar"); } };
   });
 }
 function openNutriSetup() {

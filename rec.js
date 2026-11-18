@@ -1,4 +1,4 @@
-// ===== Ritmo+ · grabar, añadir a mano, gimnasio e importar del reloj =====
+// ===== Pádel+ · grabar, añadir a mano, gimnasio e importar del reloj =====
 
 function openStart() {
   openSheet("Pádel", `<div class="row" style="margin-bottom:6px"><button class="btn block" id="sPm" style="background:#facc15;color:#1a1500;border:0;padding:18px">${svg("plus")}Apuntar partido</button><button class="btn block" id="sPc" style="padding:18px">${svg("clock")}Cronometrar</button></div>

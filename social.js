@@ -1,4 +1,4 @@
-// ===== Ritmo+ · comunidad: perfiles, seguir, muro, kudos, comentarios, chat y avisos =====
+// ===== Pádel+ · comunidad: perfiles, seguir, muro, kudos, comentarios, chat y avisos =====
 const FS = () => store.db;
 const FV = () => firebase.firestore.FieldValue;
 const COLORS = ["#d4ff3a", "#38bdf8", "#ff6a3d", "#a78bfa", "#34d399", "#facc15", "#f472b6", "#22d3ee"];
@@ -67,7 +67,7 @@ function vComunidad() {
   if (store.kind !== "firebase") return `<div class="card empty">${svg("users")}<p>La comunidad necesita conexión.</p></div>`;
   if (!social.loaded) return `<div class="empty">Cargando…</div>`;
   if (!social.me) return `<div class="hero" style="background:radial-gradient(400px 220px at 100% 0%,rgba(56,189,248,.25),transparent 70%),linear-gradient(160deg,#0e1620,#0a0d11 60%);border-color:rgba(56,189,248,.22)">
-      <div class="lbl" style="color:#9cc9e6">Comunidad Ritmo+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Entrena con tu gente</h2>
+      <div class="lbl" style="color:#9cc9e6">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Entrena con tu gente</h2>
       <p class="small" style="color:#cbd6df;line-height:1.55">Sigue a tus amigos, mira sus entrenos, dales <b>kudos</b>, comenta y habla por mensaje. Compite en el <b>ranking semanal</b> con todos los deportes, no solo correr y bici.</p>
       <div class="chips"><span class="chip">${svg("heart")}Kudos</span><span class="chip">${svg("mail")}Mensajes</span><span class="chip">${svg("trophy")}Ranking</span><span class="chip">${svg("shield")}Zona privada</span></div>
       <button class="btn pri block" id="cpStart" style="margin-top:16px">Crear mi perfil público</button></div>
@@ -188,7 +188,7 @@ function openPerfilPublico() {
     <div class="seg" id="colSeg" style="justify-content:center">${COLORS.map(c => `<button data-c="${c}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c};${p.color === c ? "outline:3px solid #fff;outline-offset:2px" : ""}"></button>`).join("")}</div>
     <label class="field">Nombre<input id="ppN" maxlength="40" value="${esc(p.nombre)}"></label>
     <label class="field">Usuario<input id="ppU" maxlength="20" value="${esc(p.usuario || sug)}" ${social.me ? "disabled" : ""} autocapitalize="off" autocorrect="off" spellcheck="false"></label>
-    <p class="tiny mute" style="margin:-6px 0 12px">${social.me ? "El usuario no se puede cambiar." : "Solo minúsculas, números, punto y guion bajo. Será tu @ en Ritmo+."}</p>
+    <p class="tiny mute" style="margin:-6px 0 12px">${social.me ? "El usuario no se puede cambiar." : "Solo minúsculas, números, punto y guion bajo. Será tu @ en Pádel+."}</p>
     <label class="field">Ciudad (opcional)<input id="ppC" maxlength="40" value="${esc(p.ciudad || "")}"></label>
     <label class="field">Sobre ti (opcional)<textarea id="ppB" rows="2" maxlength="160" placeholder="Corredor de fin de semana y adicto al pádel">${esc(p.bio || "")}</textarea></label>
     <label class="check"><input type="checkbox" id="ppZ" ${p.ocultarInicio !== false ? "checked" : ""}> <span><b>Zona privada:</b> ocultar los primeros y últimos 200 m de mis rutas (para que nadie sepa dónde vives)</span></label>

@@ -1,4 +1,4 @@
-// ===== Ritmo+ · Zapatillas: catálogo, recomendador, mis zapatillas, opiniones y preguntas =====
+// ===== Pádel+ · Zapatillas: catálogo, recomendador, mis zapatillas, opiniones y preguntas =====
 // Datos orientativos (peso aprox. en talla 42-43 de hombre). Ritmo ideal en s/km [rápido, lento].
 const SHOE_CATS = { diario: "Diario", maxcush: "Máxima amortiguación", tempo: "Tempo / series", carrera: "Competición (carbono)", estab: "Estabilidad", trail: "Trail" };
 const SHOE_CAT_C = { diario: "#d4ff3a", maxcush: "#a78bfa", tempo: "#38bdf8", carrera: "#ff6a3d", estab: "#34d399", trail: "#facc15" };
@@ -109,7 +109,7 @@ function showRecs(q) {
   openSheet("Tus zapatillas ideales", `<p class="small mute" style="margin:-6px 0 12px">Para ${({ diario: "rodajes diarios", tempo: "series y tempo", carrera: "competir", larga: "tiradas largas", trail: "montaña" })[q.uso]} a ${fmtPace(q.ritmo)}/km${q.pisada === "prona" ? ", pisada pronadora" : ""}.</p>
     ${r.map((x, i) => shoeRow(x.s, i === 0 ? "🥇 Mejor opción" : null, x.why)).join("")}
     ${fast && !r.slice(0, 3).some(x => x.s.id === fast.s.id) ? `<div class="hint">${svg("bolt")}<span><b style="color:var(--ink)">Consejo de rotación:</b> combínala con una más rápida para los días de series, como la <b style="color:var(--ink)">${shoeName(fast.s)}</b>. Alternar dos pares reparte el desgaste.</span></div>` : ""}
-    <p class="tiny mute" style="text-align:center;margin-top:10px;line-height:1.5">Recomendación orientativa. Pruébatelas antes: lo más importante es que te sienten bien. Ritmo+ no cobra de ninguna marca.</p>
+    <p class="tiny mute" style="text-align:center;margin-top:10px;line-height:1.5">Recomendación orientativa. Pruébatelas antes: lo más importante es que te sienten bien. Pádel+ no cobra de ninguna marca.</p>
     <button class="btn block" id="rAgain">${svg("refresh")}Cambiar respuestas</button>`, s => { wireShoeRows(s); $("#rAgain", s).onclick = openRecomendador; });
 }
 function shoeRow(sh, tag = null, why = null) {

@@ -1,4 +1,4 @@
-// ===== Ritmo+ · Aprende pádel: golpes, táctica y físico, según tu nivel =====
+// ===== Pádel+ · Aprende pádel: golpes, táctica y físico, según tu nivel =====
 // nivel: 1 iniciación · 2 intermedio · 3 avanzado
 const LESSONS = [
   { id: "posicion", cat: "Táctica", nivel: 1, t: "Dónde colocarte en la pista", r: "La mitad de los puntos se pierden por estar mal colocado, no por golpear mal.",
