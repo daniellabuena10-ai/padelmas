@@ -131,8 +131,8 @@ function boot() {
 
 // ---------- Navegación ----------
 let view = "inicio", sheetOpen = false;
-const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], comunidad: ["users", "Comunidad"], tu: ["user", "Tú"] };
-const TU_SUB = { progreso: "Progreso", nutricion: "Nutrición", entrenos: "Entrenos" };
+const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], material: ["target", "Material"], comunidad: ["users", "Comunidad"], tu: ["bolt", "Físico"] };
+const TU_SUB = { progreso: "Físico", nutricion: "Nutrición", entrenos: "Entrenos" };
 let tuTab = "progreso";
 function initNav() {
   $$("#tabbar button").forEach(b => {
@@ -148,11 +148,10 @@ function render() {
   if (!me || !loaded) return;
   const name = (me.name || state.perfil.nombre || me.email || "R").trim();
   $("#avBtn").textContent = name[0].toUpperCase();
-  const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tu: vTu }[view];
+  const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tu: vTu, material: () => materialView() }[view];
   $("#title").textContent = view === "tu" ? TU_SUB[tuTab] : TABS[view][1];
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
-  (view === "tu" ? WIRE.tu : WIRE[view] || (() => {}))();
-  if (view === "comunidad" && store.kind !== "firebase") wireMaterial($("#view"));
+  (view === "tu" ? WIRE.tu : view === "material" ? () => wireMaterial($("#view")) : WIRE[view] || (() => {}))();
 }
 const WIRE = {};
 function vTu() { const sub = { progreso: vProgreso, nutricion: vNutricion, entrenos: vEntrenos }[tuTab]; return `<div class="tabs">${Object.entries(TU_SUB).map(([k, n]) => `<button data-tu="${k}" class="${tuTab === k ? "on" : ""}">${n}</button>`).join("")}</div>` + sub(); }

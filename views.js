@@ -28,42 +28,43 @@ function actCard(a) {
 }
 function wireActs(root = document) { $$("[data-act]", root).forEach(b => b.onclick = () => openAct(b.dataset.act)); }
 
-// ---------- INICIO ----------
+// ---------- INICIO (pádel primero) ----------
 function vInicio() {
-  const meta = +state.perfil.metaMin || 150, w = weekStats(monday(new Date())), pct = w.min / meta;
   const h = new Date().getHours(), saludo = h < 13 ? "Buenos días" : h < 21 ? "Buenas tardes" : "Buenas noches";
   const nombre = (me.name || state.perfil.nombre || "").split(" ")[0];
-  const st = streak(), today = (new Date().getDay() + 6) % 7, maxD = Math.max(30, ...w.perDay);
-  const n = nutriToday(); const acts = actList();
-  return `
-  <p class="mute" style="margin:-6px 2px 14px">${saludo}${nombre ? ", " + esc(nombre) : ""} 👋</p>
-  <div class="hero">
-    <div class="ringwrap">
-      <div class="ring">${ringSVG(pct)}<div class="in"><div><b class="num">${Math.round(pct * 100)}%</b><br><span>meta semanal</span></div></div></div>
-      <div><div class="lbl">Esta semana</div><div class="big num" style="white-space:nowrap">${Math.round(w.min)}<small>/${meta} min</small></div>
-        <div class="small mute">${w.acts.length} entreno${w.acts.length === 1 ? "" : "s"}${w.dist ? ` · ${fmtKm(w.dist)} km` : ""}</div></div>
-    </div>
-    <div class="chips"><span class="chip volt">${svg("flame")}${st} semana${st === 1 ? "" : "s"} de racha</span><span class="chip hot">${svg("bolt")}${nf(w.kcal)} kcal</span></div>
-    <div class="week">${DIAS.map((d, i) => `<div class="${i === today ? "today" : ""}">${d}<i><b style="height:${Math.min(100, w.perDay[i] / maxD * 100)}%"></b></i></div>`).join("")}</div>
-  </div>
-  <div class="grid3" style="margin-bottom:14px">
-    <button class="stat" id="qRec" style="text-align:left"><div class="k" style="color:var(--volt)">${svg("gps")}Grabar</div><div class="small" style="margin-top:6px;font-weight:600">GPS en vivo</div></button>
-    <button class="stat" id="qMan" style="text-align:left"><div class="k" style="color:var(--hot)">${svg("edit")}Añadir</div><div class="small" style="margin-top:6px;font-weight:600">Pádel, gym…</div></button>
-    <button class="stat" id="qImp" style="text-align:left"><div class="k" style="color:var(--sky)">${svg("watch")}Reloj</div><div class="small" style="margin-top:6px;font-weight:600">Importar</div></button>
-  </div>
-  ${padelMini()}
-  <div class="card" id="nutriMini" style="cursor:pointer">
-    <h3><span style="display:flex;align-items:center;gap:8px">${svg("food")}Nutrición de hoy</span>${svg("chev")}</h3>
-    ${n.target ? `<div class="kring"><div class="ring" style="width:84px;height:84px">${ringSVG(n.kcal / n.target, "var(--hot)", 84, 9)}<div class="in"><div><b class="num" style="font-size:22px">${nf(n.kcal)}</b><br><span>kcal</span></div></div></div>
-      <div style="flex:1" class="bars">${macroBar("Proteína", n.p, n.tp, "#d4ff3a")}${macroBar("Carbohidratos", n.c, n.tc, "#38bdf8")}${macroBar("Grasa", n.g, n.tg, "#ff6a3d")}</div></div>
-      <p class="small mute" style="margin-top:10px">Te quedan <b style="color:var(--ink)">${nf(Math.max(0, n.target - n.kcal))} kcal</b> de ${nf(n.target)}${n.burn ? ` · has quemado ${nf(n.burn)} kcal entrenando` : ""}</p>`
-      : `<p class="mute small" style="line-height:1.5">Calcula tus calorías y macros y te hago un plan de comidas semanal con lista de la compra.</p><button class="btn pri sm" style="margin-top:12px">Crear mi plan</button>`}
-  </div>
-  ${shoeAlert()}
-  <button class="card" id="qShoe" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left"><div class="sp" style="background:var(--volt-soft);color:var(--volt)">${svg("run")}</div><div style="flex:1"><div style="font-weight:700">¿Qué zapatilla me va?</div><div class="small mute">Recomendador con ${SHOES.length} modelos y opiniones de la comunidad</div></div>${svg("chev", "chev")}</button>
-  <div class="sec">Últimos entrenos ${acts.length ? `<button id="verTodos">Ver todos</button>` : ""}</div>
-  ${acts.length ? acts.slice(0, 4).map(actCard).join("") : `<div class="card empty">${svg("run")}<p>Aún no tienes entrenos.<br>Toca el <b style="color:var(--volt)">+</b> para grabar el primero.</p></div>`}`;
+  const P = state.perfil.padel || {}; const r = P.nivel0 ? computeNivel() : null; const st = r ? padelStats() : null;
+  const last = padelActs().slice(-1)[0]; const nx = nextLesson();
+  const band = myPadelBand(); const pala = recPala({ nivel: band, estilo: 2, lado: P.lado || null, brazo: false, ligera: false, precio: 0 })[0];
+  const w = weekStats(monday(new Date())); const n = nutriToday();
+  let html = `<p class="mute" style="margin:-6px 2px 14px">${saludo}${nombre ? ", " + esc(nombre) : ""} 👋</p>`;
+  html += r ? `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.24),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.25)">
+      <div style="display:flex;align-items:flex-start;gap:12px"><div><div class="lbl" style="color:#e5d38f">Tu nivel de pádel</div><div class="big num" style="color:#facc15">${fmtNivel(r.nivel)}</div><div class="small" style="color:#ddd6bf">${nivelTxt(r.nivel)}${r.n ? ` · fiabilidad ${r.fiab}%` : ""}</div></div>
+        <div style="margin-left:auto;text-align:right;line-height:1.7" class="small"><div><b class="num" style="font-size:20px">${st.n}</b> <span class="mute">partidos</span></div><div><b class="num" style="font-size:20px;color:var(--volt)">${st.w + st.l ? Math.round(st.w / (st.w + st.l) * 100) : 0}%</b> <span class="mute">victorias</span></div>${st.racha > 1 ? `<div style="color:var(--volt)">🔥 ${st.racha} seguidas</div>` : ""}</div></div>
+      <div class="row" style="margin-top:14px"><button class="btn block" id="hAdd" style="background:#facc15;color:#1a1500;border:0">${svg("plus")}Apuntar partido</button><button class="btn" id="hPad" style="flex:none">Ver todo</button></div></div>`
+    : `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.24),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.25)">
+      <div class="lbl" style="color:#e5d38f">Empieza aquí</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 8px">¿Cuál es tu nivel de pádel?</h2>
+      <p class="small" style="color:#ddd6bf;line-height:1.5">5 preguntas y lo sabes. Luego sube o baja solo con cada partido que apuntes.</p>
+      <button class="btn block" id="hTest" style="margin-top:14px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>`;
+  if (typeof partidosPend !== "undefined" && partidosPend.length) html += `<button class="hint" id="hPend" style="width:100%;text-align:left;background:rgba(250,204,21,.1);margin-bottom:14px"><span style="font-size:18px">🎾</span><span style="color:var(--ink)">Te han apuntado en <b>${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</b>. Toca para confirmar.</span></button>`;
+  if (last) html += `<div class="sec">Último partido</div>${matchCard(last)}`;
+  html += `<div class="sec">Para ti</div>`;
+  if (nx) html += `<button class="card" id="hLes" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left"><span style="font-size:26px">🧠</span><div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:700">APRENDE · ${NIVL[nx.nivel].toUpperCase()}</div><div style="font-weight:700;margin-top:2px">${nx.t}</div><div class="small mute" style="margin-top:2px;line-height:1.4">${nx.r}</div></div>${svg("chev", "chev")}</button>`;
+  if (pala) html += `<button class="card" id="hPala" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left"><span style="font-size:26px">🎯</span><div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:700">PALA PARA TU NIVEL</div><div style="font-weight:700;margin-top:2px">${pala.s.marca} ${pala.s.modelo}</div><div class="small mute" style="margin-top:2px">${perfilTxt(pala.s.perfil)} · ${pala.s.forma} · ~${pala.s.peso} g · afina con el recomendador</div></div>${svg("chev", "chev")}</button>`;
+  html += `${shoeAlert()}<div class="sec">Tu físico</div>
+    <button class="card" id="hFis" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left"><div class="ring" style="width:64px;height:64px">${ringSVG(w.min / (+state.perfil.metaMin || 150), "var(--volt)", 64, 8)}</div><div style="flex:1"><div style="font-weight:700">${Math.round(w.min)} min esta semana</div><div class="small mute">${w.acts.length} sesion${w.acts.length === 1 ? "" : "es"}${w.dist ? ` · ${fmtKm(w.dist)} km` : ""} · correr, gimnasio y pádel suman</div></div>${svg("chev", "chev")}</button>
+    <div class="grid3" style="margin-bottom:14px"><button class="stat" id="qRec" style="text-align:left"><div class="k" style="color:var(--volt)">${svg("gps")}Correr</div><div class="small" style="margin-top:6px;font-weight:600">GPS en vivo</div></button>
+      <button class="stat" id="qGym" style="text-align:left"><div class="k" style="color:var(--hot)">${svg("gym")}Gimnasio</div><div class="small" style="margin-top:6px;font-weight:600">Series y kilos</div></button>
+      <button class="stat" id="qImp" style="text-align:left"><div class="k" style="color:var(--sky)">${svg("watch")}Reloj</div><div class="small" style="margin-top:6px;font-weight:600">Importar</div></button></div>
+    <button class="card" id="nutriMini" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left"><span style="color:var(--hot)">${svg("food")}</span><div style="flex:1">${n.target ? `<div style="font-weight:700">${nf(n.kcal)} / ${nf(n.target)} kcal hoy</div><div class="small mute">Proteína ${nf(n.p)} / ${nf(n.tp)} g</div>` : `<div style="font-weight:700">Nutrición para rendir en pista</div><div class="small mute">Calcula tus calorías y te hago un menú semanal</div>`}</div>${svg("chev", "chev")}</button>`;
+  return html;
 }
+WIRE.inicio = () => {
+  const on = (id, f) => { const e = $(id); if (e) e.onclick = f; };
+  on("#hAdd", () => openPadelMatch()); on("#hPad", () => setView("padel")); on("#hTest", openNivelTest); on("#hPend", () => { padelTab = "resumen"; setView("padel"); });
+  on("#hLes", () => openLesson(nextLesson().id)); on("#hPala", () => { gearSeg = "palas"; openRecPala(); }); on("#hFis", () => setView("progreso"));
+  on("#qRec", () => startRec("correr")); on("#qGym", () => openGym()); on("#qImp", openImport); on("#nutriMini", () => setView("nutricion"));
+  wireActs(); if (typeof loadPadelSocial === "function") loadPadelSocial();
+};
 function padelMini() {
   const P = state.perfil.padel || {}; const r = P.nivel0 ? computeNivel() : null; const st = r ? padelStats() : null;
   return `<button class="card" id="padelMini" style="display:block;width:100%;text-align:left;border-color:rgba(250,204,21,.25)"><h3><span style="display:flex;align-items:center;gap:8px;color:#facc15">${svg("padel")}<span style="color:var(--ink)">Tu pádel</span></span>${svg("chev")}</h3>
@@ -72,11 +73,6 @@ function padelMini() {
 }
 function shoeAlert() { const z = (state.perfil.zapas || []).filter(z => z.activa !== false).find(z => zapaKm(z) > ZAPA_VIDA * .9); return z ? `<div class="hint" style="background:var(--hot-soft);margin-bottom:14px">${svg("info")}<span style="color:var(--ink)">Tus <b>${esc(z.apodo || z.nombre)}</b> llevan ${nf(zapaKm(z))} km. Es buen momento para cambiarlas.</span></div>` : ""; }
 function macroBar(n, v, t, c) { return `<div class="b"><div><span>${n}</span><span class="mute">${nf(v)} / ${nf(t)} g</span></div><i><b style="width:${Math.min(100, t ? v / t * 100 : 0)}%;background:${c}"></b></i></div>`; }
-WIRE.inicio = () => {
-  wireActs(); $("#qRec").onclick = openStart; $("#qMan").onclick = () => openManual(); $("#qImp").onclick = openImport;
-  $("#padelMini").onclick = () => setView("padel"); $("#nutriMini").onclick = () => setView("nutricion"); $("#qShoe").onclick = () => { social.tab = "zapas"; setView("comunidad"); }; const v = $("#verTodos"); if (v) v.onclick = () => setView("entrenos");
-};
-
 // ---------- ENTRENOS ----------
 let entFilter = "todos";
 function vEntrenos() {
@@ -194,7 +190,7 @@ function vProgreso() {
   <div class="card"><h3><span style="display:flex;gap:8px;align-items:center">${svg("chart")}Minutos por semana</span><span class="small mute">12 semanas</span></h3>
     <div style="display:flex;align-items:flex-end;gap:5px;height:120px">${weeks.map((w, i) => `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%"><div style="height:${Math.max(3, w.min / mx * 100)}%;border-radius:7px;background:${i === 11 ? "var(--volt)" : "rgba(212,255,58,.35)"}"></div></div>`).join("")}</div>
     <div class="row small mute" style="justify-content:space-between;margin-top:6px"><span>${weeks[0].d.getDate()} ${MESES[weeks[0].d.getMonth()].slice(0, 3)}</span><span>Esta semana: <b style="color:var(--ink)">${Math.round(weeks[11].min)} min</b></span></div></div>
-  <div class="card"><h3><span style="display:flex;gap:8px;align-items:center">${svg("calendar")}Constancia</span><span class="small mute">${Object.keys(days).filter(k => parseD(k) >= start).length} días activos</span></h3><div class="heat" style="grid-template-rows:repeat(7,1fr)">${heat}</div></div>
+  <div class="card"><h3><span style="display:flex;gap:8px;align-items:center">${svg("calendar")}Constancia</span><span class="small mute">${(n => `${n} día${n === 1 ? "" : "s"} activo${n === 1 ? "" : "s"}`)(Object.keys(days).filter(k => parseD(k) >= start).length)}</span></h3><div class="heat" style="grid-template-rows:repeat(7,1fr)">${heat}</div></div>
   <div class="card"><h3><span style="display:flex;gap:8px;align-items:center">${svg("scale")}Peso</span><button class="btn sm" id="pAdd">${svg("plus")}Apuntar</button></h3>
     ${lastP ? `<div style="display:flex;align-items:baseline;gap:10px"><span class="num" style="font-size:44px">${nf(lastP.kg, 1)}</span><span class="mute">kg</span>${firstP !== lastP ? `<span class="chip ${lastP.kg <= firstP.kg ? "volt" : "hot"}" style="margin-left:auto">${lastP.kg - firstP.kg > 0 ? "+" : ""}${nf(lastP.kg - firstP.kg, 1)} kg</span>` : ""}</div>
       <div class="chartbox">${pesos.length > 1 ? lineChart(pesos.map(p => p.kg).concat(pesos.length < 5 ? Array(5 - pesos.length).fill(lastP.kg) : []), "#ff6a3d", { unit: " kg", fmt: v => nf(v, 1) }) : ""}</div>` : `<p class="small mute">Apunta tu peso de vez en cuando para ver tu evolución.</p>`}</div>
@@ -218,7 +214,7 @@ function openPerfil() {
     <div class="card"><h3>${svg("target")}Meta semanal</h3><div class="seg" id="metaSeg">${[90, 150, 200, 300, 420].map(v => `<button data-m="${v}" class="${(+state.perfil.metaMin || 150) === v ? "on" : ""}">${v} min</button>`).join("")}</div><p class="tiny mute">La OMS recomienda al menos 150 minutos de actividad moderada a la semana.</p></div>
     <div class="card list" style="padding:4px 14px">
       <button class="item" id="pPub">${svg("users")}${typeof social !== "undefined" && social.me ? "Mi perfil público · @" + esc(social.me.usuario) : "Unirme a la comunidad"}${svg("chev", "chev")}</button>
-      <button class="item" id="pAll">${svg("list")}Mis entrenos${svg("chev", "chev")}</button>
+      <button class="item" id="pFis">${svg("bolt")}Mi físico: entrenos, progreso y nutrición${svg("chev", "chev")}</button>
       <button class="item" id="pName">${svg("user")}Cambiar nombre${svg("chev", "chev")}</button>
       <button class="item" id="pWatch">${svg("watch")}Conectar reloj${svg("chev", "chev")}</button>
       <button class="item" id="pNut">${svg("food")}Mis datos de nutrición${svg("chev", "chev")}</button>
@@ -229,7 +225,7 @@ function openPerfil() {
     </div><p class="tiny mute" style="text-align:center;margin-top:8px">Ritmo+ · versión 1.0</p>`, s => {
     $$("[data-m]", s).forEach(b => b.onclick = () => { savePerfil({ metaMin: +b.dataset.m }); $$("[data-m]", s).forEach(x => x.classList.toggle("on", x === b)); toast("Meta actualizada"); });
     $("#pName", s).onclick = () => openSheet("Tu nombre", `<label class="field">Nombre<input id="nN" value="${esc(name)}" maxlength="40"></label><button class="btn pri block" id="nOk">Guardar</button>`, s2 => $("#nOk", s2).onclick = async () => { const n = $("#nN", s2).value.trim(); if (!n) return; me.name = n; savePerfil({ nombre: n }); try { store.auth && await store.auth.currentUser.updateProfile({ displayName: n }); } catch {} closeSheet(); toast("Nombre guardado"); });
-    $("#pWatch", s).onclick = openImport; $("#pAll", s).onclick = () => { closeSheet(); setView("entrenos"); };
+    $("#pWatch", s).onclick = openImport; $("#pFis", s).onclick = () => { closeSheet(); setView("progreso"); };
     $("#pPub", s).onclick = () => { if (social.me) openUser(me.uid); else if (store.kind === "firebase") openPerfilPublico(); else toast("Necesitas conexión"); }; $("#pNut", s).onclick = () => openNutriSetup();
     $("#pOut", s).onclick = () => confirmSheet("¿Cerrar sesión?", "Tus datos quedan guardados en tu cuenta.", "Cerrar sesión", async () => { closeSheet(); await store.signOut(); }, false);
     $("#pDel", s).onclick = openBorrar;

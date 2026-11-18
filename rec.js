@@ -1,9 +1,11 @@
 // ===== Ritmo+ · grabar, añadir a mano, gimnasio e importar del reloj =====
 
 function openStart() {
-  openSheet("¿Qué vas a hacer?", `<div class="sports">${SPORTS.map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.n}</button>`).join("")}</div>
+  openSheet("Pádel", `<div class="row" style="margin-bottom:6px"><button class="btn block" id="sPm" style="background:#facc15;color:#1a1500;border:0;padding:18px">${svg("plus")}Apuntar partido</button><button class="btn block" id="sPc" style="padding:18px">${svg("clock")}Cronometrar</button></div>
+    <div class="sec">Entrenamiento físico</div><div class="sports">${SPORTS.filter(s => s.id !== "padel").map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.n}</button>`).join("")}</div>
     <p class="small mute" style="margin-top:14px;text-align:center">Correr, bici, caminar y senderismo graban con GPS. El resto, con cronómetro.</p>
     <button class="btn block" style="margin-top:12px" id="sMan">${svg("edit")}Añadir un entreno ya hecho</button>`, s => {
+    $("#sPm", s).onclick = () => openPadelMatch(); $("#sPc", s).onclick = () => { sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); startRec("padel"); };
     $$("[data-s]", s).forEach(b => b.onclick = () => { const sp = b.dataset.s; sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); sp === "gym" ? openGym() : startRec(sp); });
     $("#sMan", s).onclick = () => openManual();
   });

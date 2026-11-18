@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Ritmo+</title>
+<title>Ritmo+ · Pádel</title>
 <meta name="theme-color" content="#07090c">
 <meta name="description" content="Ritmo+: entrenos, deportes, nutrición y tu reloj en una sola app.">
 <link rel="manifest" href="manifest.json">
@@ -278,17 +278,17 @@ nav.tabbar button{position:relative}
 <section id="auth" hidden>
   <div class="logo sm"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l3-8 4 15 3-9 2 2h4"/></svg></div>Ritmo<b>+</b></div>
   <div id="land">
-    <h1>Tu pádel y tu running,<br><em>en serio.</em></h1>
-    <p class="pitch">Tu nivel real, tus marcas y el material que te va. Gratis y sin anuncios.</p>
+    <h1>Tu pádel,<br><em>en serio.</em></h1>
+    <p class="pitch">Tu nivel real, tus partidos, la pala que te va y cómo mejorar. Gratis y sin anuncios.</p>
     <div class="demo">
       <div class="dc dpad"><div class="dl">🎾 Tu nivel de pádel</div><div class="dr"><span class="num dbig" style="color:#facc15">3,89</span><span class="dup">▲ +0,13</span></div><div class="dsub">Victoria 6-4 / 7-6 · con Javi · tu bestia negra: Álex</div></div>
-      <div class="dc drun"><div class="dl">🏃 Rodaje de domingo</div><div class="dr"><span class="num dmid">10,2 km</span><span class="num dmid">4:58 /km</span></div><div class="dsub" style="color:var(--volt)">🏆 Récord personal en 5K</div></div>
-      <div class="dc dgear"><div class="dl">🎯 ¿Qué me compro?</div><div class="dsub" style="color:var(--ink)"><b>Pala de control</b> para tu nivel · <b>Novablast 6</b> para rodar a 5:30</div></div>
+      <div class="dc drun"><div class="dl">🎯 La pala que te va</div><div class="dsub" style="color:var(--ink)"><b>Polivalente, tacto medio, ~365 g</b> · para tu nivel y tu revés, cuidando el codo</div></div>
+      <div class="dc dgear"><div class="dl">🧠 Aprende</div><div class="dsub" style="color:var(--ink)"><b>La bandeja</b> · siguiente lección para tu nivel</div></div>
     </div>
     <div class="what">
       <div><span>🎾</span><p><b>Tu nivel de pádel</b>, que sube o baja con cada partido. Con quién ganas más y quién te tiene la medida cogida.</p></div>
-      <div><span>⌚</span><p><b>Corre con GPS o desde tu reloj</b> (Garmin, Polar, Coros…): ritmo, parciales y récords.</p></div>
-      <div><span>👟</span><p><b>Palas y zapatillas</b> recomendadas para ti, explicadas, con opiniones de jugadores y corredores.</p></div>
+      <div><span>🎯</span><p><b>Palas, zapatillas y ropa</b> recomendadas para ti y explicadas, con opiniones de otros jugadores.</p></div>
+      <div><span>💪</span><p><b>Aprende y prepárate</b>: golpes y táctica según tu nivel, y tu físico (correr, gimnasio, reloj) para rendir más en pista.</p></div>
     </div>
     <button class="btn pri block big" id="goUp">Empezar gratis</button>
     <button class="btn block ghost" id="goIn">Ya tengo cuenta</button>
@@ -314,8 +314,8 @@ nav.tabbar button{position:relative}
   <button data-v="inicio" class="on"></button>
   <button data-v="padel"></button>
   <button data-v="grabar"><span class="rec"></span></button>
+  <button data-v="material"></button>
   <button data-v="comunidad"></button>
-  <button data-v="tu"></button>
 </nav>
 <div id="sheetBg"></div><div id="sheet"></div>
 <div id="rec" hidden></div>
@@ -336,6 +336,7 @@ nav.tabbar button{position:relative}
 <script src="shoes.js"></script>
 <script src="padel.js"></script>
 <script src="gear.js"></script>
+<script src="learn.js"></script>
 <script>boot();</script>
 <script>["gesturestart","gesturechange"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");</script>

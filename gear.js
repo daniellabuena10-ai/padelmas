@@ -172,12 +172,12 @@ function openGearReview(g) {
 }
 
 // ---------- Hub de material ----------
-let gearSeg = "running", gearFilter = "todas", gearBrand = "todas";
-function materialView(fromPadel = false) {
-  const segs = fromPadel ? [["palas", "Palas"], ["zpadel", "Zapatillas de pádel"]] : [["running", "Running"], ["palas", "Palas"], ["zpadel", "Zapas pádel"]];
-  if (fromPadel && gearSeg === "running") gearSeg = "palas";
+let gearSeg = "palas", gearFilter = "todas", gearBrand = "todas";
+function materialView() {
+  const segs = [["palas", "Palas"], ["zpadel", "Zapatillas"], ["acces", "Ropa y accesorios"], ["running", "Running"]];
   const seg = `<div class="seg" style="margin-bottom:14px">${segs.map(([k, n]) => `<button data-gs="${k}" class="${gearSeg === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   if (gearSeg === "running") return seg + zapasView();
+  if (gearSeg === "acces") return seg + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
   const cats = isP ? [["todas", "Todas"], ["1", "Control"], ["2", "Polivalente"], ["3", "Potencia"]] : [["todas", "Todas"], ["espiga", "Espiga"], ["omni", "Omni"], ["híbrida", "Híbrida"]];
   const list = all.filter(g => (gearFilter === "todas" || (isP ? String(Math.round(g.perfil)) === gearFilter : g.suela === gearFilter)) && (gearBrand === "todas" || g.marca === gearBrand));
@@ -196,6 +196,7 @@ function materialView(fromPadel = false) {
 function wireMaterial(root) {
   $$("[data-gs]", root).forEach(b => b.onclick = () => { gearSeg = b.dataset.gs; gearFilter = "todas"; gearBrand = "todas"; render(); });
   if (gearSeg === "running") { wireZapasView(root); return; }
+  if (gearSeg === "acces") { wireAcces(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
   $("#gRec", root).onclick = gearSeg === "palas" ? openRecPala : openRecZP; wireGearRows(root);
   $$("[data-gf]", root).forEach(b => b.onclick = () => { gearFilter = b.dataset.gf; render(); });
   $$("[data-gb]", root).forEach(b => b.onclick = () => { gearBrand = b.dataset.gb; render(); });

@@ -90,7 +90,7 @@ function vPadel() {
       <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel</b>, que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
       <button class="btn block" id="pdTest" style="margin-top:16px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
-  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["material", "Material"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
+  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   const pend = partidosPend.length ? `<div class="card" style="border-color:rgba(250,204,21,.35)"><h3>${svg("bell")}Te han apuntado en ${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</h3>${partidosPend.map(pendRow).join("")}</div>` : "";
   let body = "";
   if (padelTab === "resumen") {
@@ -115,7 +115,7 @@ function vPadel() {
   } else if (padelTab === "partidos") {
     const A = padelActs().reverse();
     body = pend + `<button class="btn pri block" id="pdAdd" style="margin-bottom:14px">${svg("plus")}Apuntar partido</button>` + (A.length ? A.map(matchCard).join("") : `<div class="card empty">${svg("padel")}<p>Todavía no hay partidos.</p></div>`);
-  } else if (padelTab === "material") body = materialView(true);
+  } else if (padelTab === "aprende") body = aprendeHTML();
   else body = `<button class="btn sm" id="bqBack" style="margin-bottom:12px">${svg("back")}Volver</button>` + buscarHTML();
   return tabs + body;
 }
@@ -137,10 +137,11 @@ WIRE.padel = () => {
   $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); });
   $$("#pdAdd").forEach(b => b.onclick = () => openPadelMatch()); const f = $("#pdFind"); if (f) f.onclick = () => { padelTab = "buscar"; render(); };
   const g = $("#pdGear"); if (g) g.onclick = () => { gearSeg = "palas"; openRecPala(); };
+  if (!(state.perfil.padel || {}).nivel0) return;
   wireActs(); $$("[data-user]").forEach(b => b.onclick = () => socialOn() ? openUser(b.dataset.user) : null);
   $$("[data-pok]").forEach(b => b.onclick = () => confirmPartido(b.dataset.pok, true)); $$("[data-pno]").forEach(b => b.onclick = () => confirmPartido(b.dataset.pno, false));
   if (padelTab === "buscar") { wireBuscar(); const bb = $("#bqBack"); if (bb) bb.onclick = () => { padelTab = "resumen"; render(); }; }
-  if (padelTab === "material") wireMaterial($("#view"));
+  if (padelTab === "aprende") wireAprende($("#view"));
   loadPadelSocial();
 };
 async function loadPadelSocial(force = false) {
