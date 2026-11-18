@@ -67,8 +67,8 @@ function vComunidad() {
   if (store.kind !== "firebase") return `<div class="card empty">${svg("users")}<p>La comunidad necesita conexión.</p></div>`;
   if (!social.loaded) return `<div class="empty">Cargando…</div>`;
   if (!social.me) return `<div class="hero" style="background:radial-gradient(400px 220px at 100% 0%,rgba(56,189,248,.25),transparent 70%),linear-gradient(160deg,#0e1620,#0a0d11 60%);border-color:rgba(56,189,248,.22)">
-      <div class="lbl" style="color:#9cc9e6">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Entrena con tu gente</h2>
-      <p class="small" style="color:#cbd6df;line-height:1.55">Sigue a tus amigos, mira sus entrenos, dales <b>kudos</b>, comenta y habla por mensaje. Compite en el <b>ranking semanal</b> con todos los deportes, no solo correr y bici.</p>
+      <div class="lbl" style="color:#9cc9e6">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Juega con tu gente</h2>
+      <p class="small" style="color:#cbd6df;line-height:1.55">Sigue a tus amigos, mira sus partidos, dales <b>kudos</b>, comenta y habla por mensaje. Pregunta por palas y zapatillas a gente que juega como tú.</p>
       <div class="chips"><span class="chip">${svg("heart")}Kudos</span><span class="chip">${svg("mail")}Mensajes</span><span class="chip">${svg("trophy")}Ranking</span><span class="chip">${svg("shield")}Zona privada</span></div>
       <button class="btn pri block" id="cpStart" style="margin-top:16px">Crear mi perfil público</button></div>
       <p class="tiny mute" style="text-align:center;margin-bottom:18px">Tus datos de salud y nutrición nunca se publican.</p>`;
@@ -76,7 +76,19 @@ function vComunidad() {
   return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="srch" placeholder="Buscar personas por @usuario o nombre" autocomplete="off" style="margin:0"></label></div>
     <div id="srchRes"></div>
     <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["ranking", "Ranking"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
-    ${social.tab === "ranking" ? rankHTML(rank) : `<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
+    ${social.tab === "ranking" ? rankHTML(rank) : `${genteHTML()}<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
+}
+function genteHTML() {
+  const g = (social.gente || []).filter(p => social.tab === "descubrir" || !social.following.has(p.uid));
+  if (!g.length || (social.tab === "siguiendo" && social.feed.length > 3 && social.following.size > 2)) return "";
+  return `<div class="card" style="padding:14px 0 12px"><h3 style="padding:0 16px">${svg("users")}${social.tab === "descubrir" ? "Gente en Pádel+" : "Nuevos en Pádel+"}</h3>
+    <div style="display:flex;gap:10px;overflow-x:auto;padding:10px 16px 2px;scrollbar-width:none">${g.map(p => {
+      const f = social.following.has(p.uid);
+      return `<button data-user="${p.uid}" style="flex:0 0 92px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center">${avatar(p, 54)}
+        <div class="small" style="font-weight:700;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.nombre)}</div>
+        <div class="tiny mute" style="max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nivelPadel ? "Nivel " + (+p.nivelPadel).toFixed(1) : "@" + esc(p.usuario || "")}</div>
+        <span class="tiny" style="color:${f ? "#94a3b8" : "var(--volt,#d4ff3a)"};font-weight:700">${f ? "Siguiendo" : "+ Seguir"}</span></button>`;
+    }).join("")}</div></div>`;
 }
 function feedHTML(list) {
   if (social.busy && !list.length) return `<div class="empty">Cargando entrenos…</div>`;
@@ -123,6 +135,8 @@ async function loadFeed(force = false) {
     social.feed = res.flatMap(s => s.docs.map(d => d.data())).sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 80);
     const d = await FS().collection("posts").orderBy("fecha", "desc").limit(40).get();
     social.disc = d.docs.map(x => x.data());
+    const g = await FS().collection("perfiles").orderBy("creado", "desc").limit(30).get().catch(() => ({ docs: [] }));
+    social.gente = g.docs.map(x => x.data()).filter(x => x.uid && x.uid !== me.uid);
     social.lastLoad = Date.now();
   } catch (e) { console.warn(e); } finally { social.busy = false; }
   if (view === "comunidad" && !sheetOpen) render();
