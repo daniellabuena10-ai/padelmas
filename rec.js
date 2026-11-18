@@ -106,6 +106,7 @@ function openFinish(a, editing) {
     <label class="field">Título<input id="fT" value="${esc(a.titulo || "")}" maxlength="60"></label>
     ${editing ? `<div class="row"><label class="field">Duración (min)<input id="fDur" type="number" inputmode="numeric" value="${Math.round(a.dur / 60)}"></label>${s.gps || a.dist ? `<label class="field">Distancia (km)<input id="fDist" type="number" step="0.01" inputmode="decimal" value="${(a.dist / 1000).toFixed(2)}"></label>` : ""}</div>` : ""}
     ${s.match ? matchFields(a) : ""}
+    ${zapaSelect(a)}
     <div class="field">¿Qué tal te has sentido?<div class="seg" id="fS">${[1, 2, 3, 4, 5].map(n => `<button data-n="${n}" class="${a.sensacion === n ? "on" : ""}">${["😫", "😕", "🙂", "😀", "🔥"][n - 1]}</button>`).join("")}</div></div>
     <label class="field">Notas<textarea id="fN" rows="2" maxlength="400" placeholder="Cómo fue, zapatillas, sensaciones…">${esc(a.notas || "")}</textarea></label>
     ${typeof social !== "undefined" && social.me ? `<label class="check"><input type="checkbox" id="fVis" ${a.vis === "privado" ? "" : "checked"}> <span>Publicar en la comunidad (tus seguidores lo verán)</span></label>` : ""}
@@ -117,6 +118,7 @@ function openFinish(a, editing) {
     $("#fOk", sh).onclick = () => {
       a.titulo = $("#fT", sh).value.trim() || autoTitle(a.deporte, a.fecha); a.notas = $("#fN", sh).value.trim(); a.sensacion = sens || null;
       const fv = $("#fVis", sh); if (fv) a.vis = fv.checked ? "todos" : "privado";
+      const fz = $("#fZ", sh); if (fz) a.zapa = fz.value || null;
       if (editing) { const d = +$("#fDur", sh).value; if (d > 0) a.dur = d * 60; const di = $("#fDist", sh); if (di) a.dist = Math.round(parseFloat(String(di.value).replace(",", ".")) * 1000) || 0; a.kcal = estKcal(a.deporte, a.dur, a.dist); }
       if (s.match) readMatch(sh, a);
       saveItem("act", a); localStorage.removeItem(REC_KEY); R = null; closeSheet();
@@ -150,6 +152,7 @@ function openManual(sport = null) {
     <div class="row"><label class="field">Fecha<input id="mF" type="date" value="${todayStr()}"></label><label class="field">Hora<input id="mH" type="time" value="${pad(now.getHours())}:${pad(now.getMinutes())}"></label></div>
     <div class="row"><label class="field">Duración (min)<input id="mD" type="number" inputmode="numeric" placeholder="60"></label>${s.gps || sport === "natacion" ? `<label class="field">Distancia (km)<input id="mDi" type="number" step="0.01" inputmode="decimal" placeholder="${sport === "natacion" ? "1,5" : "5"}"></label>` : ""}</div>
     ${s.match ? matchFields(a) : ""}
+    ${zapaSelect(a)}
     <label class="field">Título (opcional)<input id="mT" maxlength="60" placeholder="${esc(autoTitle(sport, now.toISOString()))}"></label>
     <label class="field">Notas<textarea id="mN" rows="2" maxlength="400"></textarea></label>
     ${typeof social !== "undefined" && social.me ? `<label class="check"><input type="checkbox" id="mVis" checked> <span>Publicar en la comunidad</span></label>` : ""}
@@ -160,7 +163,7 @@ function openManual(sport = null) {
       const di = $("#mDi", sh); a.dist = di ? Math.round((parseFloat(String(di.value).replace(",", ".")) || 0) * 1000) : 0;
       a.fecha = new Date(`${$("#mF", sh).value}T${$("#mH", sh).value || "12:00"}`).toISOString(); a.dur = d * 60;
       a.kcal = estKcal(sport, a.dur, a.dist); a.titulo = $("#mT", sh).value.trim() || autoTitle(sport, a.fecha); a.notas = $("#mN", sh).value.trim();
-      if (s.match) readMatch(sh, a); const mv = $("#mVis", sh); if (mv) a.vis = mv.checked ? "todos" : "privado";
+      if (s.match) readMatch(sh, a); const mv = $("#mVis", sh); if (mv) a.vis = mv.checked ? "todos" : "privado"; const mz = $("#fZ", sh); if (mz) a.zapa = mz.value || null;
       saveItem("act", a); closeSheet(); toast("Entreno guardado 💪");
     };
   });
@@ -245,6 +248,7 @@ function buildAct(sport, pts, extra = {}) {
   if (hrs.length) { a.fcMedia = Math.round(hrs.reduce((s, x) => s + x, 0) / hrs.length); a.fcMax = Math.max(...hrs); }
   if (extra.fcMedia) a.fcMedia = Math.round(extra.fcMedia); if (extra.fcMax) a.fcMax = Math.round(extra.fcMax);
   a.kcal = Math.round(extra.kcal || estKcal(sport, a.dur, a.dist)); a.titulo = extra.titulo || autoTitle(sport, a.fecha);
+  if (sport === "correr" && state.perfil.zapaDef) a.zapa = state.perfil.zapaDef;
   return a;
 }
 function parseGPX(txt) {

@@ -53,6 +53,26 @@ service cloud.firestore {
                       || get(/databases/$(database)/documents/posts/$(pid)).data.uid == request.auth.uid);
       }
     }
+    // Opiniones de zapatillas (una por persona y modelo)
+    match /zapas/{sid}/opiniones/{uid} {
+      allow read: if signedIn();
+      allow write: if isMe(uid) && (request.resource == null || (request.resource.data.uid == request.auth.uid
+                    && request.resource.data.nota is int && request.resource.data.nota >= 1 && request.resource.data.nota <= 5));
+    }
+    // Preguntas y respuestas
+    match /preguntas/{qid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.texto is string && request.resource.data.texto.size() <= 300;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      allow update: if signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nResp']);
+      match /respuestas/{rid} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+                      && request.resource.data.texto is string && request.resource.data.texto.size() <= 600;
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+    }
     // Mensajes privados entre dos personas
     match /chats/{cid} {
       allow read: if signedIn() && request.auth.uid in resource.data.miembros;

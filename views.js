@@ -58,13 +58,16 @@ function vInicio() {
       <p class="small mute" style="margin-top:10px">Te quedan <b style="color:var(--ink)">${nf(Math.max(0, n.target - n.kcal))} kcal</b> de ${nf(n.target)}${n.burn ? ` · has quemado ${nf(n.burn)} kcal entrenando` : ""}</p>`
       : `<p class="mute small" style="line-height:1.5">Calcula tus calorías y macros y te hago un plan de comidas semanal con lista de la compra.</p><button class="btn pri sm" style="margin-top:12px">Crear mi plan</button>`}
   </div>
+  ${shoeAlert()}
+  <button class="card" id="qShoe" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left"><div class="sp" style="background:var(--volt-soft);color:var(--volt)">${svg("run")}</div><div style="flex:1"><div style="font-weight:700">¿Qué zapatilla me va?</div><div class="small mute">Recomendador con ${SHOES.length} modelos y opiniones de la comunidad</div></div>${svg("chev", "chev")}</button>
   <div class="sec">Últimos entrenos ${acts.length ? `<button id="verTodos">Ver todos</button>` : ""}</div>
   ${acts.length ? acts.slice(0, 4).map(actCard).join("") : `<div class="card empty">${svg("run")}<p>Aún no tienes entrenos.<br>Toca el <b style="color:var(--volt)">+</b> para grabar el primero.</p></div>`}`;
 }
+function shoeAlert() { const z = (state.perfil.zapas || []).filter(z => z.activa !== false).find(z => zapaKm(z) > ZAPA_VIDA * .9); return z ? `<div class="hint" style="background:var(--hot-soft);margin-bottom:14px">${svg("info")}<span style="color:var(--ink)">Tus <b>${esc(z.apodo || z.nombre)}</b> llevan ${nf(zapaKm(z))} km. Es buen momento para cambiarlas.</span></div>` : ""; }
 function macroBar(n, v, t, c) { return `<div class="b"><div><span>${n}</span><span class="mute">${nf(v)} / ${nf(t)} g</span></div><i><b style="width:${Math.min(100, t ? v / t * 100 : 0)}%;background:${c}"></b></i></div>`; }
 WIRE.inicio = () => {
   wireActs(); $("#qRec").onclick = openStart; $("#qMan").onclick = () => openManual(); $("#qImp").onclick = openImport;
-  $("#nutriMini").onclick = () => setView("nutricion"); const v = $("#verTodos"); if (v) v.onclick = () => setView("entrenos");
+  $("#nutriMini").onclick = () => setView("nutricion"); $("#qShoe").onclick = () => { social.tab = "zapas"; setView("comunidad"); }; const v = $("#verTodos"); if (v) v.onclick = () => setView("entrenos");
 };
 
 // ---------- ENTRENOS ----------

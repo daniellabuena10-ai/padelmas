@@ -64,19 +64,19 @@ async function unpublishAct(a) { if (socialOn() && a.postId) { try { await FS().
 
 // ---------- Vista Comunidad ----------
 function vComunidad() {
-  if (store.kind !== "firebase") return `<div class="card empty">${svg("user")}<p>La comunidad necesita conexión.</p></div>`;
+  if (store.kind !== "firebase") return zapasView();
   if (!social.loaded) return `<div class="empty">Cargando…</div>`;
   if (!social.me) return `<div class="hero" style="background:radial-gradient(400px 220px at 100% 0%,rgba(56,189,248,.25),transparent 70%),linear-gradient(160deg,#0e1620,#0a0d11 60%);border-color:rgba(56,189,248,.22)">
       <div class="lbl" style="color:#9cc9e6">Comunidad Ritmo+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Entrena con tu gente</h2>
       <p class="small" style="color:#cbd6df;line-height:1.55">Sigue a tus amigos, mira sus entrenos, dales <b>kudos</b>, comenta y habla por mensaje. Compite en el <b>ranking semanal</b> con todos los deportes, no solo correr y bici.</p>
       <div class="chips"><span class="chip">${svg("heart")}Kudos</span><span class="chip">${svg("mail")}Mensajes</span><span class="chip">${svg("trophy")}Ranking</span><span class="chip">${svg("shield")}Zona privada</span></div>
       <button class="btn pri block" id="cpStart" style="margin-top:16px">Crear mi perfil público</button></div>
-      <p class="tiny mute" style="text-align:center">Tus datos de salud y nutrición nunca se publican.</p>`;
+      <p class="tiny mute" style="text-align:center;margin-bottom:18px">Tus datos de salud y nutrición nunca se publican.</p>${zapasView()}`;
   const rank = weeklyRanking();
   return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="srch" placeholder="Buscar personas por @usuario o nombre" autocomplete="off" style="margin:0"></label></div>
     <div id="srchRes"></div>
-    <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["ranking", "Ranking"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
-    ${social.tab === "ranking" ? rankHTML(rank) : `<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
+    <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["ranking", "Ranking"], ["zapas", "Zapatillas"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    ${social.tab === "zapas" ? zapasView() : social.tab === "ranking" ? rankHTML(rank) : `<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
 }
 function feedHTML(list) {
   if (social.busy && !list.length) return `<div class="empty">Cargando entrenos…</div>`;
@@ -128,12 +128,12 @@ async function loadFeed(force = false) {
   if (view === "comunidad" && !sheetOpen) render();
 }
 WIRE.comunidad = () => {
-  const st = $("#cpStart"); if (st) { st.onclick = () => openPerfilPublico(); return; }
+  const st = $("#cpStart"); if (st) { st.onclick = () => openPerfilPublico(); wireZapasView($("#view")); return; }
   if (!social.me) return;
   loadFeed();
   $$("[data-st]").forEach(b => b.onclick = () => { social.tab = b.dataset.st; render(); });
   const gd = $("#goDisc"); if (gd) gd.onclick = () => { social.tab = "descubrir"; render(); };
-  wirePosts($("#view"));
+  if (social.tab === "zapas") wireZapasView($("#view")); else wirePosts($("#view"));
   let to; $("#srch").oninput = e => { clearTimeout(to); const q = e.target.value.trim().toLowerCase().replace(/^@/, ""); to = setTimeout(() => searchPeople(q), 300); };
 };
 function wirePosts(root) {

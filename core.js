@@ -148,6 +148,7 @@ function render() {
   $("#title").textContent = TABS[view][1];
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
   (WIRE[view] || (() => {}))();
+  if (view === "comunidad" && store.kind !== "firebase") wireZapasView($("#view"));
 }
 const WIRE = {};
 function openSheet(title, html, wire) {
