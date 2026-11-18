@@ -73,6 +73,27 @@ service cloud.firestore {
         allow delete: if signedIn() && resource.data.uid == request.auth.uid;
       }
     }
+    // Partidos de pádel compartidos (solo los ven sus jugadores)
+    match /partidos/{pid} {
+      allow read: if signedIn() && request.auth.uid in resource.data.jugadores;
+      allow create: if signedIn() && request.resource.data.creador == request.auth.uid
+                    && request.auth.uid in request.resource.data.jugadores && request.resource.data.jugadores.size() <= 4;
+      allow update: if signedIn() && request.auth.uid in resource.data.jugadores
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['conf', 'rech']);
+      allow delete: if signedIn() && resource.data.creador == request.auth.uid;
+    }
+    // Partidos abiertos para buscar jugadores
+    match /quedadas/{qid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.creador == request.auth.uid && request.resource.data.jugadores.size() <= 4;
+      allow delete: if signedIn() && resource.data.creador == request.auth.uid;
+      allow update: if signedIn() && request.resource.data.jugadores.size() <= 4 && (
+        (resource.data.creador == request.auth.uid && request.resource.data.creador == request.auth.uid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['jugadores', 'uids'])
+            && request.resource.data.uids.toSet().difference(resource.data.uids.toSet())
+                 .union(resource.data.uids.toSet().difference(request.resource.data.uids.toSet()))
+                 .hasOnly([request.auth.uid])));
+    }
     // Mensajes privados entre dos personas
     match /chats/{cid} {
       allow read: if signedIn() && request.auth.uid in resource.data.miembros;

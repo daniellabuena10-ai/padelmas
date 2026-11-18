@@ -51,6 +51,7 @@ function vInicio() {
     <button class="stat" id="qMan" style="text-align:left"><div class="k" style="color:var(--hot)">${svg("edit")}Añadir</div><div class="small" style="margin-top:6px;font-weight:600">Pádel, gym…</div></button>
     <button class="stat" id="qImp" style="text-align:left"><div class="k" style="color:var(--sky)">${svg("watch")}Reloj</div><div class="small" style="margin-top:6px;font-weight:600">Importar</div></button>
   </div>
+  ${padelMini()}
   <div class="card" id="nutriMini" style="cursor:pointer">
     <h3><span style="display:flex;align-items:center;gap:8px">${svg("food")}Nutrición de hoy</span>${svg("chev")}</h3>
     ${n.target ? `<div class="kring"><div class="ring" style="width:84px;height:84px">${ringSVG(n.kcal / n.target, "var(--hot)", 84, 9)}<div class="in"><div><b class="num" style="font-size:22px">${nf(n.kcal)}</b><br><span>kcal</span></div></div></div>
@@ -63,11 +64,17 @@ function vInicio() {
   <div class="sec">Últimos entrenos ${acts.length ? `<button id="verTodos">Ver todos</button>` : ""}</div>
   ${acts.length ? acts.slice(0, 4).map(actCard).join("") : `<div class="card empty">${svg("run")}<p>Aún no tienes entrenos.<br>Toca el <b style="color:var(--volt)">+</b> para grabar el primero.</p></div>`}`;
 }
+function padelMini() {
+  const P = state.perfil.padel || {}; const r = P.nivel0 ? computeNivel() : null; const st = r ? padelStats() : null;
+  return `<button class="card" id="padelMini" style="display:block;width:100%;text-align:left;border-color:rgba(250,204,21,.25)"><h3><span style="display:flex;align-items:center;gap:8px;color:#facc15">${svg("padel")}<span style="color:var(--ink)">Tu pádel</span></span>${svg("chev")}</h3>
+    ${r ? `<div style="display:flex;align-items:center;gap:16px"><div><div class="num" style="font-size:44px;line-height:1;color:#facc15">${fmtNivel(r.nivel)}</div><div class="small mute">${nivelTxt(r.nivel)}</div></div><div class="small mute" style="margin-left:auto;text-align:right;line-height:1.6">${st.n} partidos<br>${st.w + st.l ? Math.round(st.w / (st.w + st.l) * 100) : 0}% victorias${st.racha > 1 ? `<br><span style="color:var(--volt)">🔥 ${st.racha} seguidas</span>` : ""}</div></div>`
+      : `<p class="small mute">Calcula tu nivel, apunta partidos con tus amigos y busca partido de tu nivel.</p>`}</button>`;
+}
 function shoeAlert() { const z = (state.perfil.zapas || []).filter(z => z.activa !== false).find(z => zapaKm(z) > ZAPA_VIDA * .9); return z ? `<div class="hint" style="background:var(--hot-soft);margin-bottom:14px">${svg("info")}<span style="color:var(--ink)">Tus <b>${esc(z.apodo || z.nombre)}</b> llevan ${nf(zapaKm(z))} km. Es buen momento para cambiarlas.</span></div>` : ""; }
 function macroBar(n, v, t, c) { return `<div class="b"><div><span>${n}</span><span class="mute">${nf(v)} / ${nf(t)} g</span></div><i><b style="width:${Math.min(100, t ? v / t * 100 : 0)}%;background:${c}"></b></i></div>`; }
 WIRE.inicio = () => {
   wireActs(); $("#qRec").onclick = openStart; $("#qMan").onclick = () => openManual(); $("#qImp").onclick = openImport;
-  $("#nutriMini").onclick = () => setView("nutricion"); $("#qShoe").onclick = () => { social.tab = "zapas"; setView("comunidad"); }; const v = $("#verTodos"); if (v) v.onclick = () => setView("entrenos");
+  $("#padelMini").onclick = () => setView("padel"); $("#nutriMini").onclick = () => setView("nutricion"); $("#qShoe").onclick = () => { social.tab = "zapas"; setView("comunidad"); }; const v = $("#verTodos"); if (v) v.onclick = () => setView("entrenos");
 };
 
 // ---------- ENTRENOS ----------

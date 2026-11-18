@@ -83,6 +83,7 @@ function stopRec(discard) {
 }
 function finishRec() {
   const t = elapsed(); if (t < 10) { toast("Graba al menos unos segundos"); return; }
+  if (R.sport === "padel") { const f = new Date(R.start).toISOString(); stopRec(false); localStorage.removeItem(REC_KEY); R = null; openPadelMatch({ fecha: f, dur: Math.round(t), fuente: "crono" }); return; }
   const s = sportOf(R.sport), trk = downsample(R.pts);
   const a = { id: uid("a"), deporte: R.sport, fecha: new Date(R.start).toISOString(), dur: Math.round(t), dist: Math.round(R.dist), fuente: s.gps ? "gps" : "crono" };
   if (trk && trk.length > 1) { a.trk = trk; a.desnivel = elevGain(trk); a.bests = bestEfforts(trk); }
@@ -147,6 +148,7 @@ function openManual(sport = null) {
       s => $$("[data-s]", s).forEach(b => b.onclick = () => b.dataset.s === "gym" ? openGym() : openManual(b.dataset.s)));
     return;
   }
+  if (sport === "padel") { openPadelMatch(); return; }
   const s = sportOf(sport), now = new Date(); const a = { id: uid("a"), deporte: sport, fuente: "manual" };
   openSheet(`${s.n}`, `
     <div class="row"><label class="field">Fecha<input id="mF" type="date" value="${todayStr()}"></label><label class="field">Hora<input id="mH" type="time" value="${pad(now.getHours())}:${pad(now.getMinutes())}"></label></div>

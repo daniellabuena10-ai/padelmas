@@ -5,7 +5,7 @@ const COLORS = ["#d4ff3a", "#38bdf8", "#ff6a3d", "#a78bfa", "#34d399", "#facc15"
 let social = { me: null, loaded: false, following: new Set(), followers: 0, feed: [], disc: [], chats: [], avisos: [], tab: "siguiendo", busy: false, lastLoad: 0 };
 const socialOn = () => store && store.kind === "firebase" && social.me;
 const handleOk = h => /^[a-z0-9._]{3,20}$/.test(h);
-function avatar(p, size = 40) { const n = (p && (p.nombre || p.autor) || "?").trim(); return `<div class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px;background:${(p && p.color) || "#d4ff3a"};flex:none">${esc(n[0].toUpperCase())}</div>`; }
+function avatar(p, size = 40) { const n = (p && (p.nombre || p.autor || p.n) || "?").trim(); return `<div class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px;background:${(p && p.color) || "#d4ff3a"};flex:none">${esc(n[0].toUpperCase())}</div>`; }
 function ago(t) { const s = (Date.now() - t) / 1000; if (s < 60) return "ahora"; if (s < 3600) return `hace ${Math.floor(s / 60)} min`; if (s < 86400) return `hace ${Math.floor(s / 3600)} h`; if (s < 7 * 86400) return `hace ${Math.floor(s / 86400)} d`; const d = new Date(t); return `${d.getDate()} ${MESES[d.getMonth()].slice(0, 3)}`; }
 
 // ---------- Arranque ----------

@@ -129,7 +129,9 @@ function boot() {
 
 // ---------- Navegación ----------
 let view = "inicio", sheetOpen = false;
-const TABS = { inicio: ["home", "Inicio"], comunidad: ["users", "Comunidad"], grabar: ["plus", "Grabar"], nutricion: ["food", "Nutrición"], progreso: ["chart", "Progreso"], entrenos: ["list", "Mis entrenos"] };
+const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], comunidad: ["users", "Comunidad"], tu: ["user", "Tú"] };
+const TU_SUB = { progreso: "Progreso", nutricion: "Nutrición", entrenos: "Entrenos" };
+let tuTab = "progreso";
 function initNav() {
   $$("#tabbar button").forEach(b => {
     const [ic, t] = TABS[b.dataset.v];
@@ -139,18 +141,20 @@ function initNav() {
   $("#avBtn").onclick = openPerfil; $("#chatBtn").onclick = openChats; $("#bellBtn").onclick = openAvisos;
   $("#sheetBg").onclick = closeSheet;
 }
-function setView(v) { view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v || (v === "entrenos" && b.dataset.v === "progreso"))); window.scrollTo(0, 0); render(); }
+function setView(v) { if (TU_SUB[v]) { tuTab = v; v = "tu"; } view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); window.scrollTo(0, 0); render(); }
 function render() {
   if (!me || !loaded) return;
   const name = (me.name || state.perfil.nombre || me.email || "R").trim();
   $("#avBtn").textContent = name[0].toUpperCase();
-  const V = { inicio: vInicio, entrenos: vEntrenos, nutricion: vNutricion, progreso: vProgreso, comunidad: vComunidad }[view];
-  $("#title").textContent = TABS[view][1];
+  const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tu: vTu }[view];
+  $("#title").textContent = view === "tu" ? TU_SUB[tuTab] : TABS[view][1];
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
-  (WIRE[view] || (() => {}))();
+  (view === "tu" ? WIRE.tu : WIRE[view] || (() => {}))();
   if (view === "comunidad" && store.kind !== "firebase") wireZapasView($("#view"));
 }
 const WIRE = {};
+function vTu() { const sub = { progreso: vProgreso, nutricion: vNutricion, entrenos: vEntrenos }[tuTab]; return `<div class="tabs">${Object.entries(TU_SUB).map(([k, n]) => `<button data-tu="${k}" class="${tuTab === k ? "on" : ""}">${n}</button>`).join("")}</div>` + sub(); }
+WIRE.tu = () => { $$("[data-tu]").forEach(b => b.onclick = () => { tuTab = b.dataset.tu; render(); }); (WIRE[tuTab] || (() => {}))(); };
 function openSheet(title, html, wire) {
   const s = $("#sheet"); s.innerHTML = `<div class="grab"></div><div class="sh"><h2>${title}</h2><button class="x" id="shX">${svg("close")}</button></div>${html}`;
   $("#shX").onclick = closeSheet; s.scrollTop = 0; sheetOpen = true;
