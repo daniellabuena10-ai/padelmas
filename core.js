@@ -103,8 +103,10 @@ function savePerfil(p) { state.perfil = { ...state.perfil, ...p }; store.savePer
 // ---------- Arranque y sesión ----------
 let authMode = "in";
 function initAuthUI() {
-  $("#feat").innerHTML = [["gps", "GPS"], ["padel", "Pádel y más"], ["gym", "Gimnasio"], ["food", "Nutrición"], ["watch", "Tu reloj"]].map(([i, t]) => `<span>${svg(i)}${t}</span>`).join("");
-  const setMode = m => { authMode = m; $("#fName").hidden = m !== "up"; $("#aBtn").textContent = m === "up" ? "Crear cuenta" : "Entrar"; $("#aSwTxt").textContent = m === "up" ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; $("#aSw").textContent = m === "up" ? "Entrar" : "Crear cuenta"; $("#aPass").autocomplete = m === "up" ? "new-password" : "current-password"; $("#aErr").textContent = ""; };
+  const show = m => { $("#land").hidden = true; $("#authForm").hidden = false; setMode(m); window.scrollTo(0, 0); setTimeout(() => (m === "up" ? $("#aName") : $("#aEmail")).focus(), 50); };
+  $("#goUp").onclick = () => show("up"); $("#goIn").onclick = () => show("in");
+  $("#aBack").onclick = () => { $("#authForm").hidden = true; $("#land").hidden = false; };
+  const setMode = m => { authMode = m; $("#aTitle").textContent = m === "up" ? "Crea tu cuenta" : "Hola de nuevo"; $("#fName").hidden = m !== "up"; $("#aBtn").textContent = m === "up" ? "Crear cuenta" : "Entrar"; $("#aSwTxt").textContent = m === "up" ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; $("#aSw").textContent = m === "up" ? "Entrar" : "Crear cuenta"; $("#aPass").autocomplete = m === "up" ? "new-password" : "current-password"; $("#aErr").textContent = ""; };
   $("#aSw").onclick = () => setMode(authMode === "up" ? "in" : "up");
   $("#aReset").onclick = async () => { const e = $("#aEmail").value.trim(); if (!e) { $("#aErr").textContent = "Escribe tu email arriba y vuelve a tocar."; return; } try { await store.reset(e); $("#aErr").textContent = ""; toast("Te hemos enviado un email para cambiarla"); } catch (er) { $("#aErr").textContent = authErr(er); } };
   $("#authForm").onsubmit = async ev => {
@@ -150,7 +152,7 @@ function render() {
   $("#title").textContent = view === "tu" ? TU_SUB[tuTab] : TABS[view][1];
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
   (view === "tu" ? WIRE.tu : WIRE[view] || (() => {}))();
-  if (view === "comunidad" && store.kind !== "firebase") wireZapasView($("#view"));
+  if (view === "comunidad" && store.kind !== "firebase") wireMaterial($("#view"));
 }
 const WIRE = {};
 function vTu() { const sub = { progreso: vProgreso, nutricion: vNutricion, entrenos: vEntrenos }[tuTab]; return `<div class="tabs">${Object.entries(TU_SUB).map(([k, n]) => `<button data-tu="${k}" class="${tuTab === k ? "on" : ""}">${n}</button>`).join("")}</div>` + sub(); }

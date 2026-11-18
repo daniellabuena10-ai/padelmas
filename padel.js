@@ -87,10 +87,10 @@ function vPadel() {
   const P = state.perfil.padel || {};
   if (!P.nivel0) return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.25),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.22)">
       <div class="lbl" style="color:#e5d38f">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
-      <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel</b>, que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y busca partido de tu nivel.</p>
+      <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel</b>, que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
       <button class="btn block" id="pdTest" style="margin-top:16px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
-  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["buscar", "Buscar partido"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
+  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["material", "Material"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   const pend = partidosPend.length ? `<div class="card" style="border-color:rgba(250,204,21,.35)"><h3>${svg("bell")}Te han apuntado en ${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</h3>${partidosPend.map(pendRow).join("")}</div>` : "";
   let body = "";
   if (padelTab === "resumen") {
@@ -98,7 +98,7 @@ function vPadel() {
       <div class="ringwrap"><div><div class="lbl" style="color:#e5d38f">Tu nivel</div><div class="big num" style="color:#facc15">${fmtNivel(lv)}</div><div class="small" style="color:#ddd6bf">${nivelTxt(lv)}${r.n ? ` · fiabilidad ${r.fiab}%` : " · nivel de partida"}</div></div>
         <div style="margin-left:auto;text-align:right">${r.n ? `<span class="chip ${tr >= 0 ? "volt" : "hot"}">${tr >= 0 ? "▲" : "▼"} ${nf(Math.abs(tr), 2)}</span><div class="tiny mute" style="margin-top:6px">últimos 5</div>` : ""}</div></div>
       ${r.hist.length > 2 ? `<div class="chartbox" style="margin-top:10px">${lineChart(r.hist.map(h => h.n).concat(r.hist.length < 5 ? Array(5 - r.hist.length).fill(lv) : []), "#facc15", { fmt: v => nf(v, 2) })}</div>` : ""}
-      <div class="row" style="margin-top:14px"><button class="btn block" id="pdAdd" style="background:#facc15;color:#1a1500;border:0">${svg("plus")}Apuntar partido</button><button class="btn" id="pdFind" style="flex:none">${svg("users")}Buscar</button></div></div>
+      <button class="btn block" id="pdAdd" style="margin-top:14px;background:#facc15;color:#1a1500;border:0">${svg("plus")}Apuntar partido</button></div>
       ${pend}
       ${st.n ? `<div class="grid3"><div class="stat"><div class="k">Partidos</div><div class="v num">${st.n}</div></div><div class="stat"><div class="k">Victorias</div><div class="v num" style="color:var(--volt)">${Math.round(st.w / Math.max(1, st.w + st.l) * 100)}<small>%</small></div></div><div class="stat"><div class="k">Racha</div><div class="v num" style="color:${st.racha >= 0 ? "var(--volt)" : "var(--neg)"}">${st.racha > 0 ? "+" : ""}${st.racha}</div></div></div>
       <div class="grid2" style="margin-top:10px"><div class="stat"><div class="k">Sets</div><div class="v num" style="font-size:24px">${st.sw}<small>–${st.sl}</small></div></div><div class="stat"><div class="k">Juegos</div><div class="v num" style="font-size:24px">${st.gw}<small>–${st.gl}</small></div></div></div>
@@ -109,11 +109,14 @@ function vPadel() {
         ${statItem("🔥", "Mejor racha", st.mejorRacha > 0 ? `${st.mejorRacha} victorias seguidas` : "–", "")}
         ${st.lado.drive[1] || st.lado.reves[1] ? statItem("↔️", "Por lado", `Drive ${st.lado.drive[1] ? Math.round(st.lado.drive[0] / st.lado.drive[1] * 100) + "%" : "–"} · Revés ${st.lado.reves[1] ? Math.round(st.lado.reves[0] / st.lado.reves[1] * 100) + "%" : "–"}`, "porcentaje de victorias") : ""}
         ${st.tie[0] + st.tie[1] ? statItem("🧊", "Tie-breaks", `${st.tie[0]} ganados · ${st.tie[1]} perdidos`, "") : ""}
-      </div>` : `<div class="card empty">${svg("padel")}<p>Apunta tu primer partido y empieza a mover tu nivel.</p></div>`}`;
+      </div>
+      <button class="item" id="pdGear" style="margin-top:4px"><span style="font-size:22px;width:28px;text-align:center">🎾</span><div style="flex:1"><div style="font-weight:700">¿Qué pala me va?</div><div class="tiny mute">Recomendador según tu nivel (${fmtNivel(lv)}) y tu juego</div></div>${svg("chev", "chev")}</button>
+      <button class="item" id="pdFind"><span style="font-size:22px;width:28px;text-align:center">👥</span><div style="flex:1"><div style="font-weight:700">Buscar partido</div><div class="tiny mute">Partidos abiertos de tu nivel</div></div>${svg("chev", "chev")}</button>` : `<div class="card empty">${svg("padel")}<p>Apunta tu primer partido y empieza a mover tu nivel.</p></div>`}`;
   } else if (padelTab === "partidos") {
     const A = padelActs().reverse();
     body = pend + `<button class="btn pri block" id="pdAdd" style="margin-bottom:14px">${svg("plus")}Apuntar partido</button>` + (A.length ? A.map(matchCard).join("") : `<div class="card empty">${svg("padel")}<p>Todavía no hay partidos.</p></div>`);
-  } else body = buscarHTML();
+  } else if (padelTab === "material") body = materialView(true);
+  else body = `<button class="btn sm" id="bqBack" style="margin-bottom:12px">${svg("back")}Volver</button>` + buscarHTML();
   return tabs + body;
 }
 function statItem(e, k, v, s, uid) { return `<div class="item" ${uid ? `data-user="${uid}" style="cursor:pointer"` : ""}><span style="font-size:22px;width:28px;text-align:center">${e}</span><div style="min-width:0;flex:1"><div class="small mute">${k}</div><div style="font-weight:700">${esc(v)}</div>${s ? `<div class="tiny mute">${s}</div>` : ""}</div>${uid ? svg("chev", "chev") : ""}</div>`; }
@@ -133,9 +136,11 @@ WIRE.padel = () => {
   const t = $("#pdTest"); if (t) { t.onclick = openNivelTest; return; }
   $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); });
   $$("#pdAdd").forEach(b => b.onclick = () => openPadelMatch()); const f = $("#pdFind"); if (f) f.onclick = () => { padelTab = "buscar"; render(); };
+  const g = $("#pdGear"); if (g) g.onclick = () => { gearSeg = "palas"; openRecPala(); };
   wireActs(); $$("[data-user]").forEach(b => b.onclick = () => socialOn() ? openUser(b.dataset.user) : null);
   $$("[data-pok]").forEach(b => b.onclick = () => confirmPartido(b.dataset.pok, true)); $$("[data-pno]").forEach(b => b.onclick = () => confirmPartido(b.dataset.pno, false));
-  if (padelTab === "buscar") wireBuscar();
+  if (padelTab === "buscar") { wireBuscar(); const bb = $("#bqBack"); if (bb) bb.onclick = () => { padelTab = "resumen"; render(); }; }
+  if (padelTab === "material") wireMaterial($("#view"));
   loadPadelSocial();
 };
 async function loadPadelSocial(force = false) {

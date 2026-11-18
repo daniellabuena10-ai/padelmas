@@ -226,21 +226,23 @@ function wireZapasView(root) {
   $("#zRec", root).onclick = openRecomendador; wireZapas(root); wireShoeRows(root);
   $$("[data-sf]", root).forEach(b => b.onclick = () => { shoeFilter = b.dataset.sf; render(); });
   $$("[data-sb]", root).forEach(b => b.onclick = () => { shoeBrand = b.dataset.sb; render(); });
-  const qa = $("#qAsk", root); if (qa) { qa.onclick = openAsk; loadQuestions(); }
+  const qa = $("#qAsk", root); if (qa) { qa.onclick = () => openAsk("running"); loadQuestions("running"); }
 }
 
 // ---------- Preguntas y respuestas ----------
-async function loadQuestions() {
-  try { const q = await FS().collection("preguntas").orderBy("t", "desc").limit(20).get(); const qs = q.docs.map(d => ({ id: d.id, ...d.data() })); const box = $("#qList"); if (!box) return;
+const QCAT = { running: "zapatillas de running", palas: "palas", zpadel: "zapatillas de pádel" };
+async function loadQuestions(cat = "running") {
+  try { const q = await FS().collection("preguntas").orderBy("t", "desc").limit(60).get(); const qs = q.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => (x.cat || "running") === cat).slice(0, 20); const box = $("#qList"); if (!box) return;
     box.innerHTML = qs.length ? `<div class="card" style="padding:4px 14px">${qs.map(x => `<button class="item" data-q="${x.id}">${avatar(x, 34)}<div style="min-width:0;flex:1"><div style="font-weight:600;line-height:1.35">${esc(x.texto)}</div><div class="tiny mute" style="margin-top:3px">${esc(x.autor)} · ${ago(x.t)} · ${x.nResp || 0} respuesta${x.nResp === 1 ? "" : "s"}</div></div>${svg("chev", "chev")}</button>`).join("")}</div>`
-      : `<div class="card"><p class="small mute">¿Dudas con unas zapatillas, un plan o una carrera? Pregunta y te responde la comunidad.</p></div>`;
+      : `<div class="card"><p class="small mute">¿Dudas con ${cat === "palas" ? "una pala" : cat === "zpadel" ? "unas zapatillas de pádel" : "unas zapatillas, un plan o una carrera"}? Pregunta y te responde la comunidad.</p></div>`;
     $$("[data-q]", box).forEach(b => b.onclick = () => openQuestion(qs.find(x => x.id === b.dataset.q)));
   } catch (e) { console.warn(e); const box = $("#qList"); if (box) box.innerHTML = ""; }
 }
-function openAsk() {
-  openSheet("Preguntar a la comunidad", `<label class="field">Tu pregunta<textarea id="aqT" rows="3" maxlength="300" placeholder="¿Qué zapatillas me recomendáis para rodar a 5:30 en llano?"></textarea></label><button class="btn pri block" id="aqOk">Publicar</button>`, s => {
+function openAsk(cat = "running") {
+  const ph = { running: "¿Qué zapatillas me recomendáis para rodar a 5:30 en llano?", palas: "Juego de revés y me molesta el codo, ¿qué pala me recomendáis?", zpadel: "¿Qué zapatillas para pista de arena si tengo el pie ancho?" }[cat];
+  openSheet(`Preguntar sobre ${QCAT[cat]}`, `<label class="field">Tu pregunta<textarea id="aqT" rows="3" maxlength="300" placeholder="${ph}"></textarea></label><button class="btn pri block" id="aqOk">Publicar</button>`, s => {
     $("#aqOk", s).onclick = async () => { const t = $("#aqT", s).value.trim(); if (t.length < 8) { toast("Escribe un poco más"); return; }
-      try { await FS().collection("preguntas").add({ uid: me.uid, autor: social.me.nombre, color: social.me.color, texto: t.slice(0, 300), t: Date.now(), nResp: 0 }); closeSheet(); toast("Pregunta publicada"); } catch { toast("No se pudo publicar"); } };
+      try { await FS().collection("preguntas").add({ uid: me.uid, autor: social.me.nombre, color: social.me.color, texto: t.slice(0, 300), cat, t: Date.now(), nResp: 0 }); closeSheet(); toast("Pregunta publicada"); } catch { toast("No se pudo publicar"); } };
   });
 }
 let ansUnsub = null;
@@ -252,7 +254,7 @@ function openQuestion(qd) {
     ansUnsub && ansUnsub(); ansUnsub = FS().collection("preguntas").doc(qd.id).collection("respuestas").orderBy("t").onSnapshot(q => {
       const box = $("#ans"); if (!box) { ansUnsub(); ansUnsub = null; return; } const rs = q.docs.map(d => ({ id: d.id, ...d.data() }));
       box.innerHTML = rs.length ? rs.map(r => `<div class="meal" style="align-items:flex-start"><button data-user="${r.uid}">${avatar(r, 32)}</button><div style="flex:1;min-width:0"><div class="small"><b>${esc(r.autor)}</b> <span class="mute">${ago(r.t)}</span></div><div style="margin-top:2px;line-height:1.45">${linkShoes(esc(r.texto))}</div></div>${r.uid === me.uid ? `<button class="tiny mute" data-adel="${r.id}">borrar</button>` : ""}</div>`).join("") : `<p class="small mute">Aún sin respuestas. ¡Ayuda tú!</p>`;
-      $$("[data-user]", box).forEach(b => b.onclick = () => openUser(b.dataset.user)); wireShoeRows(box);
+      $$("[data-user]", box).forEach(b => b.onclick = () => openUser(b.dataset.user)); wireGearRows(box);
       $$("[data-adel]", box).forEach(b => b.onclick = async () => { await FS().collection("preguntas").doc(qd.id).collection("respuestas").doc(b.dataset.adel).delete().catch(() => {}); FS().collection("preguntas").doc(qd.id).update({ nResp: FV().increment(-1) }).catch(() => {}); });
     }, () => {});
     const send = async () => { const inp = $("#aIn", s); const t = inp.value.trim(); if (!t) return; inp.value = "";
@@ -263,5 +265,5 @@ function openQuestion(qd) {
   });
 }
 function linkShoes(txt) { // convierte menciones de modelos en enlaces a su ficha
-  let out = txt; for (const s of SHOES) { const re = new RegExp(`\\b(${s.modelo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i"); if (re.test(out)) { out = out.replace(re, `<a data-shoe="${s.id}" style="color:var(--volt);font-weight:600">$1</a>`); } } return out;
+  let out = txt; for (const s of [...SHOES, ...(typeof PALAS !== "undefined" ? PALAS : []), ...(typeof ZPADEL !== "undefined" ? ZPADEL : [])]) { const re = new RegExp(`\\b(${s.modelo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i"); if (re.test(out)) { out = out.replace(re, `<a data-gear="${s.id}" style="color:var(--volt);font-weight:600">$1</a>`); } } return out;
 }

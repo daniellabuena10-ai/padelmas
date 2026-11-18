@@ -39,7 +39,24 @@ input,select,textarea{font:inherit;font-size:16px;color:var(--ink)}
 .logo .mk svg{width:26px;height:26px;stroke-width:2.6}
 .logo b{color:var(--volt)}
 #auth{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 22px calc(32px + var(--safe-b));max-width:440px;margin:0 auto}
-#auth h1{font-size:32px;line-height:1.1;letter-spacing:-1px;margin:28px 0 8px}
+#auth h1{font-size:38px;line-height:1.05;letter-spacing:-1.4px;margin:26px 0 10px}
+.logo.sm{font-size:21px}.logo.sm .mk{width:34px;height:34px;border-radius:10px}.logo.sm .mk svg{width:20px;height:20px}
+.demo{position:relative;margin:4px 0 22px;display:flex;flex-direction:column;gap:10px}
+.dc{border-radius:18px;padding:13px 15px;border:1px solid var(--line2);background:var(--card);animation:fin .5s ease both}
+.dc:nth-child(2){animation-delay:.12s;margin-left:18px}.dc:nth-child(3){animation-delay:.24s;margin-right:18px}
+.dpad{background:linear-gradient(160deg,#1c180b,#0f0d08);border-color:rgba(250,204,21,.28)}
+.drun{background:linear-gradient(160deg,#141a0e,#0c0f09);border-color:rgba(212,255,58,.22)}
+.dl{font-size:12.5px;color:var(--mute);font-weight:600}
+.dr{display:flex;align-items:baseline;gap:14px;margin-top:2px}
+.dbig{font-size:40px;line-height:1}.dmid{font-size:26px;line-height:1.1}
+.dup{color:var(--volt);font-weight:700;font-size:14px}
+.dsub{font-size:13px;color:var(--mute);margin-top:4px;line-height:1.4}
+.what{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.what div{display:flex;gap:12px;align-items:flex-start}
+.what span{font-size:20px;width:28px;flex:none;text-align:center}
+.what p{font-size:14.5px;color:#c5cdd6;line-height:1.45}.what b{color:var(--ink)}
+.btn.big{padding:17px;font-size:17px}
+.btn.ghost{background:none;border:0;color:var(--mute);margin-top:6px}
 #auth h1 em{font-style:normal;color:var(--volt)}
 #auth .pitch{color:var(--mute);margin-bottom:24px;line-height:1.5}
 .feat{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
@@ -259,11 +276,26 @@ nav.tabbar button{position:relative}
 <div id="splash"><div class="logo"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l3-8 4 15 3-9 2 2h4"/></svg></div>Ritmo<b>+</b></div></div>
 
 <section id="auth" hidden>
-  <div class="logo"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l3-8 4 15 3-9 2 2h4"/></svg></div>Ritmo<b>+</b></div>
-  <h1>Entrena, come y mejora.<br><em>Todo en un sitio.</em></h1>
-  <p class="pitch">Graba tus carreras con GPS, apunta tu pádel o tu gimnasio, importa lo de tu reloj y lleva tu nutrición con un plan hecho para ti.</p>
-  <div class="feat" id="feat"></div>
-  <form id="authForm">
+  <div class="logo sm"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l3-8 4 15 3-9 2 2h4"/></svg></div>Ritmo<b>+</b></div>
+  <div id="land">
+    <h1>Tu pádel y tu running,<br><em>en serio.</em></h1>
+    <p class="pitch">Tu nivel real, tus marcas y el material que te va. Gratis y sin anuncios.</p>
+    <div class="demo">
+      <div class="dc dpad"><div class="dl">🎾 Tu nivel de pádel</div><div class="dr"><span class="num dbig" style="color:#facc15">3,89</span><span class="dup">▲ +0,13</span></div><div class="dsub">Victoria 6-4 / 7-6 · con Javi · tu bestia negra: Álex</div></div>
+      <div class="dc drun"><div class="dl">🏃 Rodaje de domingo</div><div class="dr"><span class="num dmid">10,2 km</span><span class="num dmid">4:58 /km</span></div><div class="dsub" style="color:var(--volt)">🏆 Récord personal en 5K</div></div>
+      <div class="dc dgear"><div class="dl">🎯 ¿Qué me compro?</div><div class="dsub" style="color:var(--ink)"><b>Pala de control</b> para tu nivel · <b>Novablast 6</b> para rodar a 5:30</div></div>
+    </div>
+    <div class="what">
+      <div><span>🎾</span><p><b>Tu nivel de pádel</b>, que sube o baja con cada partido. Con quién ganas más y quién te tiene la medida cogida.</p></div>
+      <div><span>⌚</span><p><b>Corre con GPS o desde tu reloj</b> (Garmin, Polar, Coros…): ritmo, parciales y récords.</p></div>
+      <div><span>👟</span><p><b>Palas y zapatillas</b> recomendadas para ti, explicadas, con opiniones de jugadores y corredores.</p></div>
+    </div>
+    <button class="btn pri block big" id="goUp">Empezar gratis</button>
+    <button class="btn block ghost" id="goIn">Ya tengo cuenta</button>
+  </div>
+  <form id="authForm" hidden>
+    <button type="button" class="link small" id="aBack" style="margin:22px 0 10px">‹ Volver</button>
+    <h2 id="aTitle" style="font-size:26px;letter-spacing:-.6px;margin-bottom:16px">Crea tu cuenta</h2>
     <label class="field" id="fName" hidden>Nombre<input id="aName" autocomplete="name" maxlength="40"></label>
     <label class="field">Email<input id="aEmail" type="email" autocomplete="email" required></label>
     <label class="field">Contraseña<input id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
@@ -303,6 +335,7 @@ nav.tabbar button{position:relative}
 <script src="social.js"></script>
 <script src="shoes.js"></script>
 <script src="padel.js"></script>
+<script src="gear.js"></script>
 <script>boot();</script>
 <script>["gesturestart","gesturechange"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");</script>
