@@ -116,7 +116,7 @@ function shoeRow(sh, tag = null, why = null) {
   const st = shoeStats[sh.id];
   return `<button class="card shoe" data-shoe="${sh.id}" style="display:block;width:100%;text-align:left;padding:14px">
     ${tag ? `<div class="tiny" style="color:var(--volt);font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
-    <div style="display:flex;align-items:center;gap:12px"><div class="sp" style="background:${SHOE_CAT_C[sh.cat]}1f;color:${SHOE_CAT_C[sh.cat]}">${svg("run")}</div>
+    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${shoeArt(sh, 70)}</div>
       <div style="min-width:0;flex:1"><div class="small mute">${sh.marca}</div><div style="font-weight:700;font-size:16px">${sh.modelo}</div></div>
       <div style="text-align:right"><div class="small" style="color:var(--volt)">${PRECIO[sh.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px"><span class="chip" style="color:${SHOE_CAT_C[sh.cat]}">${SHOE_CATS[sh.cat]}</span><span class="chip">${sh.peso} g</span><span class="chip">drop ${sh.drop} mm</span>${sh.placa !== "no" ? `<span class="chip">placa ${sh.placa}</span>` : ""}</div>
@@ -129,7 +129,7 @@ let shoeStats = {};
 async function openShoe(id) {
   const sh = shoeOf(id); if (!sh) return; const mine = (state.perfil.zapas || []).some(z => z.modelo === id);
   const bars = [["Amortiguación", sh.amort / 5], ["Ligereza", Math.max(0, Math.min(1, (330 - sh.peso) / 160))], ["Estabilidad", [.35, .7, 1][sh.estab]], ["Precio", 1 - (sh.precio - 1) / 2.5]];
-  openSheet(`${sh.marca} ${sh.modelo}`, `
+  openSheet(`${sh.marca} ${sh.modelo}`, `<div class="gartbig">${shoeArt(sh, 230)}<span class="tiny mute">Ilustración orientativa</span></div>
     <div class="chips" style="margin:-6px 0 12px"><span class="chip" style="color:${SHOE_CAT_C[sh.cat]}">${SHOE_CATS[sh.cat]}</span><span class="chip">${sh.terreno === "trail" ? "Montaña" : sh.terreno === "mixto" ? "Asfalto y caminos" : "Asfalto"}</span><span class="chip" style="color:var(--volt)">${PRECIO[sh.precio]}</span></div>
     <p style="line-height:1.5">${sh.desc}</p>
     <div class="grid3" style="margin:14px 0"><div class="stat"><div class="k">Peso aprox.</div><div class="v num" style="font-size:24px">${sh.peso}<small>g</small></div></div><div class="stat"><div class="k">Drop</div><div class="v num" style="font-size:24px">${sh.drop}<small>mm</small></div></div><div class="stat"><div class="k">Placa</div><div class="v num" style="font-size:20px">${sh.placa === "no" ? "No" : sh.placa[0].toUpperCase() + sh.placa.slice(1)}</div></div></div>

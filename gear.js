@@ -26,6 +26,26 @@ const PALAS_RAW = [
   ["fuji", "Kombat", "Fuji 2026", "lágrima", 2.2, 2.3, 365, "carbono", 2.5, 2.2, 2, "Equilibrada y competitiva, de las alternativas más interesantes a las grandes marcas."],
   ["hybridcoki", "Kuikma", "Hybrid Pro Coki Nieto", "lágrima", 1.9, 2.2, 365, "carbono", 2.5, 1.8, 2, "Para el jugador estratega que controla el ritmo del partido. Muy buena relación calidad-precio."],
   ["wallbreaker375", "Tecnifibre", "Wall Breaker 375", "lágrima", 2.2, 2.5, 375, "carbono", 2.5, 2.4, 2, "Pesada y estable (375 g): mucha inercia en el golpe."],
+  ["vertex05", "Bullpadel", "Vertex 05 2026", "diamante", 2.8, 2.7, 370, "carbono 12K", 3, 2.9, 3, "La pala de Juan Tello: diamante con balance alto y superficie rugosa para rematar y dar efecto."],
+  ["vertex05hybrid", "Bullpadel", "Vertex 05 Hybrid 2026", "híbrida", 2.4, 2, 365, "carbono", 2.5, 2.4, 3, "La Vertex más cómoda: absorbe vibraciones, buena si cuidas codo u hombro sin renunciar a atacar."],
+  ["vertex05w", "Bullpadel", "Vertex 05 W 2026", "diamante", 2.6, 2.2, 355, "carbono", 2.5, 2.6, 3, "La versión ligera de la Vertex (la de Delfi Brea): potencia con más manejabilidad."],
+  ["neuron02", "Bullpadel", "Neuron 02 2026", "híbrida", 2.2, 2.6, 370, "carbono", 3, 2.1, 3, "La pala de Fede Chingotto: equilibrio, precisión y mucha estabilidad cuando sube el ritmo."],
+  ["radicalpro", "Head", "Radical Pro 2026", "híbrida", 1.9, 2.4, 365, "carbono", 3, 1.6, 2, "La Radical es la familia de control de Head: precisión y comodidad con algo de salida."],
+  ["radicallight", "Head", "Radical Team Light 2026", "híbrida", 1.8, 1.8, 350, "fibra / carbono", 2, 1.6, 1, "Control y ligereza a buen precio (unos 150 €)."],
+  ["coelloteam", "Head", "Coello Team 2026", "diamante", 2.4, 2.1, 360, "fibra / carbono", 2, 2.5, 2, "La Coello más accesible: ataque tolerante para intermedios."],
+  ["electrapro", "Siux", "Electra Pro 2026", "lágrima", 2, 2.4, 362, "carbono", 3, 2.1, 3, "La línea de Franco Stupaczuk: híbrida y muy completa para jugadores avanzados."],
+  ["diablopro", "Siux", "Diablo Pro 2026", "lágrima", 2, 2.4, 365, "carbono", 3, 2, 3, "Polivalente y estable, un clásico de Siux."],
+  ["pegasuspro", "Siux", "Pegasus Pro 2026", "híbrida", 2, 2.5, 365, "carbono 18K", 2.8, 2.3, 3, "Para atacantes versátiles: ritmo y salida sin ser una pala de remate puro."],
+  ["fenixelite", "Siux", "Fenix Elite 2026", "diamante", 2.8, 2.5, 365, "carbono", 3, 2.9, 3, "La Siux de ataque: diamante y balance alto."],
+  ["trilogypro", "Siux", "Trilogy Pro 2026", "redonda", 1.6, 2.2, 365, "carbono", 2.5, 1.4, 2, "Control y colocación: para construir el punto con paciencia."],
+  ["raptor", "StarVie", "Raptor+ 2026", "lágrima", 2.2, 2.4, 365, "carbono 3D", 2.7, 2.2, 3, "Lágrima equilibrada entre potencia, control y manejabilidad."],
+  ["drax", "StarVie", "Drax+ 2026", "redonda", 1.7, 2.3, 365, "carbono", 2.5, 1.7, 3, "Control con un punto de potencia y buena absorción de vibraciones."],
+  ["blacktitan", "StarVie", "Black Titan 2026", "redonda", 1.6, 2.6, 365, "carbono", 2.7, 1.4, 2, "Sensación firme y predecible para colocar y manejar el ritmo."],
+  ["arkos", "StarVie", "Arkos 2026", "lágrima", 2, 1.8, 360, "fibra / carbono", 2, 2, 1, "StarVie a precio contenido para intermedios."],
+  ["patronkore", "Black Crown", "Patron Kore 2026", "diamante", 2.7, 2.7, 370, "carbono", 3, 2.8, 3, "La más avanzada de Black Crown: potencia para jugadores exigentes."],
+  ["canyonattack", "Drop Shot", "Canyon Pro Attack 2.0 2026", "diamante", 2.7, 2.7, 370, "carbono", 3, 2.9, 3, "La pala de ataque de Pablo Lima."],
+  ["explorercomfort", "Drop Shot", "Explorer Pro Comfort 2.0 2026", "lágrima", 2.1, 1.9, 365, "carbono", 2.5, 2.1, 3, "Polivalente y cómoda, equilibrio entre control y potencia."],
+  ["defyprov1", "Wilson", "Defy Pro V1 2026", "lágrima", 2.3, 2.5, 365, "carbono", 3, 2.4, 3, "La gama alta de Wilson en pádel: polivalente con salida."],
 ];
 const PALAS = PALAS_RAW.map(r => ({ id: "pala_" + r[0], marca: r[1], modelo: r[2], forma: r[3], balance: r[4], dureza: r[5], peso: r[6], cara: r[7], nivel: r[8], perfil: r[9], precio: r[10], desc: r[11] }));
 // Zapatillas de pádel: [id, marca, modelo, suela, amort(1-5), estab(1-5), peso g, horma, precio, descripción]
@@ -129,13 +149,33 @@ function openRecZP() {
   });
 }
 
+// ---------- Ilustraciones (dibujo propio orientativo, no es foto del producto) ----------
+const BRAND_COL = { Nox: ["#111827", "#facc15"], adidas: ["#0f172a", "#e5e7eb"], Babolat: ["#0b1220", "#22d3ee"], Head: ["#111", "#f97316"], Bullpadel: ["#0b1020", "#38bdf8"], Kombat: ["#1f2937", "#a3e635"], Kuikma: ["#0f172a", "#60a5fa"], Tecnifibre: ["#111", "#ef4444"], Siux: ["#1e1b4b", "#f43f5e"], StarVie: ["#0a0a0a", "#d4ff3a"], "Black Crown": ["#0a0a0a", "#eab308"], "Drop Shot": ["#111827", "#14b8a6"], Wilson: ["#111", "#dc2626"], ASICS: ["#0b1220", "#3b82f6"], Mizuno: ["#0b1220", "#2563eb"] };
+function hueOf(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+function palaArt(g, size = 120) {
+  const [base, acc0] = BRAND_COL[g.marca] || ["#111827", "#facc15"]; const acc = acc0; const alt = `hsl(${hueOf(g.modelo)},70%,55%)`;
+  const head = { redonda: "M60 8 C96 8 108 36 108 62 C108 92 88 112 60 112 C32 112 12 92 12 62 C12 36 24 8 60 8Z", "lágrima": "M60 6 C94 6 108 34 108 58 C108 86 86 112 60 114 C34 112 12 86 12 58 C12 34 26 6 60 6Z", diamante: "M60 4 C88 4 106 22 108 46 C110 74 88 106 60 116 C32 106 10 74 12 46 C14 22 32 4 60 4Z", "híbrida": "M60 6 C92 6 108 30 108 56 C108 84 88 110 60 114 C32 110 12 84 12 56 C12 30 28 6 60 6Z" }[g.forma] || "";
+  let holes = ""; for (let y = 30; y <= 92; y += 11) for (let x = 30; x <= 90; x += 11) if (Math.hypot(x - 60, (y - 60) * 1.05) < 34) holes += `<circle cx="${x}" cy="${y}" r="2.6" fill="#000" opacity=".55"/>`;
+  return `<svg viewBox="0 0 120 190" width="${size * .63}" height="${size}"><defs><linearGradient id="pg${g.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${base}"/><stop offset="1" stop-color="${base}" stop-opacity=".85"/></linearGradient></defs>
+    <path d="${head}" fill="url(#pg${g.id})" stroke="${acc}" stroke-width="4"/>
+    <path d="M24 ${g.forma === "diamante" ? 70 : 82} Q60 ${g.forma === "diamante" ? 30 : 46} 96 ${g.forma === "diamante" ? 70 : 82}" stroke="${alt}" stroke-width="7" fill="none" opacity=".9" stroke-linecap="round"/>${holes}
+    <rect x="52" y="112" width="16" height="20" rx="3" fill="${acc}"/><rect x="53" y="130" width="14" height="52" rx="6" fill="#1f2937"/><path d="M53 140h14M53 150h14M53 160h14M53 170h14" stroke="#374151" stroke-width="2"/></svg>`;
+}
+function shoeArt(g, size = 120) {
+  const [base, acc] = BRAND_COL[g.marca] || ["#111827", "#d4ff3a"]; const alt = `hsl(${hueOf(g.modelo)},75%,58%)`;
+  return `<svg viewBox="0 0 200 110" width="${size}" height="${size * .55}"><path d="M14 82 C14 60 30 52 48 48 L84 36 C96 30 104 22 118 24 C130 26 132 40 146 46 C166 54 186 58 188 76 L188 84 Z" fill="${base}" stroke="${acc}" stroke-width="3"/>
+    <path d="M60 46 L70 62 M76 40 L86 56 M92 34 L100 50" stroke="#e5e7eb" stroke-width="3" stroke-linecap="round"/><path d="M110 60 C130 52 150 60 170 70" stroke="${alt}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M10 84 H192 C192 92 186 98 176 98 H22 C14 98 10 92 10 84Z" fill="#e5e7eb"/><path d="M22 98 V92 M40 98 V92 M58 98 V92 M76 98 V92 M94 98 V92 M112 98 V92 M130 98 V92 M148 98 V92 M166 98 V92" stroke="#9ca3af" stroke-width="2"/></svg>`;
+}
+function gearArt(g, size) { return g.id.startsWith("pala_") ? palaArt(g, size) : shoeArt(g, size); }
+
 // ---------- Filas y fichas ----------
 function gearRow(g, tag = null, why = null) {
   if (!g.id.startsWith("pala_") && !g.id.startsWith("zp_")) return shoeRow(g, tag, why);
   const isP = g.id.startsWith("pala_"); const st = shoeStats[g.id];
   const chips = isP ? [g.forma, perfilTxt(g.perfil), `balance ${blTxt(g.balance).toLowerCase()}`, `~${g.peso} g`] : [`suela ${g.suela}`, `~${g.peso} g`, g.horma !== "normal" ? `horma ${g.horma}` : null].filter(Boolean);
   return `<button class="card shoe" data-gear="${g.id}" style="display:block;width:100%;text-align:left;padding:14px">${tag ? `<div class="tiny" style="color:#facc15;font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
-    <div style="display:flex;align-items:center;gap:12px"><div class="sp" style="background:rgba(250,204,21,.12);color:#facc15">${svg(isP ? "padel" : "run")}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right"><div class="small" style="color:#facc15">${PRECIO[g.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${gearArt(g, isP ? 64 : 70)}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right"><div class="small" style="color:#facc15">${PRECIO[g.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px">${isP ? `<span class="chip" style="color:#facc15">${nivTxt(g.nivel)}</span>` : ""}${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
     ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}</button>`;
 }
@@ -147,7 +187,7 @@ function openGear(id) {
     : [["Amortiguación", g.amort / 5], ["Estabilidad", g.estab / 5], ["Ligereza", Math.max(.15, (430 - g.peso) / 90)], ["Precio", 1 - (g.precio - 1) / 2.5]];
   const specs = isP ? [["Forma", g.forma], ["Balance", blTxt(g.balance)], ["Tacto", durTxt(g.dureza)], ["Peso", `~${g.peso} g`], ["Caras", g.cara], ["Nivel", nivTxt(g.nivel)]]
     : [["Suela", g.suela], ["Peso", `~${g.peso} g`], ["Horma", g.horma], ["Precio", PRECIO[g.precio]]];
-  openSheet(`${g.marca} ${g.modelo}`, `<p style="line-height:1.5;margin-top:-4px">${g.desc}</p>
+  openSheet(`${g.marca} ${g.modelo}`, `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div><p style="line-height:1.5;margin-top:-4px">${g.desc}</p>
     <div class="grid3" style="margin:14px 0">${specs.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div style="font-weight:700;margin-top:4px">${String(v)[0].toUpperCase() + String(v).slice(1)}</div></div>`).join("")}</div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${Math.max(5, Math.min(100, v * 100))}%;background:#facc15"></b></i></div>`).join("")}</div>
     ${socialOn() ? `<button class="btn block" id="gRev">${svg("edit")}Opinar</button>` : ""}
