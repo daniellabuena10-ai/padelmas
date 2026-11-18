@@ -179,23 +179,33 @@ function openPadelMatch(base = {}) {
   const now = new Date(base.fecha || Date.now()); const P = state.perfil.padel || {};
   const sets = [[6, 4], [6, 4], [0, 0]]; let lado = P.lado || null, tipo = "amistoso";
   const people = socialOn() ? [...social.following] : [];
-  const pick = (id, label) => `<label class="field">${label}<div class="row" style="gap:6px"><input id="${id}" list="pl" placeholder="Nombre o @usuario" autocomplete="off" style="margin-top:6px"></div></label>`;
+  const pick = (id, ph) => `<input id="${id}" list="pl" placeholder="${ph}" autocomplete="off" autocapitalize="words" style="margin:0">`;
+  const clubTxt = P.club ? esc(P.club) : "sin club";
   openSheet("Apuntar partido", `
-    <div class="row"><label class="field">Fecha<input id="pmF" type="date" value="${dstr(now)}"></label><label class="field">Hora<input id="pmH" type="time" value="${pad(now.getHours())}:${pad(now.getMinutes())}"></label><label class="field">Min<input id="pmD" type="number" inputmode="numeric" value="${Math.round((base.dur || 5400) / 60)}"></label></div>
-    <label class="field">Club / pista<input id="pmC" list="clubs" value="${esc(P.club || "")}" placeholder="Ej. Club de Pádel Las Rozas"></label>
-    <datalist id="clubs">${[...new Set(padelActs().map(a => a.padel.club).filter(Boolean))].map(c => `<option value="${esc(c)}">`).join("")}</datalist>
-    <div class="card" style="padding:12px"><div class="small mute" style="margin-bottom:6px">Tu equipo</div>${pick("pmComp", "Compañero/a")}
-      <div class="field">Tu lado<div class="seg" id="pmL"><button data-v="drive" class="${lado === "drive" ? "on" : ""}">Drive</button><button data-v="reves" class="${lado === "reves" ? "on" : ""}">Revés</button></div></div></div>
-    <div class="card" style="padding:12px"><div class="small mute" style="margin-bottom:6px">Rivales</div>${pick("pmR1", "Rival 1")}${pick("pmR2", "Rival 2")}</div>
+    <div class="field" style="margin-bottom:10px">Resultado <span class="tiny mute">(tu equipo – rivales)</span><div id="pmS"></div></div>
+    <div class="card pmIn" style="padding:12px;margin-bottom:10px">
+      <div class="small mute" style="margin-bottom:6px">Tú y…</div>${pick("pmComp", "Compañero/a (nombre o @usuario)")}
+      <div class="small mute" style="margin:12px 0 6px">Contra</div><div class="row" style="gap:8px">${pick("pmR1", "Rival 1")}${pick("pmR2", "Rival 2")}</div>
+      <div id="pmQ" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div></div>
     <datalist id="pl"></datalist>
-    <div class="field">Resultado <span class="tiny mute">(juegos de tu equipo – rivales)</span><div id="pmS"></div></div>
-    <div class="field">Tipo<div class="seg" id="pmT"><button data-v="amistoso" class="on">Amistoso</button><button data-v="liga">Liga</button><button data-v="torneo">Torneo</button></div></div>
-    ${socialOn() ? `<p class="tiny mute">Si etiquetas a amigos de Pádel+ (con @), les llegará el partido para que lo confirmen y se les sume a ellos también.</p>` : ""}
+    <details id="pmMore" style="margin-bottom:12px"><summary class="small mute" style="padding:8px 2px;cursor:pointer">Más detalles · <span style="color:var(--ink)">hoy, ${pad(now.getHours())}:${pad(now.getMinutes())}, ${clubTxt}</span></summary>
+      <div class="row" style="margin-top:8px"><label class="field">Fecha<input id="pmF" type="date" value="${dstr(now)}"></label><label class="field">Hora<input id="pmH" type="time" value="${pad(now.getHours())}:${pad(now.getMinutes())}"></label><label class="field">Min<input id="pmD" type="number" inputmode="numeric" value="${Math.round((base.dur || 5400) / 60)}"></label></div>
+      <label class="field">Club / pista<input id="pmC" list="clubs" value="${esc(P.club || "")}" placeholder="Ej. Club de Pádel Las Rozas"></label>
+      <datalist id="clubs">${[...new Set(padelActs().map(a => a.padel.club).filter(Boolean))].map(c => `<option value="${esc(c)}">`).join("")}</datalist>
+      <div class="field">Tu lado<div class="seg" id="pmL"><button data-v="drive" class="${lado === "drive" ? "on" : ""}">Drive</button><button data-v="reves" class="${lado === "reves" ? "on" : ""}">Revés</button></div></div>
+      <div class="field">Tipo<div class="seg" id="pmT"><button data-v="amistoso" class="on">Amistoso</button><button data-v="liga">Liga</button><button data-v="torneo">Torneo</button></div></div></details>
+    ${socialOn() ? `<p class="tiny mute" style="margin-bottom:10px">Etiqueta con @ a tus amigos de Pádel+: les llega el partido y lo confirman con un toque.</p>` : ""}
     <div class="err" id="pmE"></div><button class="btn block" id="pmOk" style="background:#facc15;color:#1a1500;border:0">Guardar partido</button>`, async s => {
     const dl = $("#pl", s); const opts = [];
     if (people.length) { await fetchProfiles(people); people.forEach(u => { const p = profCache[u]; if (p) opts.push(`@${p.usuario}`); }); }
     const names = new Set(); padelActs().forEach(a => [a.padel.comp, ...(a.padel.riv || [])].forEach(x => x && x.n && !x.uid && names.add(x.n)));
     dl.innerHTML = [...opts, ...names].map(o => `<option value="${esc(o)}">`).join("");
+    const freq = {}; padelActs().slice(-30).forEach(x => [x.padel.comp, ...(x.padel.riv || [])].forEach(y => { if (!y || !y.n) return; const k = y.uid && profCache[y.uid] ? "@" + profCache[y.uid].usuario : y.n; freq[k] = (freq[k] || 0) + 1; }));
+    const quick = [...new Set([...Object.keys(freq).sort((p, q) => freq[q] - freq[p]), ...opts])].slice(0, 10);
+    const fields = ["pmComp", "pmR1", "pmR2"].map(i => $("#" + i, s));
+    const drawQ = () => { const used = fields.map(f => f.value.trim()); $("#pmQ", s).innerHTML = quick.filter(q => !used.includes(q)).map(q => `<button class="chip" data-q="${esc(q)}" style="cursor:pointer">+ ${esc(q)}</button>`).join("");
+      $$("#pmQ [data-q]", s).forEach(c => c.onclick = () => { const f = fields.find(f => !f.value.trim()); if (f) { f.value = c.dataset.q; drawQ(); } }); };
+    fields.forEach(f => f.addEventListener("input", drawQ)); drawQ();
     const drawSets = () => { $("#pmS", s).innerHTML = sets.map((st, i) => `<div class="setrow"><span class="tiny mute">Set ${i + 1}</span>${[0, 1].map(k => `<div class="stp"><button data-s="${i}" data-k="${k}" data-d="-1">−</button><b class="num">${st[k]}</b><button data-s="${i}" data-k="${k}" data-d="1">+</button></div>`).join(`<span class="mute">–</span>`)}</div>`).join("") + `<div class="tiny mute" style="margin-top:4px">Deja el 3.º set en 0–0 si no se jugó.</div>`;
       $$("#pmS [data-s]", s).forEach(b => b.onclick = () => { const st = sets[+b.dataset.s]; st[+b.dataset.k] = Math.max(0, Math.min(7, st[+b.dataset.k] + +b.dataset.d)); drawSets(); }); };
     drawSets();
