@@ -52,12 +52,12 @@ function firebaseStore() {
   try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch {}
   let unsubs = [];
   return {
-    kind: "firebase", auth,
+    kind: "firebase", auth, db,
     onUser(cb) { auth.onAuthStateChanged(u => cb(u ? { uid: u.uid, email: u.email, name: u.displayName } : null)); },
     async signIn(e, p) { await auth.signInWithEmailAndPassword(e, p); },
     async signUp(e, p, n) { const c = await auth.createUserWithEmailAndPassword(e, p); if (n) await c.user.updateProfile({ displayName: n }); me && (me.name = n); },
     async reset(e) { await auth.sendPasswordResetEmail(e); },
-    async signOut() { unsubs.forEach(f => f()); unsubs = []; await auth.signOut(); },
+    async signOut() { unsubs.forEach(f => f()); unsubs = []; stopSocial(); await auth.signOut(); },
     start(u, onChange) {
       const base = db.collection("users").doc(u.uid); this.base = base;
       const since = dstr(addDays(new Date(), -400));
@@ -76,7 +76,7 @@ function firebaseStore() {
     save(k, o) { return this.base.collection(COLS[k]).doc(o.id).set(k === "act" ? packAct(o) : o); },
     del(k, id) { return this.base.collection(COLS[k]).doc(id).delete(); },
     savePerfil(p) { return this.base.collection("config").doc("perfil").set(p, { merge: true }); },
-    async deleteAll() { for (const col of Object.values(COLS)) { const s = await this.base.collection(col).get(); for (const d of s.docs) await d.ref.delete(); } await this.base.collection("config").doc("perfil").delete(); },
+    async deleteAll() { try { await leaveSocial(); } catch {} for (const col of Object.values(COLS)) { const s = await this.base.collection(col).get(); for (const d of s.docs) await d.ref.delete(); } await this.base.collection("config").doc("perfil").delete(); },
   };
 }
 function localStore() {
@@ -96,8 +96,8 @@ function localStore() {
     async deleteAll() { for (const k of [...Object.keys(COLS), "perfil"]) delete db[k]; persist(); },
   };
 }
-function saveItem(k, o) { state[k][o.id] = o; store.save(k, o); }
-function delItem(k, id) { delete state[k][id]; store.del(k, id); }
+function saveItem(k, o) { const isNew = !state[k][o.id]; state[k][o.id] = o; store.save(k, o); if (k === "act" && typeof publishAct === "function") publishAct(o, isNew); }
+function delItem(k, id) { const o = state[k][id]; delete state[k][id]; store.del(k, id); if (k === "act" && o && typeof unpublishAct === "function") unpublishAct(o); }
 function savePerfil(p) { state.perfil = { ...state.perfil, ...p }; store.savePerfil(p); }
 
 // ---------- Arranque y sesión ----------
@@ -123,28 +123,28 @@ function boot() {
     $("#splash").classList.add("out");
     if (!u) { me = null; state = { act: {}, com: {}, peso: {}, dia: {}, perfil: {} }; loaded = false; $("#auth").hidden = false; $("#app").hidden = true; $("#tabbar").hidden = true; return; }
     me = u; $("#auth").hidden = true; $("#app").hidden = false; $("#tabbar").hidden = false;
-    store.start(u, first => { loaded = true; if (first) { setView(view); checkRecovery(); } else if (!sheetOpen && !recActive) render(); });
+    store.start(u, first => { loaded = true; if (first) { setView(view); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (!sheetOpen && !recActive) render(); });
   });
 }
 
 // ---------- Navegación ----------
 let view = "inicio", sheetOpen = false;
-const TABS = { inicio: ["home", "Inicio"], entrenos: ["list", "Entrenos"], grabar: ["plus", "Grabar"], nutricion: ["food", "Nutrición"], progreso: ["chart", "Progreso"] };
+const TABS = { inicio: ["home", "Inicio"], comunidad: ["users", "Comunidad"], grabar: ["plus", "Grabar"], nutricion: ["food", "Nutrición"], progreso: ["chart", "Progreso"], entrenos: ["list", "Mis entrenos"] };
 function initNav() {
   $$("#tabbar button").forEach(b => {
     const [ic, t] = TABS[b.dataset.v];
-    if (b.dataset.v === "grabar") b.querySelector(".rec").innerHTML = svg("plus"); else b.innerHTML = svg(ic) + `<span>${t}</span>`;
+    if (b.dataset.v === "grabar") b.querySelector(".rec").innerHTML = svg("plus"); else b.innerHTML = svg(ic) + `<span>${t}</span>` + (b.dataset.v === "comunidad" ? `<i class="dotb" hidden></i>` : "");
     b.onclick = () => b.dataset.v === "grabar" ? openStart() : setView(b.dataset.v);
   });
-  $("#avBtn").onclick = openPerfil;
+  $("#avBtn").onclick = openPerfil; $("#chatBtn").onclick = openChats; $("#bellBtn").onclick = openAvisos;
   $("#sheetBg").onclick = closeSheet;
 }
-function setView(v) { view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); window.scrollTo(0, 0); render(); }
+function setView(v) { view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v || (v === "entrenos" && b.dataset.v === "progreso"))); window.scrollTo(0, 0); render(); }
 function render() {
   if (!me || !loaded) return;
   const name = (me.name || state.perfil.nombre || me.email || "R").trim();
   $("#avBtn").textContent = name[0].toUpperCase();
-  const V = { inicio: vInicio, entrenos: vEntrenos, nutricion: vNutricion, progreso: vProgreso }[view];
+  const V = { inicio: vInicio, entrenos: vEntrenos, nutricion: vNutricion, progreso: vProgreso, comunidad: vComunidad }[view];
   $("#title").textContent = TABS[view][1];
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
   (WIRE[view] || (() => {}))();
@@ -155,7 +155,7 @@ function openSheet(title, html, wire) {
   $("#shX").onclick = closeSheet; s.scrollTop = 0; sheetOpen = true;
   s.classList.add("on"); $("#sheetBg").classList.add("on"); wire && wire(s);
 }
-function closeSheet() { $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); sheetOpen = false; setTimeout(() => { if (!sheetOpen) render(); }, 50); }
+function closeSheet() { chatOpenId = null; if (msgUnsub) { msgUnsub(); msgUnsub = null; } $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); sheetOpen = false; setTimeout(() => { if (!sheetOpen) render(); }, 50); }
 function confirmSheet(title, text, okTxt, onOk, danger = true) {
   openSheet(title, `<p class="mute" style="line-height:1.5;margin-bottom:18px">${text}</p><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn ${danger ? "danger" : "pri"}" id="cOk">${okTxt}</button></div>`,
     s => { $("#cNo", s).onclick = closeSheet; $("#cOk", s).onclick = () => { onOk(); }; });

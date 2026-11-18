@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Datos privados de cada usuario (entrenos, comidas, peso, ajustes)
+    match /users/{uid}/{document=**} {
+      allow read, write: if isMe(uid);
+    }
+    // Avisos: cualquiera puede dejarte uno firmado con su uid; solo tú los lees y borras
+    match /users/{uid}/avisos/{aid} {
+      allow create: if signedIn() && request.resource.data.de == request.auth.uid
+                    && request.resource.data.texto is string && request.resource.data.texto.size() <= 200;
+    }
+
+    // Perfil público
+    match /perfiles/{uid} {
+      allow read: if signedIn();
+      allow write: if isMe(uid);
+    }
+    // Nombres de usuario únicos
+    match /usuarios/{handle} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    // Seguir
+    match /follows/{fid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.de == request.auth.uid
+                    && fid == request.auth.uid + '_' + request.resource.data.a;
+      allow delete: if signedIn() && resource.data.de == request.auth.uid;
+    }
+    // Publicaciones del muro
+    match /posts/{pid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      allow update: if signedIn() && (
+        (resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['kudos'])
+            && request.resource.data.kudos.toSet().difference(resource.data.kudos.toSet())
+                 .union(resource.data.kudos.toSet().difference(request.resource.data.kudos.toSet()))
+                 .hasOnly([request.auth.uid]))
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nCom'])
+      );
+      match /comentarios/{cid} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+                      && request.resource.data.texto is string && request.resource.data.texto.size() <= 500;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid
+                      || get(/databases/$(database)/documents/posts/$(pid)).data.uid == request.auth.uid);
+      }
+    }
+    // Mensajes privados entre dos personas
+    match /chats/{cid} {
+      allow read: if signedIn() && request.auth.uid in resource.data.miembros;
+      allow create: if signedIn() && request.auth.uid in request.resource.data.miembros
+                    && request.resource.data.miembros.size() == 2;
+      allow update: if signedIn() && request.auth.uid in resource.data.miembros
+                    && request.resource.data.miembros == resource.data.miembros;
+      match /msgs/{mid} {
+        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(cid)).data.miembros;
+        allow create: if signedIn() && request.resource.data.de == request.auth.uid
+                      && request.auth.uid in get(/databases/$(database)/documents/chats/$(cid)).data.miembros
+                      && request.resource.data.texto is string && request.resource.data.texto.size() <= 1000;
+      }
+    }
+  }
+}

@@ -108,6 +108,7 @@ function openFinish(a, editing) {
     ${s.match ? matchFields(a) : ""}
     <div class="field">¿Qué tal te has sentido?<div class="seg" id="fS">${[1, 2, 3, 4, 5].map(n => `<button data-n="${n}" class="${a.sensacion === n ? "on" : ""}">${["😫", "😕", "🙂", "😀", "🔥"][n - 1]}</button>`).join("")}</div></div>
     <label class="field">Notas<textarea id="fN" rows="2" maxlength="400" placeholder="Cómo fue, zapatillas, sensaciones…">${esc(a.notas || "")}</textarea></label>
+    ${typeof social !== "undefined" && social.me ? `<label class="check"><input type="checkbox" id="fVis" ${a.vis === "privado" ? "" : "checked"}> <span>Publicar en la comunidad (tus seguidores lo verán)</span></label>` : ""}
     <button class="btn pri block" id="fOk">${editing ? "Guardar cambios" : "Guardar entreno"}</button>
     ${editing ? "" : `<button class="btn block" style="margin-top:10px;color:var(--mute)" id="fDis">Descartar</button>`}`, sh => {
     let sens = a.sensacion || 0;
@@ -115,6 +116,7 @@ function openFinish(a, editing) {
     wireMatch(sh, a);
     $("#fOk", sh).onclick = () => {
       a.titulo = $("#fT", sh).value.trim() || autoTitle(a.deporte, a.fecha); a.notas = $("#fN", sh).value.trim(); a.sensacion = sens || null;
+      const fv = $("#fVis", sh); if (fv) a.vis = fv.checked ? "todos" : "privado";
       if (editing) { const d = +$("#fDur", sh).value; if (d > 0) a.dur = d * 60; const di = $("#fDist", sh); if (di) a.dist = Math.round(parseFloat(String(di.value).replace(",", ".")) * 1000) || 0; a.kcal = estKcal(a.deporte, a.dur, a.dist); }
       if (s.match) readMatch(sh, a);
       saveItem("act", a); localStorage.removeItem(REC_KEY); R = null; closeSheet();
@@ -150,6 +152,7 @@ function openManual(sport = null) {
     ${s.match ? matchFields(a) : ""}
     <label class="field">Título (opcional)<input id="mT" maxlength="60" placeholder="${esc(autoTitle(sport, now.toISOString()))}"></label>
     <label class="field">Notas<textarea id="mN" rows="2" maxlength="400"></textarea></label>
+    ${typeof social !== "undefined" && social.me ? `<label class="check"><input type="checkbox" id="mVis" checked> <span>Publicar en la comunidad</span></label>` : ""}
     <button class="btn pri block" id="mOk">Guardar</button>`, sh => {
     wireMatch(sh, a);
     $("#mOk", sh).onclick = () => {
@@ -157,7 +160,7 @@ function openManual(sport = null) {
       const di = $("#mDi", sh); a.dist = di ? Math.round((parseFloat(String(di.value).replace(",", ".")) || 0) * 1000) : 0;
       a.fecha = new Date(`${$("#mF", sh).value}T${$("#mH", sh).value || "12:00"}`).toISOString(); a.dur = d * 60;
       a.kcal = estKcal(sport, a.dur, a.dist); a.titulo = $("#mT", sh).value.trim() || autoTitle(sport, a.fecha); a.notas = $("#mN", sh).value.trim();
-      if (s.match) readMatch(sh, a);
+      if (s.match) readMatch(sh, a); const mv = $("#mVis", sh); if (mv) a.vis = mv.checked ? "todos" : "privado";
       saveItem("act", a); closeSheet(); toast("Entreno guardado 💪");
     };
   });

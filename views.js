@@ -207,6 +207,8 @@ function openPerfil() {
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><div class="av" style="width:58px;height:58px;font-size:24px">${esc((name || me.email || "R")[0].toUpperCase())}</div><div><div style="font-weight:700;font-size:18px">${esc(name || "Deportista")}</div><div class="small mute">${esc(me.email || "")}</div></div></div>
     <div class="card"><h3>${svg("target")}Meta semanal</h3><div class="seg" id="metaSeg">${[90, 150, 200, 300, 420].map(v => `<button data-m="${v}" class="${(+state.perfil.metaMin || 150) === v ? "on" : ""}">${v} min</button>`).join("")}</div><p class="tiny mute">La OMS recomienda al menos 150 minutos de actividad moderada a la semana.</p></div>
     <div class="card list" style="padding:4px 14px">
+      <button class="item" id="pPub">${svg("users")}${typeof social !== "undefined" && social.me ? "Mi perfil público · @" + esc(social.me.usuario) : "Unirme a la comunidad"}${svg("chev", "chev")}</button>
+      <button class="item" id="pAll">${svg("list")}Mis entrenos${svg("chev", "chev")}</button>
       <button class="item" id="pName">${svg("user")}Cambiar nombre${svg("chev", "chev")}</button>
       <button class="item" id="pWatch">${svg("watch")}Conectar reloj${svg("chev", "chev")}</button>
       <button class="item" id="pNut">${svg("food")}Mis datos de nutrición${svg("chev", "chev")}</button>
@@ -217,7 +219,8 @@ function openPerfil() {
     </div><p class="tiny mute" style="text-align:center;margin-top:8px">Ritmo+ · versión 1.0</p>`, s => {
     $$("[data-m]", s).forEach(b => b.onclick = () => { savePerfil({ metaMin: +b.dataset.m }); $$("[data-m]", s).forEach(x => x.classList.toggle("on", x === b)); toast("Meta actualizada"); });
     $("#pName", s).onclick = () => openSheet("Tu nombre", `<label class="field">Nombre<input id="nN" value="${esc(name)}" maxlength="40"></label><button class="btn pri block" id="nOk">Guardar</button>`, s2 => $("#nOk", s2).onclick = async () => { const n = $("#nN", s2).value.trim(); if (!n) return; me.name = n; savePerfil({ nombre: n }); try { store.auth && await store.auth.currentUser.updateProfile({ displayName: n }); } catch {} closeSheet(); toast("Nombre guardado"); });
-    $("#pWatch", s).onclick = openImport; $("#pNut", s).onclick = () => openNutriSetup();
+    $("#pWatch", s).onclick = openImport; $("#pAll", s).onclick = () => { closeSheet(); setView("entrenos"); };
+    $("#pPub", s).onclick = () => { if (social.me) openUser(me.uid); else if (store.kind === "firebase") openPerfilPublico(); else toast("Necesitas conexión"); }; $("#pNut", s).onclick = () => openNutriSetup();
     $("#pOut", s).onclick = () => confirmSheet("¿Cerrar sesión?", "Tus datos quedan guardados en tu cuenta.", "Cerrar sesión", async () => { closeSheet(); await store.signOut(); }, false);
     $("#pDel", s).onclick = openBorrar;
   });

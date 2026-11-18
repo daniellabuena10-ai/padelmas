@@ -1,5 +1,5 @@
-const V = "ritmo-v1";
-const SHELL = ["./", "index.html", "core.js", "views.js", "rec.js", "nutri.js", "data.js", "icons.js", "config.js", "manifest.json", "icon-192.png", "privacidad.html", "lib/leaflet.js", "lib/leaflet.css"];
+const V = "ritmo-v2";
+const SHELL = ["./", "index.html", "core.js", "views.js", "rec.js", "nutri.js", "social.js", "data.js", "icons.js", "config.js", "manifest.json", "icon-192.png", "privacidad.html", "lib/leaflet.js", "lib/leaflet.css"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {
