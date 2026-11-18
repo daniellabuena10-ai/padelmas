@@ -88,3 +88,27 @@ function wireAcces(root) { $$("[data-acc]", root).forEach(b => b.onclick = () =>
   openSheet(`${a.e} ${a.t}`, `<p style="font-size:16px;line-height:1.5">${a.r}</p><div class="sec">Consejos</div><div class="card">${a.tips.map(t => `<p style="line-height:1.5;margin-bottom:8px">✓ ${t}</p>`).join("")}</div>
     <div class="sec">Marcas habituales</div><div class="chips">${a.marcas.map(m => `<span class="chip">${m}</span>`).join("")}</div>
     ${socialOn() ? `<button class="btn block" id="aAsk" style="margin-top:16px">${svg("mail")}Preguntar a la comunidad</button>` : ""}`, s => { const q = $("#aAsk", s); if (q) q.onclick = () => openAsk("acces"); }); }); }
+
+// ===== Outfits de pádel =====
+const OUTFITS = [
+  { id: "verano-m", g: "mujer", e: "☀️", t: "Verano · Mujer", piezas: ["Camiseta de tirantes o top técnico transpirable", "Falda pantalón con malla interior y bolsillo para la bola", "Calcetines técnicos tobilleros", "Visera y muñequera"], tips: ["Colores claros: absorben menos calor.", "Malla interior con bolsillo: la segunda bola siempre a mano.", "Lleva una camiseta de cambio en el paletero."] },
+  { id: "invierno-m", g: "mujer", e: "❄️", t: "Invierno · Mujer", piezas: ["Camiseta técnica de manga larga o térmica", "Mallas largas o falda + mallas térmicas", "Sudadera ligera con cremallera para calentar", "Calcetines de media caña"], tips: ["Capas: te quitas la sudadera después de calentar.", "Las mallas térmicas protegen la musculatura en pistas frías."] },
+  { id: "verano-h", g: "hombre", e: "☀️", t: "Verano · Hombre", piezas: ["Camiseta técnica de manga corta o sin mangas", "Pantalón corto con bolsillos profundos o malla interior", "Calcetines técnicos", "Cinta o gorra"], tips: ["Tejido que seque rápido (nada de algodón).", "Bolsillo profundo para que no se caiga la bola al correr."] },
+  { id: "invierno-h", g: "hombre", e: "❄️", t: "Invierno · Hombre", piezas: ["Camiseta térmica de manga larga", "Pantalón corto + malla larga, o pantalón largo técnico", "Sudadera o chaqueta ligera", "Calcetines de media caña"], tips: ["Calienta con la chaqueta puesta y quítatela al empezar.", "Si la pista es exterior y hay humedad, guarda una camiseta seca."] },
+  { id: "torneo", g: "todos", e: "🏆", t: "Día de torneo", piezas: ["Dos camisetas iguales (para cambiarte entre partidos)", "Pantalón o falda de confianza, ya probada", "Zapatillas usadas al menos 2–3 partidos (nunca nuevas)", "Overgrip nuevo puesto la noche antes"], tips: ["Ir conjuntado con tu pareja motiva (y queda mejor en las fotos).", "Prepara el paletero la noche anterior: pelotas, agua, plátano, overgrip."] },
+  { id: "tallas", g: "todos", e: "📏", t: "Cómo acertar con la talla", piezas: ["Camiseta: ajustada pero sin apretar en hombros (que puedas rematar)", "Falda / pantalón: que la malla no se suba al agacharte", "Zapatillas: medio número más que tu calle si juegas mucho (el pie se hincha)"], tips: ["Haz una sentadilla y un gesto de remate en el probador.", "Cada marca talla distinto: mira la tabla de tallas de cada una."] },
+];
+let outfitG = "todos";
+function outfitsHTML() {
+  const list = OUTFITS.filter(o => outfitG === "todos" || o.g === outfitG || o.g === "todos");
+  return `<div class="hint" style="background:rgba(250,204,21,.08)"><span style="font-size:18px">👕</span><span style="color:var(--ink)">Qué ponerte para jugar cómodo y que te quede bien, según la estación. Sin tecnicismos.</span></div>
+    <div class="seg">${[["todos", "Todo"], ["mujer", "Mujer"], ["hombre", "Hombre"]].map(([k, n]) => `<button data-og="${k}" class="${outfitG === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    ${list.map(o => `<button class="card" data-out="${o.id}" style="display:block;width:100%;text-align:left"><div style="display:flex;gap:12px;align-items:center"><span style="font-size:26px">${o.e}</span><div style="flex:1"><div style="font-weight:700">${o.t}</div><div class="small mute" style="margin-top:2px">${o.piezas.slice(0, 2).join(" · ")}…</div></div>${svg("chev", "chev")}</div></button>`).join("")}`;
+}
+function wireOutfits(root) {
+  $$("[data-og]", root).forEach(b => b.onclick = () => { outfitG = b.dataset.og; render(); });
+  $$("[data-out]", root).forEach(b => b.onclick = () => { const o = OUTFITS.find(x => x.id === b.dataset.out);
+    openSheet(`${o.e} ${o.t}`, `<div class="sec" style="margin-top:0">Qué llevar</div><div class="card">${o.piezas.map(p => `<p style="line-height:1.5;margin-bottom:8px">👉 ${p}</p>`).join("")}</div>
+      <div class="sec">Consejos</div><div class="card">${o.tips.map(t => `<p style="line-height:1.5;margin-bottom:8px">✓ ${t}</p>`).join("")}</div>
+      <div class="sec">Marcas habituales</div><div class="chips">${["adidas", "Bullpadel", "Nox", "Siux", "Joma", "Kuikma", "Head", "Babolat"].map(m => `<span class="chip">${m}</span>`).join("")}</div>
+      <a class="btn block" style="margin-top:16px;text-decoration:none;color:inherit" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=shop&q=${encodeURIComponent("ropa padel " + (o.g === "todos" ? "" : o.g))}">${svg("cart")}Ver ropa de pádel</a>`); }); }

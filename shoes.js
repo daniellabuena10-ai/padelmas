@@ -135,6 +135,7 @@ async function openShoe(id) {
     <div class="grid3" style="margin:14px 0"><div class="stat"><div class="k">Peso aprox.</div><div class="v num" style="font-size:24px">${sh.peso}<small>g</small></div></div><div class="stat"><div class="k">Drop</div><div class="v num" style="font-size:24px">${sh.drop}<small>mm</small></div></div><div class="stat"><div class="k">Placa</div><div class="v num" style="font-size:20px">${sh.placa === "no" ? "No" : sh.placa[0].toUpperCase() + sh.placa.slice(1)}</div></div></div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${v * 100}%;background:${SHOE_CAT_C[sh.cat]}"></b></i></div>`).join("")}
       <p class="small mute" style="margin-top:12px">Ritmo ideal: <b style="color:var(--ink)">${fmtPace(sh.rMin)} – ${fmtPace(sh.rMax)} /km</b></p></div>
+    ${priceBtns(sh)}
     <div class="row"><button class="btn ${mine ? "" : "pri"}" id="shHave">${mine ? "✓ La tengo" : `${svg("plus")}La tengo`}</button>${socialOn() ? `<button class="btn" id="shRev">${svg("edit")}Opinar</button>` : ""}</div>
     <div class="sec">Opiniones de la comunidad</div><div id="shRevs"><p class="small mute">${socialOn() ? "Cargando…" : "Únete a la comunidad para ver y dejar opiniones."}</p></div>`, s => {
     $("#shHave", s).onclick = () => { if (!mine) addZapa(id); else toast("Ya está en Mis zapatillas"); };

@@ -169,6 +169,16 @@ function shoeArt(g, size = 120) {
 }
 function gearArt(g, size) { return g.id.startsWith("pala_") ? palaArt(g, size) : shoeArt(g, size); }
 
+// ---------- Precio y compra ----------
+// Cuando Awin apruebe los programas, se rellena AFFIL y los enlaces pasan a ser de afiliado.
+const AFFIL = { activo: false, affid: "", tiendas: [] /* {n, mid, buscar: q => url} */ };
+function priceLinks(g) {
+  const q = `${g.marca} ${g.modelo}`;
+  if (AFFIL.activo && AFFIL.tiendas.length) return AFFIL.tiendas.map(t => ({ n: t.n, url: `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&ued=${encodeURIComponent(t.buscar(q))}` }));
+  return [{ n: "Comparar precios", url: `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}` }];
+}
+function priceBtns(g) { return `<div class="row" style="margin:4px 0 12px">${priceLinks(g).map(l => `<a class="btn block" href="${l.url}" target="_blank" rel="noopener sponsored" style="text-decoration:none;color:inherit">${svg("cart")}${esc(l.n)}</a>`).join("")}</div>${AFFIL.activo ? `<p class="tiny mute" style="margin:-6px 0 12px">Si compras desde aquí, Pádel+ puede llevarse una pequeña comisión. A ti no te cuesta más y no cambia nuestras recomendaciones.</p>` : ""}`; }
+
 // ---------- Filas y fichas ----------
 function gearRow(g, tag = null, why = null) {
   if (!g.id.startsWith("pala_") && !g.id.startsWith("zp_")) return shoeRow(g, tag, why);
@@ -190,6 +200,7 @@ function openGear(id) {
   openSheet(`${g.marca} ${g.modelo}`, `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div><p style="line-height:1.5;margin-top:-4px">${g.desc}</p>
     <div class="grid3" style="margin:14px 0">${specs.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div style="font-weight:700;margin-top:4px">${String(v)[0].toUpperCase() + String(v).slice(1)}</div></div>`).join("")}</div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${Math.max(5, Math.min(100, v * 100))}%;background:#facc15"></b></i></div>`).join("")}</div>
+    ${priceBtns(g)}
     ${socialOn() ? `<button class="btn block" id="gRev">${svg("edit")}Opinar</button>` : ""}
     <div class="sec">Opiniones de la comunidad</div><div id="shRevs"><p class="small mute">${socialOn() ? "Cargando…" : "Únete a la comunidad para ver y dejar opiniones."}</p></div>`, s => {
     const rv = $("#gRev", s); if (rv) rv.onclick = () => openGearReview(g);
@@ -214,9 +225,10 @@ function openGearReview(g) {
 // ---------- Hub de material ----------
 let gearSeg = "palas", gearFilter = "todas", gearBrand = "todas";
 function materialView() {
-  const segs = [["palas", "Palas"], ["zpadel", "Zapatillas"], ["acces", "Ropa y accesorios"], ["running", "Running"]];
+  const segs = [["palas", "Palas"], ["zpadel", "Zapatillas"], ["outfits", "Outfits"], ["acces", "Accesorios"], ["running", "Running"]];
   const seg = `<div class="seg" style="margin-bottom:14px">${segs.map(([k, n]) => `<button data-gs="${k}" class="${gearSeg === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   if (gearSeg === "running") return seg + zapasView();
+  if (gearSeg === "outfits") return seg + outfitsHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   if (gearSeg === "acces") return seg + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
   const cats = isP ? [["todas", "Todas"], ["1", "Control"], ["2", "Polivalente"], ["3", "Potencia"]] : [["todas", "Todas"], ["espiga", "Espiga"], ["omni", "Omni"], ["híbrida", "Híbrida"]];
@@ -236,6 +248,7 @@ function materialView() {
 function wireMaterial(root) {
   $$("[data-gs]", root).forEach(b => b.onclick = () => { gearSeg = b.dataset.gs; gearFilter = "todas"; gearBrand = "todas"; render(); });
   if (gearSeg === "running") { wireZapasView(root); return; }
+  if (gearSeg === "outfits") { wireOutfits(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
   if (gearSeg === "acces") { wireAcces(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
   $("#gRec", root).onclick = gearSeg === "palas" ? openRecPala : openRecZP; wireGearRows(root);
   $$("[data-gf]", root).forEach(b => b.onclick = () => { gearFilter = b.dataset.gf; render(); });
