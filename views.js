@@ -118,10 +118,12 @@ function openAct(id) {
   if (gps) { const ch = streamCharts(a); if (ch) html += ch; }
   if (a.sensacion) html += `<p class="small mute" style="margin-top:12px">Sensación: <span style="color:var(--volt)">${"★".repeat(a.sensacion)}</span>${"☆".repeat(5 - a.sensacion)}</p>`;
   if (a.notas) html += `<div class="hint">${svg("edit")}<span style="color:var(--ink)">${esc(a.notas)}</span></div>`;
+  if (a.padel && a.padel.sets && a.padel.sets.length) html += `<button class="btn pri block" id="aShare" style="margin-top:16px">${svg("share")}Compartir en stories</button>`;
   html += `<div class="row" style="margin-top:16px"><button class="btn" id="aEdit">${svg("edit")}Editar</button><button class="btn danger" id="aDel">${svg("trash")}Borrar</button></div>`;
   openSheet(esc(a.titulo || s.n), html, sh => {
     $("#aDel", sh).onclick = () => confirmSheet("¿Borrar entreno?", "Se borrará para siempre.", "Borrar", () => { delItem("act", a.id); closeSheet(); toast("Entreno borrado"); });
     $("#aEdit", sh).onclick = () => openFinish(a, true);
+    const shb = $("#aShare", sh); if (shb) shb.onclick = () => openShareMatch(a);
     if (gps) setTimeout(() => drawMap("detMap", a.trk, s.c), 60);
   });
 }

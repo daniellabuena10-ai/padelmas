@@ -218,8 +218,8 @@ function openPadelMatch(base = {}) {
       fillPadelAct(a); savePerfil({ padel: { ...(state.perfil.padel || {}), club: club || P.club || "", lado: lado || P.lado || null } });
       saveItem("act", a); const before = computeNivel(); syncNivel(); closeSheet();
       const h = computeNivel(); const d = h && h.hist.length > 1 ? h.hist[h.hist.length - 1].n - h.hist[h.hist.length - 2].n : 0;
-      toast(won ? `¡Victoria! 🏆 Nivel ${d >= 0 ? "+" : ""}${nf(d, 2)}` : `Partido guardado · nivel ${nf(d, 2)}`);
-      if (view === "padel") render();
+      if (view === "padel" || view === "inicio") render();
+      if (h) setTimeout(() => openShareMatch(a, true), 260); else toast(won ? "¡Victoria! 🏆" : "Partido guardado");
     };
   });
 }
