@@ -19,6 +19,12 @@ service cloud.firestore {
       allow read: if signedIn();
       allow write: if isMe(uid);
     }
+    // Clubes de pádel añadidos por la comunidad
+    match /clubs/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.by == request.auth.uid && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 60;
+      allow update, delete: if signedIn() && resource.data.by == request.auth.uid;
+    }
     // Nombres de usuario únicos
     match /usuarios/{handle} {
       allow read: if signedIn();

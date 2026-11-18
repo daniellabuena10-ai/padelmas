@@ -85,10 +85,12 @@ function padelStats() {
 let padelTab = "resumen", partidosPend = [], quedadas = [], padelLoaded = 0;
 function vPadel() {
   const P = state.perfil.padel || {};
+  if (padelTab === "pistas") return `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sm" id="piBack" style="flex:0 0 auto">${svg("back")}Pádel</button><h3 style="margin:0 0 0 6px">Pistas y clubes</h3></div>${pistasHTML()}`;
   if (!P.nivel0) return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.25),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.22)">
       <div class="lbl" style="color:#e5d38f">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
       <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel</b>, que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
-      <button class="btn block" id="pdTest" style="margin-top:16px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>`;
+      <button class="btn block" id="pdTest" style="margin-top:16px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>
+      <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
   const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   const pend = partidosPend.length ? `<div class="card" style="border-color:rgba(250,204,21,.35)"><h3>${svg("bell")}Te han apuntado en ${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</h3>${partidosPend.map(pendRow).join("")}</div>` : "";
@@ -111,6 +113,7 @@ function vPadel() {
         ${st.tie[0] + st.tie[1] ? statItem("🧊", "Tie-breaks", `${st.tie[0]} ganados · ${st.tie[1]} perdidos`, "") : ""}
       </div>
       <button class="item" id="pdGear" style="margin-top:4px"><span style="font-size:22px;width:28px;text-align:center">🎾</span><div style="flex:1"><div style="font-weight:700">¿Qué pala me va?</div><div class="tiny mute">Recomendador según tu nivel (${fmtNivel(lv)}) y tu juego</div></div>${svg("chev", "chev")}</button>
+      <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>
       <button class="item" id="pdFind"><span style="font-size:22px;width:28px;text-align:center">👥</span><div style="flex:1"><div style="font-weight:700">Buscar partido</div><div class="tiny mute">Partidos abiertos de tu nivel</div></div>${svg("chev", "chev")}</button>` : `<div class="card empty">${svg("padel")}<p>Apunta tu primer partido y empieza a mover tu nivel.</p></div>`}`;
   } else if (padelTab === "partidos") {
     const A = padelActs().reverse();
@@ -133,6 +136,8 @@ function pendRow(m) {
     <div class="row" style="margin-top:8px"><button class="btn sm pri" data-pok="${m.id}">${svg("check")}Confirmar</button><button class="btn sm" data-pno="${m.id}">No era yo</button></div></div></div>`;
 }
 WIRE.padel = () => {
+  $$(".pdPis").forEach(b => b.onclick = () => { padelTab = "pistas"; render(); window.scrollTo(0, 0); });
+  if (padelTab === "pistas") { $("#piBack").onclick = () => { padelTab = "resumen"; render(); }; wirePistas($("#view")); return; }
   const t = $("#pdTest"); if (t) { t.onclick = openNivelTest; return; }
   $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); });
   $$("#pdAdd").forEach(b => b.onclick = () => openPadelMatch()); const f = $("#pdFind"); if (f) f.onclick = () => { padelTab = "buscar"; render(); };

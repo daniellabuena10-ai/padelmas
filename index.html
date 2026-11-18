@@ -273,6 +273,8 @@ nav.tabbar button{position:relative}
 .fade{animation:fin .35s ease both}
 @keyframes fin{from{opacity:0;transform:translateY(6px)}}
 @media(min-width:900px){#app{padding-top:28px}}
+a.btn{text-decoration:none;color:inherit}
+#piR button{padding-left:4px;padding-right:4px}
 </style>
 </head>
 <body>
@@ -340,7 +342,7 @@ nav.tabbar button{position:relative}
 <script src="shoes.js"></script>
 <script src="padel.js"></script>
 <script src="gear.js"></script>
-<script src="learn.js"></script><script src="share.js"></script>
+<script src="learn.js"></script><script src="share.js"></script><script src="pistas.js"></script>
 <script>boot();</script>
 <script>["gesturestart","gesturechange"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");</script>
