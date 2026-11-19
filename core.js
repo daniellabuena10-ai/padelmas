@@ -120,6 +120,7 @@ function authErr(e) {
   const c = e && e.code || ""; return ({ "auth/invalid-credential": "Email o contraseña incorrectos.", "auth/wrong-password": "Contraseña incorrecta.", "auth/user-not-found": "No hay ninguna cuenta con ese email.", "auth/email-already-in-use": "Ya existe una cuenta con ese email. Prueba a entrar.", "auth/weak-password": "La contraseña debe tener al menos 6 caracteres.", "auth/invalid-email": "Ese email no es válido.", "auth/too-many-requests": "Demasiados intentos. Espera un momento.", "auth/network-request-failed": "Sin conexión. Revisa tu internet." })[c] || "No se ha podido. Inténtalo otra vez.";
 }
 function boot() {
+  try { if (localStorage.getItem("pm-texto") === "g") document.body.classList.add("tg"); } catch {}
   store = (window.FIREBASE_CONFIG && window.firebase) ? firebaseStore() : localStore();
   initAuthUI(); initNav();
   store.onUser(u => {

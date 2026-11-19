@@ -123,27 +123,37 @@ function recZP(q) {
     sc += sue * 1.4; if (sue >= 2) why.push(`suela ${z.suela}: ideal para tu pista`);
     if (q.rodilla) { sc += (z.amort - 3) * .6; if (z.amort >= 4) why.push("mucha amortiguación"); }
     if (q.tobillo) { sc += (z.estab - 3) * .6; if (z.estab >= 4) why.push("muy estable, protege el tobillo"); }
-    if (q.ancho) { if (z.horma === "ancha") { sc += 1; why.push("horma ancha"); } if (z.horma === "estrecha") sc -= 1.2; }
+    if (q.horma === "ancha" || q.ancho) { if (z.horma === "ancha") { sc += 1.2; why.push("horma ancha, para tu pie"); } if (z.horma === "estrecha") sc -= 1.4; }
+    if (q.horma === "estrecha") { if (z.horma === "estrecha") { sc += .7; why.push("horma estrecha, se ajusta a tu pie"); } if (z.horma === "ancha") sc -= .7; }
     if (q.frec >= 3) { sc += (z.amort + z.estab) * .1; } if (q.rapido && z.peso <= 365) { sc += .5; why.push(`ligera (~${z.peso} g)`); }
     if (q.precio && z.precio > q.precio) sc -= .9 * (z.precio - q.precio); if (q.precio === 1 && z.precio === 1) why.push("económica");
-    if (weightKg() >= 85 && z.amort >= 4 && z.estab >= 4) { sc += .4; why.push("aguanta bien a jugadores pesados"); }
+    const kg = q.kg || weightKg();
+    if (kg >= 85) { sc += (z.amort + z.estab - 6) * .35; if (z.amort >= 4 && z.estab >= 4) why.push(`buena para tu peso (${kg} kg)`); if (z.peso <= 340) sc -= .5; }
+    else if (kg <= 65) { if (z.peso <= 360) { sc += .5; why.push("ligera, ideal para tu peso"); } if (z.amort >= 5) sc -= .2; }
     return { s: z, sc, why: [...new Set(why)].slice(0, 3) };
   }).sort((a, b) => b.sc - a.sc).slice(0, 6);
 }
+function zpIdeal(z) {
+  if (z.amort >= 4 && z.estab >= 4) return "Cualquier peso, también +85 kg";
+  if (z.amort >= 4) return "Hasta ~90 kg";
+  if (z.peso <= 350) return "Ligeros, hasta ~75 kg";
+  return "Hasta ~85 kg";
+}
 function openRecZP() {
-  const q = { pista: "arena", frec: 2, rodilla: false, tobillo: false, ancho: false, rapido: false, precio: 0 };
+  const q = { pista: "arena", frec: 2, rodilla: false, tobillo: false, horma: "normal", kg: Math.round(weightKg()), rapido: false, precio: 0 };
   openSheet("¿Qué zapatillas de pádel?", `
     <div class="field">¿Dónde juegas sobre todo?<div class="seg" id="rzP" style="flex-wrap:wrap">${[["arena", "Césped con arena"], ["moqueta", "Moqueta / indoor rápida"], ["mixto", "Un poco de todo"]].map(([k, n]) => `<button data-v="${k}" class="${q.pista === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <div class="field">¿Cuánto juegas?<div class="seg" id="rzF">${[[1, "1 vez/semana o menos"], [2, "2–3 veces"], [3, "4 o más"]].map(([k, n]) => `<button data-v="${k}" class="${q.frec === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <label class="check"><input type="checkbox" id="rzR"> <span>Me molestan las <b>rodillas</b> o la espalda</span></label>
     <label class="check"><input type="checkbox" id="rzT"> <span>Me <b>tuerzo el tobillo</b> con facilidad</span></label>
-    <label class="check"><input type="checkbox" id="rzA"> <span>Tengo el <b>pie ancho</b></span></label>
+    <div class="field">¿Cómo es tu pie?<div class="seg" id="rzH">${[["estrecha", "Estrecho"], ["normal", "Normal"], ["ancha", "Ancho"]].map(([k, n]) => `<button data-v="${k}" class="${q.horma === k ? "on" : ""}">${n}</button>`).join("")}</div><span class="tiny mute">Si las zapatillas te suelen apretar por los lados, es ancho.</span></div>
+    <label class="field">Tu peso (kg)<input id="rzK" type="number" inputmode="numeric" min="35" max="160" value="${q.kg}"><span class="tiny mute">Con más peso conviene más amortiguación y estabilidad.</span></label>
     <label class="check"><input type="checkbox" id="rzL"> <span>Quiero algo <b>ligero y rápido</b></span></label>
     <div class="field">Presupuesto<div class="seg" id="rzPr">${[[0, "Me da igual"], [1, "Económica"], [2, "Media"], [3, "Top"]].map(([k, n]) => `<button data-v="${k}" class="${q.precio === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <button class="btn block" id="rzGo" style="background:#facc15;color:#1a1500;border:0">Ver mis zapatillas ideales</button>`, s => {
     const seg = (id, k, num) => $$(`#${id} [data-v]`, s).forEach(b => b.onclick = () => { q[k] = num ? +b.dataset.v : b.dataset.v; $$(`#${id} [data-v]`, s).forEach(x => x.classList.toggle("on", x === b)); });
-    seg("rzP", "pista"); seg("rzF", "frec", 1); seg("rzPr", "precio", 1);
-    $("#rzGo", s).onclick = () => { q.rodilla = $("#rzR", s).checked; q.tobillo = $("#rzT", s).checked; q.ancho = $("#rzA", s).checked; q.rapido = $("#rzL", s).checked;
+    seg("rzP", "pista"); seg("rzF", "frec", 1); seg("rzPr", "precio", 1); seg("rzH", "horma");
+    $("#rzGo", s).onclick = () => { q.rodilla = $("#rzR", s).checked; q.tobillo = $("#rzT", s).checked; q.rapido = $("#rzL", s).checked; q.kg = Math.max(35, Math.min(160, +$("#rzK", s).value || q.kg));
       const r = recZP(q); openSheet("Tus zapatillas de pádel", `${r.map((x, i) => gearRow(x.s, i === 0 ? "🥇 Mejor opción" : null, x.why)).join("")}
         <div class="hint">${svg("info")}<span><b style="color:var(--ink)">Suela:</b> espiga para césped con arena (lo más habitual), omni para moqueta o pistas rápidas indoor, híbrida si juegas en ambas.</span></div>
         <button class="btn block" id="rAgain">${svg("refresh")}Cambiar respuestas</button>`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecZP; }); };
@@ -203,10 +213,11 @@ function openGear(id) {
   const bars = isP ? [["Potencia", g.perfil / 3], ["Control", (4 - g.perfil) / 3], ["Manejabilidad", Math.max(.2, (380 - g.peso) / 40 * .6 + (3 - g.balance) / 2 * .4)], ["Comodidad (brazo)", (3.2 - g.dureza) / 2.2]]
     : [["Amortiguación", g.amort / 5], ["Estabilidad", g.estab / 5], ["Ligereza", Math.max(.15, (430 - g.peso) / 90)], ["Precio", 1 - (g.precio - 1) / 2.5]];
   const specs = isP ? [["Forma", g.forma], ["Balance", blTxt(g.balance)], ["Tacto", durTxt(g.dureza)], ["Peso", `~${g.peso} g`], ["Caras", g.cara], ["Nivel", nivTxt(g.nivel)]]
-    : [["Suela", g.suela], ["Peso", `~${g.peso} g`], ["Horma", g.horma], ["Precio", PRECIO[g.precio]]];
+    : [["Suela", g.suela], ["Peso", `~${g.peso} g`], ["Horma", g.horma], ["Amortiguación", `${g.amort}/5`], ["Estabilidad", `${g.estab}/5`], ["Ideal para", zpIdeal(g)]];
   openSheet(`${g.marca} ${g.modelo}`, `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div><p style="line-height:1.5;margin-top:-4px">${g.desc}</p>
     <div class="grid3" style="margin:14px 0">${specs.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div style="font-weight:700;margin-top:4px">${String(v)[0].toUpperCase() + String(v).slice(1)}</div></div>`).join("")}</div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${Math.max(5, Math.min(100, v * 100))}%;background:#facc15"></b></i></div>`).join("")}</div>
+    ${isP ? "" : `<div class="hint">${svg("info")}<span><b style="color:var(--ink)">Talla y horma:</b> pruébatelas por la tarde y con el calcetín de jugar. Debe quedar un dedo de hueco delante y el pie no debe bailar a los lados. ${g.horma === "ancha" ? "Esta horma es ancha: buena si los pies se te salen por los lados." : g.horma === "estrecha" ? "Esta horma es estrecha: si tienes el pie ancho, mejor otra o media talla más." : "Horma normal: vale para la mayoría de pies."}</span></div>`}
     ${priceBtns(g)}
     ${socialOn() ? `<button class="btn block" id="gRev">${svg("edit")}Opinar</button>` : ""}
     <div class="sec">Opiniones de la comunidad</div><div id="shRevs"><p class="small mute">${socialOn() ? "Cargando…" : "Únete a la comunidad para ver y dejar opiniones."}</p></div>`, s => {

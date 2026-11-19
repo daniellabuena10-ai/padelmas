@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Pádel+</title>
-<meta name="theme-color" content="#07090c">
+<meta name="theme-color" content="#10141a">
 <meta name="description" content="Pádel+: tu nivel de pádel, tus partidos, la pala que te va y cómo mejorar.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -17,8 +17,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="lib/leaflet.css">
 <style>
-:root{--bg:#07090c;--bg2:#0b0e12;--card:#0f1318;--card2:#141920;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.12);
---ink:#f2f5f7;--mute:#8b95a3;--mute2:#5d6672;--volt:#d4ff3a;--volt-d:#a8d400;--volt-soft:rgba(212,255,58,.12);--hot:#ff6a3d;--hot-soft:rgba(255,106,61,.14);
+:root{--bg:#10141a;--bg2:#141920;--card:#1a2029;--card2:#212833;--line:rgba(255,255,255,.11);--line2:rgba(255,255,255,.18);
+--ink:#f8fafc;--mute:#b4bec9;--mute2:#8a95a2;--volt:#d4ff3a;--volt-d:#a8d400;--volt-soft:rgba(212,255,58,.12);--hot:#ff6a3d;--hot-soft:rgba(255,106,61,.14);
 --sky:#38bdf8;--pos:#4ade80;--neg:#f87171;--r:20px;--safe-b:env(safe-area-inset-bottom);--safe-t:env(safe-area-inset-top)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body,button,a,input,select,textarea,label{touch-action:manipulation}
@@ -28,7 +28,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,select,textarea{font:inherit;font-size:16px;color:var(--ink)}
 .ic{width:22px;height:22px;flex:none}
 .num{font-family:"Barlow Condensed",Inter,sans-serif;font-weight:700;letter-spacing:.2px;font-variant-numeric:tabular-nums}
-.mute{color:var(--mute)}.small{font-size:13px}.tiny{font-size:11.5px}
+.mute{color:var(--mute)}.small{font-size:14px;line-height:1.45}.tiny{font-size:12.5px;line-height:1.4}
+body{font-size:16px;line-height:1.4}
+body.tg{font-size:18px}body.tg .small{font-size:16px}body.tg .tiny{font-size:14.5px}body.tg .item{font-size:17px}body.tg .btn{font-size:17px}body.tg h3{font-size:18px}body.tg .seg button{font-size:15px}
 [hidden]{display:none!important}
 
 /* Splash / auth */
@@ -273,7 +275,7 @@ nav.tabbar button{position:relative}
 .fade{animation:fin .35s ease both}
 @keyframes fin{from{opacity:0;transform:translateY(6px)}}
 @media(min-width:900px){#app{padding-top:28px}}
-a.btn{text-decoration:none;color:inherit}
+a.btn,a.item{text-decoration:none;color:inherit}
 #piR button{padding-left:4px;padding-right:4px}
 </style>
 </head>

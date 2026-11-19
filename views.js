@@ -220,15 +220,17 @@ function openPerfil() {
     <div class="card list" style="padding:4px 14px">
       <button class="item" id="pPub">${svg("users")}${typeof social !== "undefined" && social.me ? "Mi perfil público · @" + esc(social.me.usuario) : "Unirme a la comunidad"}${svg("chev", "chev")}</button>
       <button class="item" id="pFis">${svg("bolt")}Mi físico: entrenos, progreso y nutrición${svg("chev", "chev")}</button>
+      <div class="item" style="cursor:default">${svg("eye")}<div style="flex:1">Tamaño del texto</div><div class="seg" id="pTxt" style="width:auto;margin:0">${[["n", "Normal"], ["g", "Grande"]].map(([k, n]) => `<button data-t="${k}" class="${(localStorage.getItem("pm-texto") || "n") === k ? "on" : ""}" style="padding:8px 12px">${n}</button>`).join("")}</div></div>
       <button class="item" id="pName">${svg("user")}Cambiar nombre${svg("chev", "chev")}</button>
       <button class="item" id="pWatch">${svg("watch")}Conectar reloj${svg("chev", "chev")}</button>
       <button class="item" id="pNut">${svg("food")}Mis datos de nutrición${svg("chev", "chev")}</button>
       <a class="item" href="privacidad.html">${svg("shield")}Privacidad y condiciones${svg("chev", "chev")}</a>
-      <a class="item" href="mailto:soporte.ahorra@gmail.com?subject=Ritmo%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
+      <a class="item" href="mailto:soporte.ahorra@gmail.com?subject=P%C3%A1del%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
       <button class="item" id="pOut">${svg("logout")}Cerrar sesión${svg("chev", "chev")}</button>
       <button class="item" id="pDel" style="color:var(--neg)">${svg("trash")}Borrar mi cuenta${svg("chev", "chev")}</button>
     </div><p class="tiny mute" style="text-align:center;margin-top:8px">Pádel+ · versión 1.0</p>`, s => {
     $$("[data-m]", s).forEach(b => b.onclick = () => { savePerfil({ metaMin: +b.dataset.m }); $$("[data-m]", s).forEach(x => x.classList.toggle("on", x === b)); toast("Meta actualizada"); });
+    $$("#pTxt [data-t]", s).forEach(b => b.onclick = () => { try { localStorage.setItem("pm-texto", b.dataset.t); } catch {} document.body.classList.toggle("tg", b.dataset.t === "g"); $$("#pTxt [data-t]", s).forEach(x => x.classList.toggle("on", x === b)); });
     $("#pName", s).onclick = () => openSheet("Tu nombre", `<label class="field">Nombre<input id="nN" value="${esc(name)}" maxlength="40"></label><button class="btn pri block" id="nOk">Guardar</button>`, s2 => $("#nOk", s2).onclick = async () => { const n = $("#nN", s2).value.trim(); if (!n) return; me.name = n; savePerfil({ nombre: n }); try { store.auth && await store.auth.currentUser.updateProfile({ displayName: n }); } catch {} closeSheet(); toast("Nombre guardado"); });
     $("#pWatch", s).onclick = openImport; $("#pFis", s).onclick = () => { closeSheet(); setView("progreso"); };
     $("#pPub", s).onclick = () => { if (social.me) openUser(me.uid); else if (store.kind === "firebase") openPerfilPublico(); else toast("Necesitas conexión"); }; $("#pNut", s).onclick = () => openNutriSetup();
