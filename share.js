@@ -108,5 +108,20 @@ function caraACaraHTML(uid, p) {
       <div style="text-align:center"><div class="tiny mute">${nm}</div><div class="num" style="font-size:56px;line-height:1;color:${r.contra[1] > r.contra[0] ? "var(--hot)" : "var(--ink)"}">${r.contra[1]}</div></div></div>
       <p class="small" style="text-align:center;margin-bottom:6px">${lead}</p>` : ""}
     ${tj ? `<div class="item" style="border-top:1px solid var(--line);margin-top:6px"><div style="flex:1"><div style="font-weight:600">Jugando juntos</div><div class="small mute">${r.juntos[0]} victorias · ${r.juntos[1]} derrotas</div></div><span class="num" style="font-size:24px;color:var(--volt)">${Math.round(r.juntos[0] / tj * 100)}%</span></div>` : ""}
-    ${r.ult ? `<p class="tiny mute" style="margin-top:6px">Último: ${relDate(r.ult.fecha)} · ${setsStr(r.ult.padel.sets)}</p>` : ""}</div>`;
+    ${r.ult ? `<p class="tiny mute" style="margin-top:6px">Último: ${relDate(r.ult.fecha)} · ${setsStr(r.ult.padel.sets)}</p>
+      <button class="btn pri block" id="uRev" style="margin-top:10px" data-pre="${esc(JSON.stringify([r.ult.padel.comp, ...(r.ult.padel.riv || [])].map(jugNombre)))}">${svg("bolt")}${r.contra[1] > r.contra[0] ? "Apuntar la revancha" : "Apuntar otro partido"}</button>` : ""}</div>`;
+}
+
+function jugNombre(x) { if (!x) return ""; return x.uid && profCache[x.uid] && profCache[x.uid].usuario ? "@" + profCache[x.uid].usuario : x.n || ""; }
+
+// ---------- Ranking de nivel con tus amigos ----------
+function rankAmigosHTML() {
+  if (!socialOn() || !social.following || !social.following.size) return "";
+  const yo = { uid: me.uid, nombre: (social.me && social.me.nombre) || "Tú", color: social.me && social.me.color, foto: social.me && social.me.foto, nivelPadel: computeNivel() ? computeNivel().nivel : null, yo: true };
+  const L = [yo, ...[...social.following].map(u => profCache[u]).filter(p => p && p.nivelPadel)].filter(p => p.nivelPadel).sort((a, b) => b.nivelPadel - a.nivelPadel);
+  if (L.length < 2) return "";
+  const pos = L.findIndex(p => p.yo) + 1;
+  return `<div class="sec">Ranking con tus amigos</div><div class="card" style="padding:6px 14px">
+    <p class="small mute" style="margin:6px 0 4px">${pos === 1 ? "Eres el número 1 de tu grupo 👑" : `Vas ${pos}º de ${L.length}. Te faltan <b style="color:var(--volt)">${nf(L[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para pasar a ${esc(L[pos - 2].nombre.split(" ")[0])}.`}</p>
+    ${L.slice(0, 10).map((p, i) => `<button class="item" ${p.yo ? "" : `data-user="${p.uid}"`} style="${p.yo ? "background:rgba(212,255,58,.06);border-radius:12px;padding-left:8px;padding-right:8px" : ""}"><span class="num" style="width:24px;font-size:20px;color:${i === 0 ? "#facc15" : "var(--mute)"}">${i + 1}</span>${avatar(p, 34)}<div style="flex:1;min-width:0;font-weight:${p.yo ? 800 : 600};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.yo ? "Tú" : esc(p.nombre)}</div><span class="num" style="font-size:22px;color:${p.yo ? "var(--volt)" : "var(--ink)"}">${nf(p.nivelPadel, 2)}</span></button>`).join("")}</div>`;
 }

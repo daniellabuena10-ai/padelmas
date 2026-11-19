@@ -85,14 +85,15 @@ function padelStats() {
 let padelTab = "resumen", partidosPend = [], quedadas = [], padelLoaded = 0;
 function vPadel() {
   const P = state.perfil.padel || {};
-  if (padelTab === "pistas") return `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sm" id="piBack" style="flex:0 0 auto">${svg("back")}Pádel</button><h3 style="margin:0 0 0 6px">Pistas y clubes</h3></div>${pistasHTML()}`;
+  if (padelTab === "pistas") return (P.nivel0 ? `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`
+    : `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sm" id="piBack" style="flex:0 0 auto">${svg("back")}Pádel</button><h3 style="margin:0 0 0 6px">Pistas y clubes</h3></div>`) + pistasHTML();
   if (!P.nivel0) return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.25),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.22)">
       <div class="lbl" style="color:#e5d38f">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
       <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel</b>, que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
       <button class="btn block" id="pdTest" style="margin-top:16px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>
       <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
-  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
+  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   const pend = partidosPend.length ? `<div class="card" style="border-color:rgba(250,204,21,.35)"><h3>${svg("bell")}Te han apuntado en ${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</h3>${partidosPend.map(pendRow).join("")}</div>` : "";
   let body = "";
   if (padelTab === "resumen") {
@@ -104,6 +105,7 @@ function vPadel() {
       ${pend}
       ${st.n ? `<div class="grid3"><div class="stat"><div class="k">Partidos</div><div class="v num">${st.n}</div></div><div class="stat"><div class="k">Victorias</div><div class="v num" style="color:var(--volt)">${Math.round(st.w / Math.max(1, st.w + st.l) * 100)}<small>%</small></div></div><div class="stat"><div class="k">Racha</div><div class="v num" style="color:${st.racha >= 0 ? "var(--volt)" : "var(--neg)"}">${st.racha > 0 ? "+" : ""}${st.racha}</div></div></div>
       <div class="grid2" style="margin-top:10px"><div class="stat"><div class="k">Sets</div><div class="v num" style="font-size:24px">${st.sw}<small>–${st.sl}</small></div></div><div class="stat"><div class="k">Juegos</div><div class="v num" style="font-size:24px">${st.gw}<small>–${st.gl}</small></div></div></div>
+      ${rankAmigosHTML()}
       <div class="sec">Tus datos</div><div class="card" style="padding:4px 14px">
         ${st.mejorPareja ? statItem("🤝", "Mejor pareja", st.mejorPareja.n, `${st.mejorPareja.w}/${st.mejorPareja.t} ganados`, st.mejorPareja.uid) : statItem("🤝", "Mejor pareja", "–", "juega 2+ partidos con alguien")}
         ${st.bestia ? statItem("😈", "Tu bestia negra", st.bestia.n, `te ha ganado ${st.bestia.t - st.bestia.w} de ${st.bestia.t}`, st.bestia.uid) : statItem("😈", "Tu bestia negra", "Nadie", "¡de momento!")}
@@ -137,7 +139,7 @@ function pendRow(m) {
 }
 WIRE.padel = () => {
   $$(".pdPis").forEach(b => b.onclick = () => { padelTab = "pistas"; render(); window.scrollTo(0, 0); });
-  if (padelTab === "pistas") { $("#piBack").onclick = () => { padelTab = "resumen"; render(); }; wirePistas($("#view")); return; }
+  if (padelTab === "pistas") { const pb = $("#piBack"); if (pb) pb.onclick = () => { padelTab = "resumen"; render(); }; $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); }); wirePistas($("#view")); return; }
   const t = $("#pdTest"); if (t) { t.onclick = openNivelTest; return; }
   $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); });
   $$("#pdAdd").forEach(b => b.onclick = () => openPadelMatch()); const f = $("#pdFind"); if (f) f.onclick = () => { padelTab = "buscar"; render(); };
@@ -155,6 +157,7 @@ async function loadPadelSocial(force = false) {
     const q = await FS().collection("partidos").where("jugadores", "array-contains", me.uid).get();
     const all = q.docs.map(d => ({ id: d.id, ...d.data() }));
     partidosPend = all.filter(m => m.creador !== me.uid && !(m.conf || {})[me.uid] && !(m.rech || {})[me.uid] && !Object.values(state.act).some(a => a.padel && a.padel.pid === m.id));
+    if (social.following && social.following.size) await fetchProfiles([...social.following]);
     const uids = []; padelActs().forEach(a => { const p = a.padel; [p.comp, ...(p.riv || [])].forEach(x => x && x.uid && uids.push(x.uid)); }); await fetchLevels(uids);
     const td = todayStr(); const qq = await FS().collection("quedadas").where("fecha", ">=", td).orderBy("fecha").limit(40).get(); quedadas = qq.docs.map(d => ({ id: d.id, ...d.data() }));
     syncNivel();
@@ -210,6 +213,7 @@ function openPadelMatch(base = {}) {
     const fields = ["pmComp", "pmR1", "pmR2"].map(i => $("#" + i, s));
     const drawQ = () => { const used = fields.map(f => f.value.trim()); $("#pmQ", s).innerHTML = quick.filter(q => !used.includes(q)).map(q => `<button class="chip" data-q="${esc(q)}" style="cursor:pointer">+ ${esc(q)}</button>`).join("");
       $$("#pmQ [data-q]", s).forEach(c => c.onclick = () => { const f = fields.find(f => !f.value.trim()); if (f) { f.value = c.dataset.q; drawQ(); } }); };
+    if (base.pre) base.pre.forEach((v, i) => { if (fields[i] && v) fields[i].value = v; });
     fields.forEach(f => f.addEventListener("input", drawQ)); drawQ();
     const drawSets = () => { $("#pmS", s).innerHTML = sets.map((st, i) => `<div class="setrow"><span class="tiny mute">Set ${i + 1}</span>${[0, 1].map(k => `<div class="stp"><button data-s="${i}" data-k="${k}" data-d="-1">−</button><b class="num">${st[k]}</b><button data-s="${i}" data-k="${k}" data-d="1">+</button></div>`).join(`<span class="mute">–</span>`)}</div>`).join("") + `<div class="tiny mute" style="margin-top:4px">Deja el 3.º set en 0–0 si no se jugó.</div>`;
       $$("#pmS [data-s]", s).forEach(b => b.onclick = () => { const st = sets[+b.dataset.s]; st[+b.dataset.k] = Math.max(0, Math.min(7, st[+b.dataset.k] + +b.dataset.d)); drawSets(); }); };

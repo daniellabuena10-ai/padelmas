@@ -48,6 +48,8 @@ function vInicio() {
   if (typeof partidosPend !== "undefined" && partidosPend.length) html += `<button class="hint" id="hPend" style="width:100%;text-align:left;background:rgba(250,204,21,.1);margin-bottom:14px"><span style="font-size:18px">🎾</span><span style="color:var(--ink)">Te han apuntado en <b>${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</b>. Toca para confirmar.</span></button>`;
   if (last) html += `<div class="sec">Último partido</div>${matchCard(last)}`;
   html += `<div class="sec">Para ti</div>`;
+  { const P = state.perfil.padel || {}; let last = null; try { last = JSON.parse(localStorage.getItem("pm-pistas-lugar")); } catch {}
+    html += `<button class="card" id="hPis" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(212,255,58,.28);background:radial-gradient(300px 140px at 100% 0%,rgba(212,255,58,.14),transparent 70%),var(--card)"><span style="font-size:26px">📍</span><div style="flex:1;min-width:0"><div class="tiny" style="color:var(--volt);font-weight:700">PISTAS Y CLUBES</div><div style="font-weight:700;margin-top:2px">${P.clubId && P.club ? "Tu club: " + esc(P.club) : last && last.lugar ? "Pistas en " + esc(last.lugar) : "Busca pistas en tu ciudad"}</div><div class="small mute" style="margin-top:2px">Mapa, cubiertas o públicas, cómo llegar y reservar</div></div>${svg("chev", "chev")}</button>`; }
   if (nx) html += `<button class="card" id="hLes" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left"><span style="font-size:26px">🧠</span><div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:700">APRENDE · ${NIVL[nx.nivel].toUpperCase()}</div><div style="font-weight:700;margin-top:2px">${nx.t}</div><div class="small mute" style="margin-top:2px;line-height:1.4">${nx.r}</div></div>${svg("chev", "chev")}</button>`;
   if (pala) html += `<button class="card" id="hPala" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left"><span style="font-size:26px">🎯</span><div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:700">PALA PARA TU NIVEL</div><div style="font-weight:700;margin-top:2px">${pala.s.marca} ${pala.s.modelo}</div><div class="small mute" style="margin-top:2px">${perfilTxt(pala.s.perfil)} · ${pala.s.forma} · ~${pala.s.peso} g · afina con el recomendador</div></div>${svg("chev", "chev")}</button>`;
   html += `${shoeAlert()}<div class="sec">Tu físico</div>
@@ -61,6 +63,7 @@ function vInicio() {
 WIRE.inicio = () => {
   const on = (id, f) => { const e = $(id); if (e) e.onclick = f; };
   on("#hAdd", () => openPadelMatch()); on("#hPad", () => setView("padel")); on("#hTest", openNivelTest); on("#hPend", () => { padelTab = "resumen"; setView("padel"); });
+  on("#hPis", () => { padelTab = "pistas"; setView("padel"); window.scrollTo(0, 0); });
   on("#hLes", () => openLesson(nextLesson().id)); on("#hPala", () => { gearSeg = "palas"; openRecPala(); }); on("#hFis", () => setView("progreso"));
   on("#qRec", () => startRec("correr")); on("#qGym", () => openGym()); on("#qImp", openImport); on("#nutriMini", () => setView("nutricion"));
   wireActs(); if (typeof loadPadelSocial === "function") loadPadelSocial();

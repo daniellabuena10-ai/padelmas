@@ -251,7 +251,7 @@ async function openUser(uid) {
     const s = $("#sheet"); s.innerHTML = `<div class="grab"></div><div class="sh"><h2>${esc(p.nombre.split(" ")[0])}</h2><button class="x" id="shX">${svg("close")}</button></div>${html}`; $("#shX").onclick = closeSheet;
     wirePosts($("#uPosts", s)); $$("#uPosts [data-user]", s).forEach(b => b.onclick = e => e.stopPropagation());
     if (mine) $("#uEdit", s).onclick = () => openPerfilPublico();
-    else { $("#uFol", s).onclick = () => toggleFollow(uid, p).then(() => openUser(uid)); $("#uDm", s).onclick = () => openChatWith(uid, p); }
+    else { $("#uFol", s).onclick = () => toggleFollow(uid, p).then(() => openUser(uid)); $("#uDm", s).onclick = () => openChatWith(uid, p); const rv = $("#uRev", s); if (rv) rv.onclick = () => { const pre = JSON.parse(rv.dataset.pre); closeSheet(); setTimeout(() => openPadelMatch({ pre }), 260); }; }
   } catch (e) { console.warn(e); const em = $("#sheet .empty"); if (em) em.textContent = "No se pudo cargar el perfil."; }
 }
 async function toggleFollow(uid, p) {
