@@ -156,7 +156,8 @@ function openRecZP() {
     $("#rzGo", s).onclick = () => { q.rodilla = $("#rzR", s).checked; q.tobillo = $("#rzT", s).checked; q.rapido = $("#rzL", s).checked; q.kg = Math.max(35, Math.min(160, +$("#rzK", s).value || q.kg));
       const r = recZP(q); openSheet("Tus zapatillas de pádel", `${r.map((x, i) => gearRow(x.s, i === 0 ? "🥇 Mejor opción" : null, x.why)).join("")}
         <div class="hint">${svg("info")}<span><b style="color:var(--ink)">Suela:</b> espiga para césped con arena (lo más habitual), omni para moqueta o pistas rápidas indoor, híbrida si juegas en ambas.</span></div>
-        <button class="btn block" id="rAgain">${svg("refresh")}Cambiar respuestas</button>`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecZP; }); };
+        <button class="btn block" id="rAgain">${svg("refresh")}Cambiar respuestas</button>
+        ${window.guest && !(me && me.uid) ? `<button class="btn pri block" id="rUp" style="margin-top:10px">Crear cuenta gratis</button>` : ""}`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecZP; const u = $("#rUp", s2); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); }; }); };
   });
 }
 

@@ -112,3 +112,10 @@ function wireOutfits(root) {
       <div class="sec">Consejos</div><div class="card">${o.tips.map(t => `<p style="line-height:1.5;margin-bottom:8px">✓ ${t}</p>`).join("")}</div>
       <div class="sec">Marcas habituales</div><div class="chips">${["adidas", "Bullpadel", "Nox", "Siux", "Joma", "Kuikma", "Head", "Babolat"].map(m => `<span class="chip">${m}</span>`).join("")}</div>
       <a class="btn block" style="margin-top:16px;text-decoration:none;color:inherit" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=shop&q=${encodeURIComponent("ropa padel " + (o.g === "todos" ? "" : o.g))}">${svg("cart")}Ver ropa de pádel</a>`); }); }
+
+function openRopaGuest() {
+  openSheet("Ropa de pádel", outfitsHTML() + (window.guest && !(me && me.uid) ? `<button class="btn pri block" id="ogUp" style="margin-top:6px">Crear cuenta gratis</button>` : ""), s => {
+    wireOutfits(s); $$("[data-og]", s).forEach(b => b.onclick = () => { outfitG = b.dataset.og; openRopaGuest(); });
+    const u = $("#ogUp", s); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); };
+  });
+}
