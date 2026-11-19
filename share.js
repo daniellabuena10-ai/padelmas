@@ -1,5 +1,5 @@
 // ===== Pádel+ · tarjeta para stories y cara a cara =====
-const APP_LINK = "daniellabuena10-ai.github.io/padelmas"; // cambiar por padelmas.club cuando esté el dominio
+const APP_LINK = "padelmas.club";
 
 function myFirstName() { return ((social && social.me && social.me.nombre) || me.name || state.perfil.nombre || "Yo").trim().split(" ")[0]; }
 function nivelDelta(a) {
