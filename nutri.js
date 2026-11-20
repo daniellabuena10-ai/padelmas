@@ -20,16 +20,45 @@ function nutriToday(day = todayStr()) {
   return { items, kcal: s("kcal"), p: s("p"), c: s("c"), g: s("g"), burn, target: T ? T.kcal : 0, tp: T ? T.prot : 0, tc: T ? T.carb : 0, tg: T ? T.fat : 0, T };
 }
 
-let nTab = "hoy", nDay = todayStr();
+let nTab = "partido", nDay = todayStr(), nMom = "antes";
 function vNutricion() {
   const T = nutriTargets();
   if (!T) return `<div class="hero" style="background:radial-gradient(400px 200px at 100% 0%,rgba(255,106,61,.25),transparent 70%),linear-gradient(160deg,#1b130f,#0f0c0a 60%);border-color:rgba(255,106,61,.2)">
-    <div class="lbl" style="color:#e8b9a5">Tu plan de nutrición</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Come para rendir, sin dietas raras</h2>
+    <div class="lbl" style="color:#e8b9a5">Nutrición para el pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Come para rendir en la pista</h2>
     <p class="small" style="color:#d9cfc9;line-height:1.55">Con tu edad, altura, peso y actividad calculo tus calorías y macros, y te preparo un <b>plan de comidas para la semana</b> con lista de la compra. Además puedes apuntar lo que comes.</p>
     <button class="btn hot block" id="nStart" style="margin-top:16px">Calcular mi plan</button></div>
+    ${nPartido()}
     <p class="tiny mute" style="text-align:center;line-height:1.5">Recomendaciones generales y orientativas. No sustituyen a un médico ni a un dietista-nutricionista.</p>`;
-  return `<div class="tabs">${[["hoy", "Diario"], ["plan", "Plan semanal"], ["datos", "Mis números"]].map(([k, n]) => `<button data-t="${k}" class="${nTab === k ? "on" : ""}">${n}</button>`).join("")}</div>` +
-    (nTab === "hoy" ? nHoy(T) : nTab === "plan" ? nPlan(T) : nDatos(T));
+  return `<div class="tabs">${[["partido", "Partido"], ["hoy", "Diario"], ["plan", "Plan semanal"], ["datos", "Mis números"]].map(([k, n]) => `<button data-t="${k}" class="${nTab === k ? "on" : ""}">${n}</button>`).join("")}</div>` +
+    (nTab === "partido" ? nPartido(T) : nTab === "hoy" ? nHoy(T) : nTab === "plan" ? nPlan(T) : nDatos(T));
+}
+const N_PARTIDO = {
+  antes: { e: "⏰", t: "Antes del partido", items: [
+    ["2–3 h antes", "Comida normal con hidratos y algo de proteína: pasta, arroz o bocadillo de pavo, con poca grasa."],
+    ["30–60 min antes", "Algo ligero si tienes hambre: un plátano, una tostada con mermelada o un yogur."],
+    ["Agua", "Llega bien hidratado: 400–500 ml en las 2 horas previas, a sorbos."],
+    ["Evita", "Fritos, comidas copiosas y mucha fibra justo antes: pesan y dan flato."]] },
+  durante: { e: "🎾", t: "Durante el partido", items: [
+    ["En cada cambio de lado", "Un par de tragos de agua, unos 150–250 ml cada 15–20 min. No esperes a tener sed."],
+    ["Si hace calor o pasas de 75 min", "Bebida isotónica o sales en el agua: recuperas el sodio que pierdes sudando."],
+    ["Partidos largos", "Medio plátano, unos dátiles o un gel entre sets te mantiene con energía."],
+    ["Truco", "Lleva dos botellas: una de agua y otra con sales."]] },
+  despues: { e: "🔋", t: "Después del partido", items: [
+    ["En la primera hora", "Hidratos + proteína para recuperar: yogur con fruta, batido de leche y plátano o bocadillo de atún o pavo."],
+    ["Rehidrátate", "Bebe poco a poco durante las 2 horas siguientes, sobre todo si has sudado mucho."],
+    ["La cerveza del tercer tiempo", "Si cae, que sea después de beber agua, y mejor una que tres."],
+    ["Cena", "Plato completo: verdura, proteína (pescado, huevo, pollo) y algo de hidrato si mañana vuelves a jugar."]] },
+  torneo: { e: "🏆", t: "Día de torneo", items: [
+    ["Varios partidos", "Comidas pequeñas cada 2–3 h en vez de una grande. Nada de experimentos ese día."],
+    ["En la bolsa", "Fruta (plátano, manzana), frutos secos, barritas de cereales, sándwich y bebida isotónica."],
+    ["Entre partidos", "Si tienes menos de 1 h: algo líquido o muy ligero. Si tienes más de 2 h: un bocadillo."],
+    ["Al acabar", "Recupera como después de cualquier partido, y descansa bien esa noche."]] } };
+function nPartido() {
+  const M = N_PARTIDO[nMom] || N_PARTIDO.antes;
+  return `<div class="sec" style="margin-top:6px">Come para jugar mejor</div>
+    <div class="seg" id="nMo" style="margin-bottom:10px">${Object.entries(N_PARTIDO).map(([k, m]) => `<button data-m="${k}" class="${nMom === k ? "on" : ""}" style="padding-left:4px;padding-right:4px">${({ antes: "Antes", durante: "Durante", despues: "Después", torneo: "Torneo" })[k]}</button>`).join("")}</div>
+    <div class="card"><h3>${M.e} ${M.t}</h3>${M.items.map(([k, v]) => `<div style="padding:10px 0;border-top:1px solid var(--line)"><div class="small" style="color:var(--volt);font-weight:700">${k}</div><div style="line-height:1.5;margin-top:2px">${v}</div></div>`).join("")}</div>
+    <p class="tiny mute" style="text-align:center;line-height:1.5">Consejos generales para deportistas aficionados. No sustituyen a un dietista-nutricionista.</p>`;
 }
 function nHoy(T) {
   const n = nutriToday(nDay); const d = parseD(nDay); const isToday = nDay === todayStr();
@@ -88,8 +117,10 @@ function nDatos(T) {
   <button class="btn block" id="nEdit">${svg("edit")}Cambiar mis datos</button>`;
 }
 WIRE.nutricion = () => {
+  $$("#nMo [data-m]").forEach(b => b.onclick = () => { nMom = b.dataset.m; render(); });
   const st = $("#nStart"); if (st) { st.onclick = () => openNutriSetup(); return; }
   $$("[data-t]").forEach(b => b.onclick = () => { nTab = b.dataset.t; render(); });
+  $$("#nMo [data-m]").forEach(b => b.onclick = () => { nMom = b.dataset.m; render(); });
   if (nTab === "hoy") {
     $("#dPrev").onclick = () => { nDay = dstr(addDays(parseD(nDay), -1)); render(); };
     $("#dNext").onclick = () => { if (nDay < todayStr()) { nDay = dstr(addDays(parseD(nDay), 1)); render(); } };

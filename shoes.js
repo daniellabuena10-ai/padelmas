@@ -232,14 +232,14 @@ function wireZapasView(root) {
 
 // ---------- Preguntas y respuestas ----------
 const QCAT = { running: "zapatillas de running", palas: "palas", zpadel: "zapatillas de pádel", acces: "ropa y accesorios", juego: "técnica y táctica" };
-async function loadQuestions(cat = "running") {
+async function loadQuestions(cat = "palas") {
   try { const q = await FS().collection("preguntas").orderBy("t", "desc").limit(60).get(); const qs = q.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => (x.cat || "running") === cat).slice(0, 20); const box = $("#qList"); if (!box) return;
     box.innerHTML = qs.length ? `<div class="card" style="padding:4px 14px">${qs.map(x => `<button class="item" data-q="${x.id}">${avatar(x, 34)}<div style="min-width:0;flex:1"><div style="font-weight:600;line-height:1.35">${esc(x.texto)}</div><div class="tiny mute" style="margin-top:3px">${esc(x.autor)} · ${ago(x.t)} · ${x.nResp || 0} respuesta${x.nResp === 1 ? "" : "s"}</div></div>${svg("chev", "chev")}</button>`).join("")}</div>`
       : `<div class="card"><p class="small mute">¿Dudas con ${cat === "palas" ? "una pala" : cat === "zpadel" ? "unas zapatillas de pádel" : cat === "acces" ? "ropa o accesorios" : cat === "juego" ? "un golpe o la táctica" : "unas zapatillas, un plan o una carrera"}? Pregunta y te responde la comunidad.</p></div>`;
     $$("[data-q]", box).forEach(b => b.onclick = () => openQuestion(qs.find(x => x.id === b.dataset.q)));
   } catch (e) { console.warn(e); const box = $("#qList"); if (box) box.innerHTML = ""; }
 }
-function openAsk(cat = "running") {
+function openAsk(cat = "palas") {
   const ph = { running: "¿Qué zapatillas me recomendáis para rodar a 5:30 en llano?", palas: "Juego de revés y me molesta el codo, ¿qué pala me recomendáis?", zpadel: "¿Qué zapatillas para pista de arena si tengo el pie ancho?", acces: "¿Qué pelotas duran más vivas?", juego: "¿Cómo hago para que la bandeja no se me quede corta?" }[cat];
   openSheet(`Preguntar sobre ${QCAT[cat]}`, `<label class="field">Tu pregunta<textarea id="aqT" rows="3" maxlength="300" placeholder="${ph}"></textarea></label><button class="btn pri block" id="aqOk">Publicar</button>`, s => {
     $("#aqOk", s).onclick = async () => { const t = $("#aqT", s).value.trim(); if (t.length < 8) { toast("Escribe un poco más"); return; }

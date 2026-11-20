@@ -2,12 +2,14 @@
 
 function openStart() {
   openSheet("Pádel", `<div class="row" style="margin-bottom:6px"><button class="btn block" id="sPm" style="background:#facc15;color:#1a1500;border:0;padding:18px">${svg("plus")}Apuntar partido</button><button class="btn block" id="sPc" style="padding:18px">${svg("clock")}Cronometrar</button></div>
-    <div class="sec">Entrenamiento físico</div><div class="sports">${SPORTS.filter(s => s.id !== "padel").map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.n}</button>`).join("")}</div>
-    <p class="small mute" style="margin-top:14px;text-align:center">Correr, bici, caminar y senderismo graban con GPS. El resto, con cronómetro.</p>
+    <div class="sec">Físico para el pádel</div>
+    <button class="item" id="sRut"><span style="font-size:22px;width:28px;text-align:center">💪</span><div style="flex:1"><div style="font-weight:700">Rutinas de gimnasio para pádel</div><div class="tiny mute">Piernas y core, explosividad, prevención de lesiones</div></div>${svg("chev", "chev")}</button>
+    <div class="sports">${["gym", "hiit", "yoga"].map(id => SPORTS.find(s => s.id === id)).filter(Boolean).map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.id === "gym" ? "Gimnasio libre" : s.id === "yoga" ? "Movilidad / yoga" : s.n}</button>`).join("")}</div>
     <button class="btn block" style="margin-top:12px" id="sMan">${svg("edit")}Añadir un entreno ya hecho</button>`, s => {
     $("#sPm", s).onclick = () => openPadelMatch(); $("#sPc", s).onclick = () => { sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); startRec("padel"); };
     $$("[data-s]", s).forEach(b => b.onclick = () => { const sp = b.dataset.s; sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); sp === "gym" ? openGym() : startRec(sp); });
     $("#sMan", s).onclick = () => openManual();
+    $("#sRut", s).onclick = () => openRutinas();
   });
 }
 
@@ -146,7 +148,7 @@ function readMatch(sh, a) {
 // ---------- Añadir a mano ----------
 function openManual(sport = null) {
   if (!sport) {
-    openSheet("Añadir entreno", `<div class="sports">${SPORTS.map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.n}</button>`).join("")}</div>`,
+    openSheet("Añadir entreno", `<div class="sports">${SPORTS.filter(s => ["padel", "gym", "hiit", "yoga"].includes(s.id)).map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.n}</button>`).join("")}</div>`,
       s => $$("[data-s]", s).forEach(b => b.onclick = () => b.dataset.s === "gym" ? openGym() : openManual(b.dataset.s)));
     return;
   }
@@ -191,7 +193,7 @@ function openGym(existing = null) {
     $$("[data-rm]", body).forEach(b => b.onclick = () => { G.ej.splice(+b.dataset.rm, 1); draw(); });
     const t = $("#gymT", sh); if (t) t.textContent = fmtDur((Date.now() - G.start) / 1000);
   };
-  openSheet("Entreno de gimnasio", `<div class="row" style="align-items:center;margin-bottom:12px"><div><div class="small mute">Tiempo</div><div class="num" style="font-size:34px" id="gymT">0:00</div></div><button class="btn sm" id="gRest" style="flex:none">${svg("clock")}Descanso 90 s</button></div>
+  openSheet(G.rutina ? esc(G.rutina) : "Entreno de gimnasio", `<div class="row" style="align-items:center;margin-bottom:12px"><div><div class="small mute">Tiempo</div><div class="num" style="font-size:34px" id="gymT">0:00</div></div><button class="btn sm" id="gRest" style="flex:none">${svg("clock")}Descanso 90 s</button></div>
     <div id="gymBody"></div>
     <label class="field">Añadir ejercicio<select id="gEx"><option value="">Elige un ejercicio…</option>${GYM_EX.map(n => `<option>${n}</option>`).join("")}<option value="__otro">Otro…</option></select></label>
     <button class="btn pri block" id="gOk" style="margin-top:6px">Terminar y guardar</button>`, sh => {
@@ -202,7 +204,7 @@ function openGym(existing = null) {
       if (!G.ej.length) { toast("Añade al menos un ejercicio"); return; }
       const dur = Math.max(60, Math.round((Date.now() - G.start) / 1000));
       const a = { id: uid("a"), deporte: "gym", fecha: new Date(G.start).toISOString(), dur, dist: 0, fuente: "gym", ejercicios: G.ej.map(e => ({ n: e.n, series: e.series.filter(s => s.r) })) };
-      a.kcal = estKcal("gym", dur, 0); a.titulo = autoTitle("gym", a.fecha); clearInterval(iv); G = null; openFinish(a, false);
+      a.kcal = estKcal("gym", dur, 0); a.titulo = G.rutina ? `${G.rutina} · pádel` : autoTitle("gym", a.fecha); clearInterval(iv); G = null; openFinish(a, false);
     };
   });
 }
@@ -278,5 +280,29 @@ async function parseFIT(buf) {
       const sport = mapSport(ses.sub_sport && ses.sub_sport !== "generic" && SPORT_MAP[ses.sub_sport] ? ses.sub_sport : ses.sport);
       res(buildAct(sport, pts, { fuente: "fit", dur: ses.total_timer_time || ses.total_elapsed_time, dist: ses.total_distance, kcal: ses.total_calories, ascent: ses.total_ascent, fcMedia: ses.avg_heart_rate, fcMax: ses.max_heart_rate, fecha: ses.start_time }));
     });
+  });
+}
+
+// ---------- Rutinas de gimnasio pensadas para el pádel ----------
+const RUTINAS_PADEL = [
+  { id: "piernas", e: "🦵", t: "Piernas y core", obj: "Más estabilidad en los desplazamientos y golpes con más fuerza desde el suelo.", min: 40,
+    ej: [["Sentadilla goblet", 3, 10, "Baja controlado, rodillas en línea con los pies."], ["Zancada lateral", 3, 8, "Por cada lado. Es el gesto de llegar a la bola abierta."], ["Peso muerto rumano", 3, 10, "Espalda recta; trabaja la parte de atrás de la pierna."], ["Elevación de gemelos", 3, 15, "Protege el tendón de Aquiles y ayuda en los arranques."], ["Plancha lateral (seg)", 3, 30, "Por cada lado. Core para girar el tronco en cada golpe."], ["Pallof press", 3, 10, "Con polea o banda: aguanta sin girar. Core antirrotación."]] },
+  { id: "explosiva", e: "⚡", t: "Explosividad y agilidad", obj: "Arrancar antes, llegar a más bolas y saltar mejor en el remate.", min: 35,
+    ej: [["Salto al cajón", 4, 5, "Sube explosivo, baja andando. Calidad, no cantidad."], ["Desplazamiento lateral con banda", 3, 10, "Banda en los tobillos, pasos cortos y rápidos."], ["Sprint corto 5 m", 4, 6, "Desde posición de espera, como en la pista."], ["Lanzamiento lateral balón medicinal", 3, 8, "Por cada lado contra la pared: imita la derecha y el revés."], ["Burpees", 3, 8, "Ritmo alto, buena técnica."], ["Split squat con salto", 3, 6, "Por pierna. Fuerza reactiva para el remate."]] },
+  { id: "prevencion", e: "🛡️", t: "Prevención de lesiones", obj: "Cuida hombro, codo, rodilla y tobillo, las zonas que más castiga el pádel.", min: 30,
+    ej: [["Rotación externa con banda", 3, 15, "Codo pegado al cuerpo. Hombro sano para el remate."], ["Face pull", 3, 12, "Tira hacia la cara abriendo los codos."], ["Extensión de muñeca excéntrica", 3, 15, "Baja lento con una mancuerna ligera: previene el codo de tenista."], ["Sentadilla isométrica en pared (seg)", 3, 30, "Rodilla fuerte y estable."], ["Equilibrio a una pierna (seg)", 3, 30, "Por pierna. Sobre superficie blanda si puedes: tobillo."], ["Puente de glúteo", 3, 12, "Glúteo fuerte = menos carga en rodilla y lumbar."]] }];
+let rutNivel = "basico";
+function openRutinas() {
+  const ser = n => rutNivel === "basico" ? Math.max(2, n - 1) : n;
+  openSheet("Rutinas para pádel", `<p class="small mute" style="margin:-6px 0 12px">Hechas para rendir más en la pista. Haz 2 por semana en días sin partido, o el día antes de forma suave.</p>
+    <div class="seg" id="ruN" style="margin-bottom:12px">${[["basico", "Empiezo"], ["avanzado", "Ya entreno"]].map(([k, n]) => `<button data-v="${k}" class="${rutNivel === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    ${RUTINAS_PADEL.map(r => `<div class="card" style="padding:14px"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:26px">${r.e}</span><div style="flex:1"><div style="font-weight:800;font-size:17px">${r.t}</div><div class="tiny mute">~${r.min} min · ${r.ej.length} ejercicios</div></div></div>
+      <p class="small" style="margin:8px 0 6px;line-height:1.45">${r.obj}</p>
+      <details><summary class="small" style="color:var(--volt);cursor:pointer;padding:4px 0">Ver ejercicios</summary>${r.ej.map(([n, s, rep, tip]) => `<div style="padding:8px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px"><b class="small">${n.replace(" (seg)", "")}</b><span class="small num" style="color:var(--volt);white-space:nowrap">${ser(s)} × ${rep}${n.includes("(seg)") ? " s" : ""}</span></div><div class="tiny mute" style="margin-top:2px">${tip}</div></div>`).join("")}</details>
+      <button class="btn pri block" data-rut="${r.id}" style="margin-top:10px">${svg("play")}Empezar</button></div>`).join("")}
+    <p class="tiny mute" style="text-align:center">Calienta 5–10 min antes. Si tienes una lesión o dolor, consulta antes con un fisioterapeuta.</p>`, s => {
+    $$("#ruN [data-v]", s).forEach(b => b.onclick = () => { rutNivel = b.dataset.v; openRutinas(); });
+    $$("[data-rut]", s).forEach(b => b.onclick = () => { const r = RUTINAS_PADEL.find(x => x.id === b.dataset.rut);
+      openGym({ start: Date.now(), rutina: r.t, ej: r.ej.map(([n, sr, rep]) => ({ n, series: Array.from({ length: ser(sr) }, () => ({ r: rep, kg: 0 })) })) }); });
   });
 }

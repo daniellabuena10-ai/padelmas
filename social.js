@@ -204,7 +204,7 @@ function openPerfilPublico() {
     <label class="field">Usuario<input id="ppU" maxlength="20" value="${esc(p.usuario || sug)}" ${social.me ? "disabled" : ""} autocapitalize="off" autocorrect="off" spellcheck="false"></label>
     <p class="tiny mute" style="margin:-6px 0 12px">${social.me ? "El usuario no se puede cambiar." : "Solo minúsculas, números, punto y guion bajo. Será tu @ en Pádel+."}</p>
     <label class="field">Ciudad (opcional)<input id="ppC" maxlength="40" value="${esc(p.ciudad || "")}"></label>
-    <label class="field">Sobre ti (opcional)<textarea id="ppB" rows="2" maxlength="160" placeholder="Corredor de fin de semana y adicto al pádel">${esc(p.bio || "")}</textarea></label>
+    <label class="field">Sobre ti (opcional)<textarea id="ppB" rows="2" maxlength="160" placeholder="Juego de revés, 3 días por semana, buscando pala nueva">${esc(p.bio || "")}</textarea></label>
     <label class="check"><input type="checkbox" id="ppZ" ${p.ocultarInicio !== false ? "checked" : ""}> <span><b>Zona privada:</b> ocultar los primeros y últimos 200 m de mis rutas (para que nadie sepa dónde vives)</span></label>
     <div class="err" id="ppE"></div><button class="btn pri block" id="ppOk">${social.me ? "Guardar" : "Crear perfil"}</button>
     ${social.me ? `<button class="btn block danger" id="ppDel" style="margin-top:10px">Dejar la comunidad</button>` : ""}`, s => {

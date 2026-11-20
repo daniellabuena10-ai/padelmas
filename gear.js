@@ -244,9 +244,9 @@ function openGearReview(g) {
 // ---------- Hub de material ----------
 let gearSeg = "palas", gearFilter = "todas", gearBrand = "todas";
 function materialView() {
-  const segs = [["palas", "Palas"], ["zpadel", "Zapatillas"], ["outfits", "Outfits"], ["acces", "Accesorios"], ["running", "Running"]];
+  const segs = [["palas", "Palas"], ["zpadel", "Zapatillas"], ["outfits", "Outfits"], ["acces", "Accesorios"]];
   const seg = `<div class="seg" style="margin-bottom:14px">${segs.map(([k, n]) => `<button data-gs="${k}" class="${gearSeg === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
-  if (gearSeg === "running") return seg + zapasView();
+  if (gearSeg === "running") gearSeg = "palas";
   if (gearSeg === "outfits") return seg + outfitsHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   if (gearSeg === "acces") return seg + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
