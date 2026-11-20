@@ -126,11 +126,31 @@ function boot() {
   try { if (localStorage.getItem("pm-texto") === "g") document.body.classList.add("tg"); } catch {}
   store = (window.FIREBASE_CONFIG && window.firebase) ? firebaseStore() : localStore();
   initAuthUI(); initNav();
+  const hideSplash = () => $("#splash").classList.add("out");
+  setTimeout(hideSplash, 5000);
+  initBackButton();
   store.onUser(u => {
-    $("#splash").classList.add("out");
-    if (!u) { me = null; state = { act: {}, com: {}, peso: {}, dia: {}, perfil: {} }; loaded = false; $("#auth").hidden = false; $("#app").hidden = true; $("#tabbar").hidden = true; return; }
+    if (!u) { hideSplash(); me = null; state = { act: {}, com: {}, peso: {}, dia: {}, perfil: {} }; loaded = false; $("#auth").hidden = false; $("#app").hidden = true; $("#tabbar").hidden = true; return; }
     me = u; $("#auth").hidden = true; $("#app").hidden = false; $("#tabbar").hidden = false;
-    store.start(u, first => { loaded = true; if (first) { setView(view); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (!sheetOpen && !recActive) render(); });
+    store.start(u, first => { loaded = true; if (first) { setView(view); requestAnimationFrame(hideSplash); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (!sheetOpen && !recActive) render(); });
+  });
+}
+
+// ---------- Botón atrás (Android y gesto de volver) ----------
+let lastBack = 0;
+function initBackButton() {
+  try { history.replaceState({ pm: "base" }, ""); history.pushState({ pm: "guard" }, ""); } catch {}
+  window.addEventListener("popstate", () => {
+    const guard = () => { try { history.pushState({ pm: "guard" }, ""); } catch {} };
+    if (sheetOpen) { closeSheet(); return guard(); }
+    const af = $("#authForm"); if (af && !af.hidden && !$("#auth").hidden) { const b = $("#aBack"); if (b) b.click(); return guard(); }
+    if (!$("#app").hidden) {
+      if (view === "padel" && typeof padelTab !== "undefined" && padelTab !== "resumen") { padelTab = "resumen"; render(); return guard(); }
+      if (view !== "inicio") { setView("inicio"); return guard(); }
+    }
+    // Primera pulsación en Inicio: aviso. Si en 2 s vuelve a pulsar, Android cierra la app (ya no queda historial).
+    lastBack = Date.now(); toast("Pulsa atrás otra vez para salir");
+    setTimeout(() => { if (history.state && history.state.pm === "base") guard(); }, 2200);
   });
 }
 
