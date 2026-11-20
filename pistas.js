@@ -78,11 +78,32 @@ async function buscarPistas(opts) {
   } catch (e) { console.warn(e); pistas.err = e.message === "nolugar" ? "No encuentro ese sitio. Prueba con el nombre de la ciudad." : "No se pudo cargar el mapa de pistas. Revisa tu conexión y vuelve a probar."; }
   pistas.busy = false; if (view === "padel" && !sheetOpen) render();
 }
+// Ubicación aproximada por internet (por si el GPS falla o tarda)
+async function ubicacionIP() {
+  for (const u of ["https://get.geojs.io/v1/ip/geo.json", "https://ipapi.co/json/"]) {
+    try { const r = await fetchT(u, {}, 8000); const j = await r.json(); const lat = +j.latitude, lon = +j.longitude; if (lat && lon) return { lat, lon, ciudad: j.city || "" }; } catch (e) { console.warn("ip-geo", u, e); }
+  }
+  return null;
+}
 function cercaDeMi() {
-  if (!navigator.geolocation) { toast("Tu móvil no permite la ubicación"); return; }
-  pistas.busy = true; render();
-  navigator.geolocation.getCurrentPosition(p => buscarPistas({ lugar: "Tu ubicación", lat: p.coords.latitude, lon: p.coords.longitude }),
-    () => { pistas.busy = false; pistas.err = "No has dado permiso de ubicación. Escribe tu ciudad."; render(); }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
+  pistas.busy = true; pistas.err = ""; render();
+  const fallo = async code => {
+    const ip = await ubicacionIP();
+    if (ip) { toast(code === 1 ? "Sin permiso de GPS: uso tu zona aproximada" : "Uso tu zona aproximada"); return buscarPistas(ip.ciudad ? { lugar: ip.ciudad, lat: ip.lat, lon: ip.lon } : { lugar: "Tu ubicación", lat: ip.lat, lon: ip.lon }); }
+    pistas.busy = false;
+    pistas.err = code === 1
+      ? "La app no tiene permiso de ubicación. En el iPhone: Ajustes → Privacidad y seguridad → Localización → Sitios web de Safari → «Al usarse la app». En Android: mantén pulsado el icono → Información de la app → Permisos → Ubicación. O escribe tu ciudad arriba."
+      : "No he podido saber dónde estás. Escribe tu ciudad arriba.";
+    render();
+  };
+  if (!navigator.geolocation) return fallo(2);
+  let done = false;
+  const ok = p => { if (done) return; done = true; buscarPistas({ lugar: "Tu ubicación", lat: p.coords.latitude, lon: p.coords.longitude }); };
+  const ko = e => { if (done) return; if (e && e.code === 1) { done = true; return fallo(1); }
+    // Reintenta con GPS de alta precisión antes de rendirse
+    navigator.geolocation.getCurrentPosition(ok, e2 => { if (done) return; done = true; fallo(e2 && e2.code); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }); };
+  navigator.geolocation.getCurrentPosition(ok, ko, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+  setTimeout(() => { if (!done) { done = true; fallo(3); } }, 28000); // por si el móvil nunca responde
 }
 
 // ---------- vista ----------
