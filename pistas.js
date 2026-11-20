@@ -1,5 +1,5 @@
 // ===== Pádel+ · Buscador de pistas y clubes (OpenStreetMap + clubes añadidos por la comunidad) =====
-const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
 let pistas = { lugar: null, lat: null, lon: null, radio: 15, clubs: [], busy: false, err: "", sel: null, addMode: false, filtro: "todos" };
 let pistasMap = null;
 
@@ -13,18 +13,24 @@ function cacheGet(k, ttl) { try { const v = JSON.parse(localStorage.getItem(k));
 function cacheSet(k, d) { try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), d })); } catch {} }
 
 // ---------- búsqueda ----------
+function fetchT(url, opts = {}, ms = 15000) { const c = new AbortController(); const id = setTimeout(() => c.abort(), ms); return fetch(url, { ...opts, signal: c.signal }).finally(() => clearTimeout(id)); }
 async function geocode(q) {
-  const k = "pm-geo:" + q.toLowerCase(); const c = cacheGet(k, 30 * 864e5); if (c) return c;
-  const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=es&q=${encodeURIComponent(q)}`);
-  const j = await r.json(); if (!j.length) return null;
-  const d = { lat: +j[0].lat, lon: +j[0].lon, nombre: j[0].display_name.split(",")[0] }; cacheSet(k, d); return d;
+  const k = "pm-geo2:" + q.toLowerCase(); const c = cacheGet(k, 30 * 864e5); if (c) return c;
+  let d = null;
+  try { const r = await fetchT(`https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=es&countrycodes=es,pt,ad,fr,it&q=${encodeURIComponent(q)}`, { headers: { Accept: "application/json" } }, 10000);
+    const j = await r.json(); if (j && j.length) d = { lat: +j[0].lat, lon: +j[0].lon, nombre: j[0].display_name.split(",")[0] }; } catch (e) { console.warn("nominatim", e); }
+  if (!d) try { const r = await fetchT(`https://photon.komoot.io/api/?limit=1&lang=es&q=${encodeURIComponent(q)}`, {}, 10000); const j = await r.json(); const f = j.features && j.features[0];
+    if (f) d = { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], nombre: f.properties.name || q }; } catch (e) { console.warn("photon", e); }
+  if (d) cacheSet(k, d); return d;
 }
 async function overpass(lat, lon, radioKm) {
-  const q = `[out:json][timeout:25];(nwr["sport"~"padel|paddle_tennis"](around:${Math.round(radioKm * 1000)},${lat.toFixed(5)},${lon.toFixed(5)}););out center tags;`;
+  const a = `(around:${Math.round(radioKm * 1000)},${lat.toFixed(5)},${lon.toFixed(5)})`;
+  const q = `[out:json][timeout:25];(nwr["sport"~"padel|paddle",i]${a};nwr["leisure"~"sports_centre|pitch|sports_hall|fitness_centre"]["name"~"p[aá]del",i]${a};nwr["club"="sport"]["name"~"p[aá]del",i]${a};);out center tags;`;
   let last;
   for (const u of OVERPASS) {
-    try { const r = await fetch(u, { method: "POST", body: "data=" + encodeURIComponent(q), headers: { "Content-Type": "application/x-www-form-urlencoded" } }); if (!r.ok) throw new Error("HTTP " + r.status); return (await r.json()).elements || []; }
-    catch (e) { last = e; }
+    try { const r = await fetchT(u, { method: "POST", body: "data=" + encodeURIComponent(q), headers: { "Content-Type": "application/x-www-form-urlencoded" } }, 20000);
+      if (!r.ok) throw new Error("HTTP " + r.status); const j = await r.json(); return j.elements || []; }
+    catch (e) { last = e; console.warn("overpass", u, e); }
   }
   throw last || new Error("overpass");
 }
@@ -39,10 +45,11 @@ function agrupar(els, lat0, lon0) {
     for (const c of clubs) { const d = distKm(p.lat, p.lon, c.lat, c.lon); const lim = c.tags.leisure === "pitch" ? .12 : .3; if (d < lim && d < bd) { best = c; bd = d; } }
     if (!best) { best = { id: "osm_" + p.id, nombre: p.t.name || "", lat: p.lat, lon: p.lon, tags: { ...p.t }, pistas: 0, cubiertas: 0, suelta: true }; clubs.push(best); }
     best.pistas += Math.max(1, +(p.t.courts || p.t.pitches || 1) || 1);
-    if (p.t.covered === "yes" || p.t.indoor === "yes" || p.t.building) best.cubiertas++;
+    if (p.t.covered === "yes" || p.t.indoor === "yes" || p.t.building || p.t.leisure === "sports_hall") best.cubiertas++;
     if (!best.nombre && p.t.name) best.nombre = p.t.name;
     for (const k of ["addr:street", "addr:housenumber", "addr:city", "website", "contact:website", "phone", "contact:phone", "operator", "access", "fee"]) if (p.t[k] && !best.tags[k]) best.tags[k] = p.t[k];
   }
+  clubs.forEach(c => { if (!c.cubiertas && (c.tags.leisure === "sports_hall" || c.tags.covered === "yes" || c.tags.indoor === "yes" || /indoor|cubiert/i.test(c.nombre))) c.cubiertas = Math.max(1, c.pistas || 1); });
   return clubs.map(c => {
     const t = c.tags; const calle = [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(", ");
     const muni = /ayuntamiento|municipal|concello|ajuntament|patronato|deportes/i.test(t.operator || "");
@@ -62,9 +69,9 @@ async function buscarPistas(opts) {
     let lugar = opts.lugar, lat = opts.lat, lon = opts.lon;
     if (lat == null) { const g = await geocode(lugar); if (!g) throw new Error("nolugar"); lat = g.lat; lon = g.lon; lugar = g.nombre; }
     Object.assign(pistas, { lugar, lat, lon }); try { localStorage.setItem("pm-pistas-lugar", JSON.stringify({ lugar, lat, lon })); } catch {}
-    const k = `pm-pistas:${lat.toFixed(2)},${lon.toFixed(2)},${pistas.radio}`;
+    const k = `pm-pistas3:${lat.toFixed(2)},${lon.toFixed(2)},${pistas.radio}`;
     let osm = cacheGet(k, 7 * 864e5);
-    if (!osm) { osm = agrupar(await overpass(lat, lon, pistas.radio), lat, lon); cacheSet(k, osm); }
+    if (!osm) { osm = agrupar(await overpass(lat, lon, pistas.radio), lat, lon); if (osm.length) cacheSet(k, osm); }
     const us = (await clubsComunidad(lat, lon)).map(c => ({ ...c, dist: distKm(lat, lon, c.lat, c.lon) })).filter(c => c.dist <= pistas.radio + 2);
     const all = [...us]; osm.forEach(o => { if (!us.some(u => distKm(u.lat, u.lon, o.lat, o.lon) < .08)) all.push({ ...o, dist: distKm(lat, lon, o.lat, o.lon) }); });
     pistas.clubs = all.sort((a, b) => a.dist - b.dist);
@@ -81,15 +88,16 @@ function cercaDeMi() {
 // ---------- vista ----------
 function pistasHTML() {
   const myClub = (state.perfil.padel || {}).clubId;
-  const list = pistas.clubs.filter(c => pistas.filtro === "todos" || (pistas.filtro === "cubiertas" ? c.cubiertas > 0 : c.publica));
+  const list = pistas.clubs.filter(c => pistas.filtro === "todos" || (pistas.filtro === "cubiertas" ? c.cubiertas > 0 : !c.cubiertas || c.cubiertas < (c.pistas || 1)));
   const res = pistas.busy ? `<div class="empty">Buscando pistas…</div>`
-    : pistas.err ? `<div class="card empty"><p>${esc(pistas.err)}</p></div>`
+    : pistas.err ? `<div class="card empty"><p>${esc(pistas.err)}</p></div><a class="btn block" href="https://www.google.com/maps/search/${encodeURIComponent("pistas de pádel " + ($("#piQ") && $("#piQ").value || ""))}" target="_blank" rel="noopener">${svg("search")}Buscar en Google Maps</a>`
     : !pistas.lugar ? `<div class="card empty">${svg("gps")}<p>Escribe tu ciudad o pulsa <b>Cerca de mí</b> para ver los clubes y pistas de pádel.</p></div>`
     : `<div class="row" style="justify-content:space-between;align-items:center;margin:4px 2px 8px"><div class="small"><b>${list.length}</b> <span class="mute">sitios en ${esc(pistas.lugar)} (${pistas.radio} km)</span></div></div>
-      <div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["publicas", "Públicas"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
+      <div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["aire", "Al aire libre"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
       <div id="piMap" style="height:260px;border-radius:18px;overflow:hidden;margin-bottom:12px;border:1px solid var(--line2)"></div>
-      ${list.length ? `<div class="card" style="padding:4px 14px">${list.slice(0, 60).map(c => `<button class="item" data-club="${c.id}"><span style="font-size:20px;width:28px;text-align:center">${c.id === myClub ? "⭐" : c.cubiertas ? "🏟️" : "🎾"}</span><div style="flex:1;min-width:0"><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</div><div class="tiny mute">${[c.pistas ? `${c.pistas} pista${c.pistas > 1 ? "s" : ""}` : null, c.cubiertas ? "cubiertas" : null, c.publica ? "pública" : null, c.fuente === "user" ? "añadido por la comunidad" : null].filter(Boolean).join(" · ") || esc(c.dir || "Pádel")}</div></div><span class="small mute" style="white-space:nowrap">${kmTxt(c.dist)}</span></button>`).join("")}</div>`
-        : `<div class="card empty"><p>No hay pistas con ese filtro.</p></div>`}`;
+      ${list.length ? `<div class="card" style="padding:4px 14px">${list.slice(0, 60).map(c => `<button class="item" data-club="${c.id}"><span style="font-size:20px;width:28px;text-align:center">${c.id === myClub ? "⭐" : c.cubiertas ? "🏟️" : "🎾"}</span><div style="flex:1;min-width:0"><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</div><div class="tiny mute">${[c.pistas ? `${c.pistas} pista${c.pistas > 1 ? "s" : ""}` : null, c.cubiertas ? (c.cubiertas >= (c.pistas || 1) ? "cubiertas" : "cubiertas y exteriores") : c.pistas ? "al aire libre" : null, c.fuente === "user" ? "añadido por la comunidad" : null].filter(Boolean).join(" · ") || esc(c.dir || "Pádel")}</div></div><span class="small mute" style="white-space:nowrap">${kmTxt(c.dist)}</span></button>`).join("")}</div>`
+        : `<div class="card empty"><p>${pistas.clubs.length ? "No hay pistas con ese filtro." : "El mapa libre aún no tiene clubes registrados aquí."}</p></div>`}
+      <a class="btn block" href="${`https://www.google.com/maps/search/${encodeURIComponent("pistas de pádel " + (pistas.lugar && pistas.lugar !== "Tu ubicación" ? pistas.lugar : ""))}${pistas.lugar === "Tu ubicación" ? `/@${pistas.lat},${pistas.lon},13z` : ""}`}" target="_blank" rel="noopener" style="margin-top:4px">${svg("search")}Ver todos los clubes en Google Maps</a>`;
   return `<div class="row" style="gap:8px;margin-bottom:10px"><label class="field" style="margin:0;flex:1"><input id="piQ" placeholder="Ciudad o barrio (ej. Zaragoza)" value="${esc(pistas.lugar && pistas.lugar !== "Tu ubicación" ? pistas.lugar : "")}" style="margin:0" enterkeyhint="search"></label><button class="btn" id="piGo" style="flex:0 0 auto">${svg("search")}</button></div>
     <div class="row" style="gap:8px;margin-bottom:12px;align-items:center"><button class="btn sm" id="piMe" style="flex:0 0 auto;white-space:nowrap">${svg("gps")}Cerca de mí</button><div class="seg" id="piR" style="flex:1;min-width:0">${[5, 15, 30].map(r => `<button data-r="${r}" class="${pistas.radio === r ? "on" : ""}">${r} km</button>`).join("")}</div></div>
     ${res}
@@ -117,7 +125,7 @@ function drawPistasMap(el) {
   const m = L.map(el, { zoomControl: false, attributionControl: false }); pistasMap = m;
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, subdomains: "abcd" }).addTo(m);
   const myClub = (state.perfil.padel || {}).clubId;
-  const list = pistas.clubs.filter(c => pistas.filtro === "todos" || (pistas.filtro === "cubiertas" ? c.cubiertas > 0 : c.publica));
+  const list = pistas.clubs.filter(c => pistas.filtro === "todos" || (pistas.filtro === "cubiertas" ? c.cubiertas > 0 : !c.cubiertas || c.cubiertas < (c.pistas || 1)));
   const pts = [];
   list.forEach(c => { pts.push([c.lat, c.lon]);
     L.circleMarker([c.lat, c.lon], { radius: c.id === myClub ? 10 : 7, color: "#0a0d11", weight: 2, fillColor: c.id === myClub ? "#facc15" : c.fuente === "user" ? "#38bdf8" : "#d4ff3a", fillOpacity: 1 }).addTo(m).on("click", () => openClub(c.id)); });
@@ -133,7 +141,7 @@ async function openClub(id) {
   const web = c.web ? (/^https?:/.test(c.web) ? c.web : "https://" + c.web) : `https://www.google.com/search?q=${encodeURIComponent(c.nombre + " " + (c.dir || pistas.lugar || "") + " reservar pista pádel")}`;
   openSheet(esc(c.nombre), `
     <div class="small mute" style="margin:-6px 0 12px">${esc(c.dir || "")}${c.dir ? " · " : ""}a ${kmTxt(c.dist)}</div>
-    <div class="grid3" style="margin-bottom:12px"><div class="stat"><div class="k">Pistas</div><div class="v num">${c.pistas || "?"}</div></div><div class="stat"><div class="k">Cubiertas</div><div class="v num">${c.cubiertas ? (c.cubiertas >= (c.pistas || 0) ? "Sí" : c.cubiertas) : c.pistas ? "No" : "?"}</div></div><div class="stat"><div class="k">Tipo</div><div class="v" style="font-size:16px;font-weight:700;margin-top:6px">${c.publica ? "Pública" : "Club"}</div></div></div>
+    <div class="grid3" style="margin-bottom:12px"><div class="stat"><div class="k">Pistas</div><div class="v num">${c.pistas || "?"}</div></div><div class="stat"><div class="k">Cubiertas</div><div class="v num">${c.cubiertas ? (c.cubiertas >= (c.pistas || 0) ? "Sí" : c.cubiertas) : c.pistas ? "No" : "?"}</div></div><div class="stat"><div class="k">Aire libre</div><div class="v num">${c.pistas ? (c.cubiertas >= c.pistas ? "No" : c.cubiertas ? c.pistas - c.cubiertas : "Sí") : "?"}</div></div></div>
     <div id="clGente" class="card" style="margin-bottom:12px"><h3>${svg("users")}Gente de Pádel+ aquí</h3><p class="small mute" style="margin-top:6px">${socialOn() ? "Cargando…" : "Crea tu perfil en Comunidad para ver quién juega aquí."}</p></div>
     <div class="row" style="gap:8px"><a class="btn" href="${maps}" target="_blank" rel="noopener" style="flex:1">${svg("route")}Cómo llegar</a><a class="btn pri" href="${web}" target="_blank" rel="noopener" style="flex:1">${svg("calendar")}${c.web ? "Web / reservar" : "Buscar reservas"}</a></div>
     ${c.tel ? `<a class="btn block" href="tel:${esc(c.tel.replace(/\s/g, ""))}" style="margin-top:8px">📞 ${esc(c.tel)}</a>` : ""}
