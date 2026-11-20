@@ -136,6 +136,13 @@ function boot() {
   });
 }
 
+// ---------- iPhone: recolocar la barra de abajo tras cerrar el teclado ----------
+function fixViewport() { requestAnimationFrame(() => { window.scrollTo(window.scrollX, window.scrollY); const tb = $("#tabbar"); if (tb && !tb.hidden) { tb.style.display = "none"; void tb.offsetHeight; tb.style.display = ""; } }); }
+document.addEventListener("focusout", e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) setTimeout(fixViewport, 80); });
+if (window.visualViewport) { let vh = visualViewport.height; visualViewport.addEventListener("resize", () => { if (visualViewport.height > vh + 80) fixViewport(); vh = visualViewport.height; }); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") fixViewport(); });
+window.addEventListener("orientationchange", () => setTimeout(fixViewport, 300));
+
 // ---------- Botón atrás (Android y gesto de volver) ----------
 let lastBack = 0;
 function initBackButton() {
