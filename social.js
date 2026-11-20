@@ -75,8 +75,13 @@ function vComunidad() {
   const rank = weeklyRanking();
   return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="srch" placeholder="Buscar personas por @usuario o nombre" autocomplete="off" style="margin:0"></label></div>
     <div id="srchRes"></div>
-    <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["ranking", "Ranking"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
-    ${social.tab === "ranking" ? rankHTML(rank) : `${genteHTML()}<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
+    <button class="card" id="opNew" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(250,204,21,.35);background:radial-gradient(300px 140px at 100% 0%,rgba(250,204,21,.12),transparent 70%),var(--card)"><span style="font-size:26px">✍️</span><div style="flex:1"><div style="font-weight:800">Opina sobre tu material</div><div class="small mute">Pala, zapatillas, ropa o accesorios. Ayuda a otros a acertar.</div></div>${svg("chev", "chev")}</button>
+    <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["opiniones", "Opiniones"], ["ranking", "Ranking"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    ${social.tab === "ranking" ? rankHTML(rank) : social.tab === "opiniones" ? `<div id="feed">${opinionesHTML()}</div>` : `${genteHTML()}<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
+}
+function opinionesHTML() {
+  const seen = new Set(), L = [...social.disc, ...social.feed].filter(p => p.tipo === "opinion" && !seen.has(p.id) && seen.add(p.id)).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  return L.length ? L.map(postCard).join("") : `<div class="card empty"><span style="font-size:34px">✍️</span><p>Todavía no hay opiniones.<br>¡Sé el primero en contar qué tal tu pala o tus zapatillas!</p></div>`;
 }
 function genteHTML() {
   const g = (social.gente || []).filter(p => social.tab === "descubrir" || !social.following.has(p.uid));
@@ -98,6 +103,7 @@ function feedHTML(list) {
   return list.map(postCard).join("");
 }
 function postCard(p) {
+  if (p.tipo === "opinion") return opinionCard(p);
   const s = sportOf(p.deporte), mine = p.uid === me.uid, k = (p.kudos || []).includes(me.uid); const ruta = p.ruta ? JSON.parse(p.ruta) : null;
   const mets = p.dist ? [["Distancia", `${fmtKm(p.dist)} km`], [p.deporte === "bici" ? "Velocidad" : "Ritmo", p.deporte === "bici" ? `${fmtSpeed(p.dist, p.dur)} km/h` : `${fmtPace(p.dur / km(p.dist))} /km`], ["Tiempo", fmtDur(p.dur)]]
     : [["Tiempo", fmtDur(p.dur, true)], p.resultado ? ["Resultado", esc(p.resultado)] : ["Calorías", nf(p.kcal)], p.ejercicios ? ["Ejercicios", p.ejercicios.length] : p.desnivel ? ["Desnivel", `${nf(p.desnivel)} m`] : ["Deporte", s.n]];
@@ -115,7 +121,7 @@ function postCard(p) {
 function weeklyRanking() {
   const w0 = monday(new Date()); const by = {};
   const all = [...social.feed]; // incluye mis publicaciones y las de quienes sigo
-  for (const p of all) { if (new Date(p.fecha) < w0) continue; if (p.uid !== me.uid && !social.following.has(p.uid)) continue; const r = by[p.uid] = by[p.uid] || { uid: p.uid, autor: p.autor, color: p.color, min: 0, n: 0, dep: new Set() }; r.min += p.dur / 60; r.n++; r.dep.add(p.deporte); }
+  for (const p of all) { if (p.tipo === "opinion" || new Date(p.fecha) < w0) continue; if (p.uid !== me.uid && !social.following.has(p.uid)) continue; const r = by[p.uid] = by[p.uid] || { uid: p.uid, autor: p.autor, color: p.color, min: 0, n: 0, dep: new Set() }; r.min += p.dur / 60; r.n++; r.dep.add(p.deporte); }
   if (!by[me.uid]) { const ws = weekStats(w0); by[me.uid] = { uid: me.uid, autor: social.me.nombre, color: social.me.color, min: ws.min, n: ws.acts.length, dep: new Set(ws.acts.map(a => a.deporte)) }; }
   return Object.values(by).sort((a, b) => b.min - a.min);
 }
@@ -148,6 +154,7 @@ WIRE.comunidad = () => {
   $$("[data-st]").forEach(b => b.onclick = () => { social.tab = b.dataset.st; render(); });
   const gd = $("#goDisc"); if (gd) gd.onclick = () => { social.tab = "descubrir"; render(); };
   if (social.tab === "zapas") social.tab = "siguiendo"; wirePosts($("#view"));
+  const on = $("#opNew"); if (on) on.onclick = () => openOpinar();
   let to; $("#srch").oninput = e => { clearTimeout(to); const q = e.target.value.trim().toLowerCase().replace(/^@/, ""); to = setTimeout(() => searchPeople(q), 300); };
 };
 function wirePosts(root) {
@@ -156,6 +163,9 @@ function wirePosts(root) {
   $$("[data-com]", root).forEach(b => b.onclick = e => { e.stopPropagation(); openPost(b.dataset.com); });
   $$("[data-dm]", root).forEach(b => b.onclick = e => { e.stopPropagation(); openChatWith(b.dataset.dm); });
   $$("[data-post]", root).forEach(b => b.onclick = () => openPost(b.dataset.post));
+  $$("[data-gear]", root).forEach(b => b.onclick = e => { e.stopPropagation(); openGear(b.dataset.gear); });
+  $$("[data-delop]", root).forEach(b => b.onclick = e => { e.stopPropagation(); const id = b.dataset.delop;
+    confirmSheet("Borrar opinión", "¿Seguro que quieres borrar esta opinión?", "Borrar", async () => { try { await FS().collection("posts").doc(id).delete(); } catch {} social.feed = social.feed.filter(x => x.id !== id); social.disc = social.disc.filter(x => x.id !== id); closeSheet(); toast("Opinión borrada"); }); });
 }
 const findPost = id => social.feed.find(p => p.id === id) || social.disc.find(p => p.id === id) || (userPosts || []).find(p => p.id === id);
 async function toggleKudo(id, btn) {
@@ -173,7 +183,7 @@ function aviso(uid, o) { FS().collection("users").doc(uid).collection("avisos").
 let comUnsub = null;
 function openPost(id) {
   const p = findPost(id); if (!p) return;
-  openSheet("Entreno", `<div id="pBox">${postCard(p)}</div><div class="sec">Comentarios</div><div id="coms"><p class="small mute">Cargando…</p></div>
+  openSheet(p.tipo === "opinion" ? "Opinión" : p.deporte === "padel" ? "Partido" : "Entreno", `<div id="pBox">${postCard(p)}</div><div class="sec">Comentarios</div><div id="coms"><p class="small mute">Cargando…</p></div>
     <div class="cbar"><input id="cIn" placeholder="Escribe un comentario…" maxlength="500"><button class="btn pri sm" id="cSend">${svg("send")}</button></div>`, s => {
     wirePosts($("#pBox", s)); $$("[data-post]", s).forEach(b => b.onclick = null);
     comUnsub && comUnsub(); comUnsub = FS().collection("posts").doc(id).collection("comentarios").orderBy("t").onSnapshot(q => {

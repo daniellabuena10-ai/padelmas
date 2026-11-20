@@ -222,7 +222,7 @@ function openGear(id) {
     ${priceBtns(g)}
     ${socialOn() ? `<button class="btn block" id="gRev">${svg("edit")}Opinar</button>` : ""}
     <div class="sec">Opiniones de la comunidad</div><div id="shRevs"><p class="small mute">${socialOn() ? "Cargando…" : "Únete a la comunidad para ver y dejar opiniones."}</p></div>`, s => {
-    const rv = $("#gRev", s); if (rv) rv.onclick = () => openGearReview(g);
+    const rv = $("#gRev", s); if (rv) rv.onclick = () => openOpinar(g);
     if (socialOn()) loadReviews(id);
   });
 }
