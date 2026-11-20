@@ -55,7 +55,7 @@ function openNivelTest() {
     $("#ntOk", s).onclick = () => {
       if (ans.some(x => x === null)) { $("#ntE", s).textContent = "Responde las 5 preguntas."; return; }
       let lv = Q.reduce((t, [q, os], i) => t + os[ans[i]][1], 0); lv = Math.round(Math.max(1, Math.min(6, lv)) * 100) / 100;
-      savePerfil({ padel: { ...(state.perfil.padel || {}), nivel0: lv, nivel: lv } }); syncNivel(); closeSheet(); setView("padel"); toast(`Tu nivel de partida: ${fmtNivel(lv)} · ${nivelTxt(lv)}`);
+      savePerfil({ padel: { ...(state.perfil.padel || {}), nivel0: lv, nivel: lv } }); syncNivel(); closeSheet(); setView("padel"); toast(`Tu nivel de partida: ${fmtNivel(lv)} de 7 · ${nivelTxt(lv)}`); setTimeout(openNivelInfo, 700);
     };
   });
 }
@@ -89,7 +89,7 @@ function vPadel() {
     : `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sm" id="piBack" style="flex:0 0 auto">${svg("back")}Pádel</button><h3 style="margin:0 0 0 6px">Pistas y clubes</h3></div>`) + pistasHTML();
   if (!P.nivel0) return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.25),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.22)">
       <div class="lbl" style="color:#e5d38f">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
-      <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel</b>, que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
+      <p class="small" style="color:#ddd6bf;line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel del 1 al 7</b> (la escala de los clubes), que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
       <button class="btn block" id="pdTest" style="margin-top:16px;background:#facc15;color:#1a1500;border:0">Calcular mi nivel</button></div>
       <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
@@ -98,7 +98,7 @@ function vPadel() {
   let body = "";
   if (padelTab === "resumen") {
     body = `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.22),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.22)">
-      <div class="ringwrap"><div><div class="lbl" style="color:#e5d38f">Tu nivel</div><div class="big num" style="color:#facc15">${fmtNivel(lv)}</div><div class="small" style="color:#ddd6bf">${nivelTxt(lv)}${r.n ? ` · fiabilidad ${r.fiab}%` : " · nivel de partida"}</div></div>
+      <div class="ringwrap"><div><div class="lbl" style="color:#e5d38f">Tu nivel</div><div style="display:flex;align-items:baseline;gap:6px"><div class="big num" style="color:#facc15">${fmtNivel(lv)}</div><span class="num" style="color:#a89a63;font-size:22px">/ 7</span></div><div class="small" style="color:#ddd6bf">${nivelTxt(lv)}${r.n ? ` · fiabilidad ${r.fiab}%` : " · nivel de partida"}</div><button class="tiny" id="pdHow" style="color:#facc15;font-weight:700;margin-top:6px;text-decoration:underline">¿Cómo se calcula?</button></div>
         <div style="margin-left:auto;text-align:right">${r.n ? `<span class="chip ${tr >= 0 ? "volt" : "hot"}">${tr >= 0 ? "▲" : "▼"} ${nf(Math.abs(tr), 2)}</span><div class="tiny mute" style="margin-top:6px">últimos 5</div>` : ""}</div></div>
       ${r.hist.length > 2 ? `<div class="chartbox" style="margin-top:10px">${lineChart(r.hist.map(h => h.n).concat(r.hist.length < 5 ? Array(5 - r.hist.length).fill(lv) : []), "#facc15", { fmt: v => nf(v, 2) })}</div>` : ""}
       <button class="btn block" id="pdAdd" style="margin-top:14px;background:#facc15;color:#1a1500;border:0">${svg("plus")}Apuntar partido</button></div>
@@ -140,6 +140,7 @@ function pendRow(m) {
 WIRE.padel = () => {
   $$(".pdPis").forEach(b => b.onclick = () => { padelTab = "pistas"; render(); window.scrollTo(0, 0); });
   if (padelTab === "pistas") { const pb = $("#piBack"); if (pb) pb.onclick = () => { padelTab = "resumen"; render(); }; $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); }); wirePistas($("#view")); return; }
+  const hw = $("#pdHow"); if (hw) hw.onclick = openNivelInfo;
   const t = $("#pdTest"); if (t) { t.onclick = openNivelTest; return; }
   $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); });
   $$("#pdAdd").forEach(b => b.onclick = () => openPadelMatch()); const f = $("#pdFind"); if (f) f.onclick = () => { padelTab = "buscar"; render(); };
@@ -307,5 +308,27 @@ function openQuedada() {
       const d = { creador: me.uid, club, ciudad: $("#qdCi", s).value.trim(), fecha: $("#qdF", s).value, hora: $("#qdH", s).value, nivelMin: parseFloat($("#qdMin", s).value) || 1, nivelMax: parseFloat($("#qdMax", s).value) || 7, plazas: 4, jugadores: [yo, ...extra], uids: [me.uid, ...extra.map(x => x.uid)], notas: $("#qdNo", s).value.trim(), t: Date.now() };
       try { const r = await FS().collection("quedadas").add(d); quedadas.push({ id: r.id, ...d }); quedadas.sort((a, b) => a.fecha.localeCompare(b.fecha)); closeSheet(); toast("Partido publicado 🎾"); } catch (e) { console.warn(e); toast("No se pudo publicar"); }
     };
+  });
+}
+
+// ---------- Explicación del nivel ----------
+function openNivelInfo() {
+  const P = state.perfil.padel || {}, r = computeNivel(), lv = r ? r.nivel : null;
+  const escala = [[1, 1.5, "Iniciación", "Primeros partidos, aprendiendo golpes"], [1.5, 2.5, "Principiante", "Pasas la bola, peloteos cortos"], [2.5, 3.5, "Intermedio", "Juegas partidos completos, empiezas a usar la pared"], [3.5, 4.5, "Intermedio alto", "Bandeja, globos y buena colocación"], [4.5, 5.5, "Avanzado", "Juego táctico, remates que definen"], [5.5, 7.01, "Competición", "Torneos y ligas de nivel alto"]];
+  openSheet("¿Cómo funciona tu nivel?", `
+    <p style="line-height:1.55;margin:-4px 0 14px">Tu nivel va <b>del 1 al 7</b>, la misma escala que usan los clubes y Playtomic. Así lo puedes comparar con cualquiera.</p>
+    <div class="card" style="padding:6px 14px">${escala.map(([a, b, n, d]) => { const yo = lv != null && lv >= a && lv < b;
+      return `<div style="display:flex;gap:12px;align-items:center;padding:10px ${yo ? "8px" : "0"};${yo ? "background:rgba(250,204,21,.12);border-radius:12px;" : ""}border-top:1px solid var(--line)"><span class="num" style="width:74px;white-space:nowrap;font-size:17px;color:${yo ? "#facc15" : "var(--mute)"}">${nf(a, 1)}–${nf(Math.min(b, 7), 1)}</span><div style="flex:1"><div style="font-weight:700">${n}${yo ? ` <span class="tiny" style="color:#facc15">← tú (${fmtNivel(lv)})</span>` : ""}</div><div class="tiny mute">${d}</div></div></div>`; }).join("")}</div>
+    <div class="sec">Cómo sube y baja</div>
+    <div class="card">
+      <div style="padding:6px 0"><b>1. Empiezas con el test.</b><div class="small mute" style="margin-top:2px">Tus respuestas te dan un nivel de partida.</div></div>
+      <div style="padding:8px 0;border-top:1px solid var(--line)"><b>2. Cada partido lo ajusta.</b><div class="small mute" style="margin-top:2px">Si ganas, sube. Si pierdes, baja.</div></div>
+      <div style="padding:8px 0;border-top:1px solid var(--line)"><b>3. Importa contra quién.</b><div class="small mute" style="margin-top:2px">Ganar a una pareja mejor que la tuya sube mucho. Perder contra gente mejor apenas baja. Ganar a gente de menos nivel sube poco.</div></div>
+      <div style="padding:8px 0;border-top:1px solid var(--line)"><b>4. Importa el resultado.</b><div class="small mute" style="margin-top:2px">Un 6-1 6-2 cuenta más que ganar en el tie-break del tercer set.</div></div>
+      <div style="padding:8px 0;border-top:1px solid var(--line)"><b>5. Al principio se mueve más.</b><div class="small mute" style="margin-top:2px">En los primeros partidos el nivel cambia rápido hasta encontrar el tuyo. Luego se estabiliza. La <b>fiabilidad</b> te dice cuánto de seguro es tu nivel.</div></div>
+    </div>
+    <div class="hint">${svg("info")}<span><b style="color:var(--ink)">Ejemplo:</b> tienes 3,0 y ganas 6-3 6-4 a una pareja de 3,5 → subes unas décimas. Si pierdes contra esa misma pareja, bajas muy poco.</span></div>
+    ${P.nivel0 ? `<button class="btn block" id="niRe" style="margin-top:12px">Repetir el test de nivel</button>` : `<button class="btn pri block" id="niRe" style="margin-top:12px">Calcular mi nivel</button>`}`, s => {
+    $("#niRe", s).onclick = () => { closeSheet(); setTimeout(openNivelTest, 250); };
   });
 }
