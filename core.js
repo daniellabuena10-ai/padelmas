@@ -43,8 +43,11 @@ let loaded = false;
 const COLS = { act: "actividades", com: "comidas", peso: "pesos", dia: "dias" };
 
 // Firestore no admite arrays anidados: la ruta se guarda como texto JSON.
-function packAct(a) { const o = { ...a }; if (Array.isArray(o.trk)) o.trk = JSON.stringify(o.trk); return o; }
-function unpackAct(a) { if (typeof a.trk === "string") { try { a.trk = JSON.parse(a.trk); } catch { a.trk = null; } } return a; }
+// Firestore no admite listas dentro de listas: los sets [[6,4],[6,3]] se guardan como [{a:6,b:4},…]
+const packSets = s => (s || []).map(x => Array.isArray(x) ? { a: +x[0] || 0, b: +x[1] || 0 } : x);
+const unpackSets = s => (s || []).map(x => Array.isArray(x) ? x : [+x.a || 0, +x.b || 0]);
+function packAct(a) { const o = { ...a }; if (Array.isArray(o.trk)) o.trk = JSON.stringify(o.trk); if (o.padel && o.padel.sets) o.padel = { ...o.padel, sets: packSets(o.padel.sets) }; return o; }
+function unpackAct(a) { if (typeof a.trk === "string") { try { a.trk = JSON.parse(a.trk); } catch { a.trk = null; } } if (a.padel && a.padel.sets) a.padel.sets = unpackSets(a.padel.sets); return a; }
 
 function firebaseStore() {
   const app = firebase.initializeApp(window.FIREBASE_CONFIG);

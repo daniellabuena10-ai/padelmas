@@ -132,7 +132,7 @@ function matchCard(a) {
     <div class="score"><div class="mute">${(p.riv || []).map(r => esc(r.n || "?")).join(" y ") || "Rivales"}</div>${p.sets.map(s => `<span class="${s[1] > s[0] ? "w" : ""}">${s[1]}</span>`).join("")}</div></button>`;
 }
 function pendRow(m) {
-  const mine = m.equipos.a.some(x => x.uid === me.uid) ? "a" : "b"; const sets = m.sets.map(s => mine === "a" ? s : [s[1], s[0]]); const won = setsWin(sets);
+  const mine = m.equipos.a.some(x => x.uid === me.uid) ? "a" : "b"; const sets = unpackSets(m.sets).map(s => mine === "a" ? s : [s[1], s[0]]); const won = setsWin(sets);
   const by = m.equipos.a.concat(m.equipos.b).find(x => x.uid === m.creador);
   return `<div class="meal" style="align-items:flex-start"><div class="mi" style="color:${won ? "var(--volt)" : "var(--neg)"};font-weight:800">${won ? "V" : "D"}</div><div style="flex:1;min-width:0"><div style="font-weight:600">${esc(by ? by.n : "Alguien")} te ha apuntado</div><div class="small mute">${setsStr(sets)} · ${esc(m.club || "pádel")} · ${relDate(m.fecha)}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm pri" data-pok="${m.id}">${svg("check")}Confirmar</button><button class="btn sm" data-pno="${m.id}">No era yo</button></div></div></div>`;
@@ -171,7 +171,7 @@ async function confirmPartido(id, ok) {
     await FS().collection("partidos").doc(id).update({ [`${ok ? "conf" : "rech"}.${me.uid}`]: true });
     if (ok) {
       const side = m.equipos.a.some(x => x.uid === me.uid) ? "a" : "b", other = side === "a" ? "b" : "a";
-      const sets = m.sets.map(s => side === "a" ? s : [s[1], s[0]]); const comp = m.equipos[side].find(x => x.uid !== me.uid) || null;
+      const sets = unpackSets(m.sets).map(s => side === "a" ? s : [s[1], s[0]]); const comp = m.equipos[side].find(x => x.uid !== me.uid) || null;
       const a = { id: uid("a"), deporte: "padel", fecha: m.fecha, dur: m.dur || 5400, dist: 0, fuente: "partido", padel: { sets, comp, riv: m.equipos[other], club: m.club || "", tipo: m.tipo || "amistoso", lado: null, pid: id } };
       fillPadelAct(a); saveItem("act", a); toast("Partido añadido a tu historial");
     } else toast("Partido rechazado");
@@ -240,7 +240,7 @@ function openPadelMatch(base = {}) {
           const pid = uid("m"); a.padel.pid = pid;
           const eq = { a: [{ uid: me.uid, n: (social.me && social.me.nombre) || me.name || "" }, ...(comp ? [comp] : [])], b: riv };
           // En segundo plano: no esperamos al servidor (con poca cobertura se quedaba colgado)
-          Promise.resolve().then(() => FS().collection("partidos").doc(pid).set({ creador: me.uid, fecha, dur: a.dur, club, tipo, sets: played, equipos: eq, jugadores: [me.uid, ...tagged.map(x => x.uid)], conf: { [me.uid]: true }, t: Date.now() }))
+          Promise.resolve().then(() => FS().collection("partidos").doc(pid).set({ creador: me.uid, fecha, dur: a.dur, club, tipo, sets: packSets(played), equipos: eq, jugadores: [me.uid, ...tagged.map(x => x.uid)], conf: { [me.uid]: true }, t: Date.now() }))
             .then(() => tagged.forEach(x => aviso(x.uid, { tipo: "comentario", texto: `te ha apuntado en un partido de pádel (${setsStr(played)})` })))
             .catch(e => console.warn("partido compartido", e));
         }
