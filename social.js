@@ -136,15 +136,21 @@ function rankHTML(r) {
     ${r.length < 2 ? `<p class="small mute" style="margin-top:10px">Sigue a tus amigos para competir con ellos cada semana. El ranking se reinicia los lunes.</p>` : ""}</div>
     <p class="tiny mute" style="text-align:center">Cuenta pádel, gimnasio, fútbol… todo suma. Nada de pagar por ver tus propias estadísticas.</p>`;
 }
+// Un mismo partido/entreno solo una vez (si cambió la fecha se generaba otro id)
+function dedupePosts(L) { const m = new Map(); for (const p of L) { const k = p.act ? p.uid + "|" + p.act : p.id; const o = m.get(k); if (!o || (p.t || 0) > (o.t || 0)) m.set(k, p); } return [...m.values()]; }
 async function loadFeed(force = false) {
   if (!socialOn() || social.busy) return; if (!force && Date.now() - social.lastLoad < 60e3) return;
   social.busy = true;
   try {
     const ids = [me.uid, ...social.following];
     const res = await Promise.all(ids.slice(0, 60).map(u => FS().collection("posts").where("uid", "==", u).limit(15).get().catch(() => ({ docs: [] }))));
-    social.feed = res.flatMap(s => s.docs.map(d => d.data())).sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 80);
+    let all = res.flatMap(s => s.docs.map(d => d.data()));
+    // Limpieza: publicaciones mías de partidos/entrenos que ya no existen (p. ej. partidos que no llegaron a guardarse)
+    const ghost = new Set();
+    if (loaded && state.act) all.filter(p => p.uid === me.uid && p.act && !state.act[p.act]).forEach(p => { ghost.add(p.id); FS().collection("posts").doc(p.id).delete().catch(() => {}); });
+    social.feed = dedupePosts(all.filter(p => !ghost.has(p.id))).sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 80);
     const d = await FS().collection("posts").orderBy("fecha", "desc").limit(40).get();
-    social.disc = d.docs.map(x => x.data());
+    social.disc = dedupePosts(d.docs.map(x => x.data()).filter(p => !ghost.has(p.id)));
     const g = await FS().collection("perfiles").orderBy("creado", "desc").limit(30).get().catch(() => ({ docs: [] }));
     social.gente = g.docs.map(x => x.data()).filter(x => x.uid && x.uid !== me.uid);
     social.lastLoad = Date.now(); limpiarHistorias();
