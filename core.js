@@ -49,6 +49,7 @@ function unpackAct(a) { if (typeof a.trk === "string") { try { a.trk = JSON.pars
 function firebaseStore() {
   const app = firebase.initializeApp(window.FIREBASE_CONFIG);
   const auth = firebase.auth(), db = firebase.firestore();
+  try { db.settings({ ignoreUndefinedProperties: true, merge: true }); } catch {}
   try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch {}
   let unsubs = [];
   return {
@@ -96,9 +97,13 @@ function localStore() {
     async deleteAll() { for (const k of [...Object.keys(COLS), "perfil"]) delete db[k]; persist(); },
   };
 }
-function saveItem(k, o) { const isNew = !state[k][o.id]; state[k][o.id] = o; store.save(k, o); if (k === "act" && typeof publishAct === "function") publishAct(o, isNew); }
+function saveItem(k, o) {
+  const isNew = !state[k][o.id]; state[k][o.id] = o;
+  try { const r = store.save(k, o); if (r && r.catch) r.catch(e => console.warn("guardar", e)); } catch (e) { console.warn("guardar", e); }
+  if (k === "act" && typeof publishAct === "function") { try { const r = publishAct(o, isNew); if (r && r.catch) r.catch(() => {}); } catch (e) { console.warn(e); } }
+}
 function delItem(k, id) { const o = state[k][id]; delete state[k][id]; store.del(k, id); if (k === "act" && o && typeof unpublishAct === "function") unpublishAct(o); }
-function savePerfil(p) { state.perfil = { ...state.perfil, ...p }; store.savePerfil(p); }
+function savePerfil(p) { state.perfil = { ...state.perfil, ...p }; try { const r = store.savePerfil(p); if (r && r.catch) r.catch(e => console.warn("perfil", e)); } catch (e) { console.warn("perfil", e); } }
 
 // ---------- Arranque y sesión ----------
 let authMode = "in";

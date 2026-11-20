@@ -220,25 +220,40 @@ function openPadelMatch(base = {}) {
     drawSets();
     $$("#pmL [data-v]", s).forEach(b => b.onclick = () => { lado = lado === b.dataset.v ? null : b.dataset.v; $$("#pmL [data-v]", s).forEach(x => x.classList.toggle("on", x.dataset.v === lado)); });
     $$("#pmT [data-v]", s).forEach(b => b.onclick = () => { tipo = b.dataset.v; $$("#pmT [data-v]", s).forEach(x => x.classList.toggle("on", x === b)); });
-    $("#pmOk", s).onclick = async () => {
+    let saving = false;
+    $("#pmOk", s).onclick = () => {
+      if (saving) return; // evita doble toque = partidos duplicados
       const played = sets.filter(x => x[0] + x[1] > 0); const won = setsWin(played);
       if (!played.length || won === null) { $("#pmE", s).textContent = "Pon el resultado (tiene que haber un ganador)."; return; }
-      const resolve = v => { v = v.trim(); if (!v) return null; if (v.startsWith("@")) { const p = Object.values(profCache).find(x => x.usuario === v.slice(1).toLowerCase()); if (p) return { uid: p.uid, n: p.nombre }; } return { n: v.replace(/^@/, "") }; };
-      const comp = resolve($("#pmComp", s).value), riv = [resolve($("#pmR1", s).value), resolve($("#pmR2", s).value)].filter(Boolean);
-      const club = $("#pmC", s).value.trim(); const fecha = new Date(`${$("#pmF", s).value}T${$("#pmH", s).value || "19:00"}`).toISOString();
-      const a = { id: uid("a"), deporte: "padel", fecha, dur: (+$("#pmD", s).value || 90) * 60, dist: 0, fuente: base.fuente || "manual", padel: { sets: played, comp, riv, club, tipo, lado } };
-      const tagged = [comp, ...riv].filter(x => x && x.uid);
-      if (tagged.length && socialOn()) {
-        const pid = uid("m"); a.padel.pid = pid;
-        const eq = { a: [{ uid: me.uid, n: social.me.nombre }, ...(comp ? [comp] : [])], b: riv };
-        try { await FS().collection("partidos").doc(pid).set({ creador: me.uid, fecha, dur: a.dur, club, tipo, sets: played, equipos: eq, jugadores: [me.uid, ...tagged.map(x => x.uid)], conf: { [me.uid]: true }, t: Date.now() });
-          tagged.forEach(x => aviso(x.uid, { tipo: "comentario", texto: `te ha apuntado en un partido de pádel (${setsStr(played)})` })); } catch (e) { console.warn(e); }
+      const btn = $("#pmOk", s); saving = true; btn.disabled = true; btn.textContent = "Guardando…"; $("#pmE", s).textContent = "";
+      let a;
+      try {
+        const resolve = v => { v = (v || "").trim(); if (!v) return null; if (v.startsWith("@")) { const p = Object.values(profCache).find(x => x.usuario === v.slice(1).toLowerCase()); if (p && p.uid) return { uid: p.uid, n: p.nombre || p.usuario || v.slice(1) }; } return { n: v.replace(/^@/, "") }; };
+        const comp = resolve($("#pmComp", s).value), riv = [resolve($("#pmR1", s).value), resolve($("#pmR2", s).value)].filter(Boolean);
+        const club = $("#pmC", s).value.trim();
+        let f = new Date(`${$("#pmF", s).value}T${$("#pmH", s).value || "19:00"}`); if (isNaN(f)) f = new Date();
+        const fecha = f.toISOString();
+        a = { id: uid("a"), deporte: "padel", fecha, dur: (+$("#pmD", s).value || 90) * 60, dist: 0, fuente: base.fuente || "manual", padel: { sets: played, comp, riv, club, tipo, lado } };
+        const tagged = [comp, ...riv].filter(x => x && x.uid);
+        if (tagged.length && socialOn()) {
+          const pid = uid("m"); a.padel.pid = pid;
+          const eq = { a: [{ uid: me.uid, n: (social.me && social.me.nombre) || me.name || "" }, ...(comp ? [comp] : [])], b: riv };
+          // En segundo plano: no esperamos al servidor (con poca cobertura se quedaba colgado)
+          Promise.resolve().then(() => FS().collection("partidos").doc(pid).set({ creador: me.uid, fecha, dur: a.dur, club, tipo, sets: played, equipos: eq, jugadores: [me.uid, ...tagged.map(x => x.uid)], conf: { [me.uid]: true }, t: Date.now() }))
+            .then(() => tagged.forEach(x => aviso(x.uid, { tipo: "comentario", texto: `te ha apuntado en un partido de pádel (${setsStr(played)})` })))
+            .catch(e => console.warn("partido compartido", e));
+        }
+        fillPadelAct(a);
+        saveItem("act", a);
+        try { savePerfil({ padel: { ...(state.perfil.padel || {}), club: club || P.club || "", lado: lado || P.lado || null } }); } catch (e) { console.warn(e); }
+        try { syncNivel(); } catch (e) { console.warn(e); }
+      } catch (e) {
+        console.error("guardar partido", e); saving = false; btn.disabled = false; btn.textContent = "Guardar partido";
+        $("#pmE", s).textContent = "No se pudo guardar el partido. Inténtalo otra vez."; return;
       }
-      fillPadelAct(a); savePerfil({ padel: { ...(state.perfil.padel || {}), club: club || P.club || "", lado: lado || P.lado || null } });
-      saveItem("act", a); const before = computeNivel(); syncNivel(); closeSheet();
-      const h = computeNivel(); const d = h && h.hist.length > 1 ? h.hist[h.hist.length - 1].n - h.hist[h.hist.length - 2].n : 0;
-      if (view === "padel" || view === "inicio") render();
-      if (h) setTimeout(() => openShareMatch(a, true), 260); else toast(won ? "¡Victoria! 🏆" : "Partido guardado");
+      closeSheet();
+      // Tarjeta para Instagram siempre al guardar
+      setTimeout(() => { try { openShareMatch(a, true); } catch (e) { console.warn(e); toast(won ? "¡Victoria! 🏆" : "Partido guardado"); } }, 120);
     };
   });
 }

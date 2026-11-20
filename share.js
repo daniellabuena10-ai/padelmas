@@ -9,9 +9,10 @@ function nivelDelta(a) {
 
 // ---------- Tarjeta 1080×1920 (formato stories) ----------
 async function matchCanvas(a) {
-  try { await document.fonts.load('800 80px "Barlow Condensed"'); await document.fonts.load("800 40px Inter"); } catch {}
+  // Si las fuentes tardan (poca cobertura) no bloqueamos: máximo 1,5 s
+  try { await Promise.race([Promise.all([document.fonts.load('800 80px "Barlow Condensed"'), document.fonts.load("800 40px Inter")]), new Promise(r => setTimeout(r, 1500))]); } catch {}
   const W = 1080, H = 1920, c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
-  const p = a.padel, won = setsWin(p.sets), lv = nivelDelta(a);
+  const p = a.padel, won = setsWin(p.sets); let lv = null; try { lv = nivelDelta(a); } catch {}
   const VOLT = "#d4ff3a", HOT = "#ff6a3d", INK = "#f2f5f7", MUTE = "#8b95a3";
   const BC = (w, s) => `${w} ${s}px "Barlow Condensed", Inter, sans-serif`, IN = (w, s) => `${w} ${s}px Inter, system-ui, sans-serif`;
   // Fondo
@@ -72,17 +73,22 @@ async function shareCanvas(c, text) {
 
 // Hoja tras guardar un partido (o desde el detalle)
 async function openShareMatch(a, recien = false) {
-  const won = setsWin(a.padel.sets), lv = nivelDelta(a);
+  const won = setsWin(a.padel.sets); let lv = null; try { lv = nivelDelta(a); } catch {}
   const head = recien ? (won ? "¡Victoria! 🏆" : "Partido guardado") : "Compartir partido";
   openSheet(head, `${recien && lv && lv.d != null ? `<p class="small mute" style="margin:-6px 0 12px">Tu nivel ${lv.d >= 0 ? "sube" : "baja"} <b style="color:${lv.d >= 0 ? "var(--volt)" : "var(--neg)"}">${lv.d >= 0 ? "+" : ""}${nf(lv.d, 2)}</b> y se queda en <b>${nf(lv.n, 2)}</b>.</p>` : ""}
     <div id="shPrev" style="aspect-ratio:9/16;max-height:52vh;margin:0 auto 14px;border-radius:18px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center"><span class="small mute">Creando tarjeta…</span></div>
     <button class="btn pri block" id="shGo">${svg("share")}Compartir en stories</button>
     <p class="tiny mute" style="text-align:center;margin-top:8px">Elige Instagram en el menú y súbela a tu historia. Etiqueta a tus compañeros 😉</p>
     ${recien ? `<button class="btn block" id="shNo" style="margin-top:8px">Ahora no</button>` : ""}`, async s => {
-    const c = await matchCanvas(a); const img = new Image(); img.src = c.toDataURL("image/png"); img.style.cssText = "height:100%;width:auto;display:block";
-    const pv = $("#shPrev", s); if (pv) { pv.innerHTML = ""; pv.appendChild(img); }
-    $("#shGo", s).onclick = () => shareCanvas(c, `${won ? "Victoria" : "Partido"} en Pádel+ 🎾 ¿Cuál es tu nivel? ${APP_LINK}`);
     const no = $("#shNo", s); if (no) no.onclick = closeSheet;
+    const go = $("#shGo", s); go.disabled = true;
+    let c;
+    try { c = await matchCanvas(a); } catch (e) { console.warn("tarjeta", e); const pv = $("#shPrev", s); if (pv) pv.innerHTML = `<span class="small mute">No se pudo crear la tarjeta</span>`; return; }
+    const blob = await new Promise(r => c.toBlob(r, "image/png"));
+    const img = new Image(); img.src = blob ? URL.createObjectURL(blob) : c.toDataURL("image/png"); img.style.cssText = "height:100%;width:auto;display:block";
+    const pv = $("#shPrev", s); if (pv) { pv.innerHTML = ""; pv.appendChild(img); }
+    go.disabled = false;
+    go.onclick = () => shareCanvas(c, `${won ? "Victoria" : "Partido"} en Pádel+ 🎾 ¿Cuál es tu nivel? ${APP_LINK}`);
   });
 }
 
