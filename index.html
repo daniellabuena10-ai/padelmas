@@ -277,10 +277,12 @@ nav.tabbar button{position:relative}
 @media(min-width:900px){#app{padding-top:28px}}
 a.btn,a.item{text-decoration:none;color:inherit}
 #piR button{padding-left:4px;padding-right:4px}
-.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 10px}
-.pick button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:14px;border-radius:18px;background:linear-gradient(160deg,#1f2a12,#151b10);border:1px solid rgba(212,255,58,.35)}
-.pick button:first-child{grid-column:1/-1;background:linear-gradient(160deg,#2a2a0e,#1a190b);border-color:rgba(250,204,21,.5);padding:18px}
-.pick button:first-child b{font-size:20px}.pick .pe{font-size:26px;line-height:1}.pick b{font-size:16px}.pick small{font-size:12.5px;color:var(--mute)}
+.pick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}
+.pick button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:13px 11px;border-radius:18px;background:linear-gradient(160deg,#1f2a12,#151b10);border:1px solid rgba(212,255,58,.35)}
+.pick .pe{font-size:26px;line-height:1;margin-bottom:4px}.pick b{font-size:16px}.pick small{font-size:12px;color:var(--mute);line-height:1.3}
+.lrank{padding:14px 15px}.lrank .rk{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:12px}.lrank .rk.me{background:rgba(250,204,21,.1)}
+.lrank .p{width:16px;color:var(--mute);font-weight:700}.lrank .av2{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0a0d11}
+.lrank b{flex:1}.lrank .v{font-size:22px}.lrank .up{color:var(--volt);font-size:12.5px;font-weight:700}
 </style>
 </head>
 <body>
@@ -289,20 +291,25 @@ a.btn,a.item{text-decoration:none;color:inherit}
 <section id="auth" hidden>
   <div class="logo sm"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="9" rx="6.2" ry="6.6"/><path d="M14.3 13.6L20 20"/><path d="M19 3v5M16.5 5.5h5"/></svg></div>Pádel<b>+</b></div>
   <div id="land">
-    <h1>La pala que te va,<br><em>en 30 segundos.</em></h1>
-    <p class="pitch">Pala, zapatillas y ropa de pádel recomendadas para tu nivel, tu juego y tu presupuesto. Con criterio de tienda, explicado fácil. Gratis.</p>
-    <div class="pick">
-      <button id="goPala"><span class="pe">🎾</span><b>¿Qué pala me va?</b><small>Según tu nivel, tu juego y tu brazo</small></button>
-      <button id="goZap"><span class="pe">👟</span><b>Zapatillas</b><small>Suela, horma y tu peso</small></button>
-      <button id="goRopa"><span class="pe">👕</span><b>Ropa</b><small>Mujer y hombre, por estación</small></button>
+    <h1>Juega mejor.<br><em>Equípate mejor.</em></h1>
+    <p class="pitch">Tu nivel real, el ranking con tus amigos y el material que de verdad necesitas para tu juego. Gratis.</p>
+    <div class="dc dpad lrank" style="width:100%;margin:0">
+      <div class="dl">🏆 Ranking de tu grupo</div>
+      <div class="rk"><span class="p">1</span><span class="av2" style="background:#38bdf8">P</span><b>Pepe</b><span class="num v">4,10</span></div>
+      <div class="rk me"><span class="p">2</span><span class="av2" style="background:#d4ff3a;color:#0a0d02">T</span><b>Tú</b><span class="up">▲ +0,13</span><span class="num v" style="color:#facc15">3,89</span></div>
+      <div class="rk"><span class="p">3</span><span class="av2" style="background:#f472b6">L</span><b>Laura</b><span class="num v">3,50</span></div>
+      <div class="tiny mute" style="margin-top:6px">Apunta el partido en 10 segundos y tu nivel se mueve según contra quién ganas.</div>
     </div>
-    <p class="tiny mute" style="text-align:center;margin:-4px 0 18px">Sin registrarte. Pruébalo ahora.</p>
-    <div class="dc drun" style="margin-bottom:22px"><div class="dl">🥇 Ejemplo de recomendación</div><div class="dsub" style="color:var(--ink)"><b>Polivalente, tacto medio, ~365 g</b> · para nivel intermedio y revés, cuidando el codo. Con las 3 mejores opciones y por qué.</div></div>
-    <div class="sec" style="margin:0 0 10px">Y con tu cuenta gratis</div>
+    <div class="sec" style="margin:20px 0 10px">¿Qué necesitas?</div>
+    <div class="pick">
+      <button id="goPala"><span class="pe">🎾</span><b>Pala</b><small>Para tu nivel, tu juego y tu brazo</small></button>
+      <button id="goZap"><span class="pe">👟</span><b>Zapatillas</b><small>Suela, horma y tu peso</small></button>
+      <button id="goRopa"><span class="pe">👕</span><b>Ropa</b><small>Mujer y hombre</small></button>
+    </div>
+    <p class="tiny mute" style="text-align:center;margin:2px 0 20px">Sin registrarte. Te explicamos por qué te va y dónde comprarlo.</p>
     <div class="what">
-      <div><span>📈</span><p><b>Tu nivel real.</b> Apunta tus partidos en 10 segundos y tu nivel sube o baja según contra quién ganas. Y las recomendaciones se ajustan a él.</p></div>
-      <div><span>🏆</span><p><b>Pícate con tus amigos.</b> Cara a cara, ranking del grupo, revanchas y tu tarjeta para stories.</p></div>
-      <div><span>📍</span><p><b>Pistas en tu ciudad.</b> Clubes, pistas cubiertas o públicas, cómo llegar y dónde reservar.</p></div>
+      <div><span>⚔️</span><p><b>Pícate con tus amigos.</b> Cara a cara, revanchas y tu tarjeta para stories.</p></div>
+      <div><span>📍</span><p><b>Pistas en tu ciudad.</b> Clubes, cubiertas o públicas, cómo llegar y dónde reservar.</p></div>
     </div>
     <button class="btn pri block big" id="goUp">Empezar gratis</button>
     <button class="btn block ghost" id="goIn">Ya tengo cuenta</button>
