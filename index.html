@@ -293,7 +293,7 @@ a.btn,a.item{text-decoration:none;color:inherit}
 .pick .pe{font-size:26px;line-height:1;margin-bottom:4px;display:block}.pick b{font-size:16px}.pick small{font-size:12px;color:var(--mute);line-height:1.3}
 .lrank{padding:14px 15px}.lrank .rk{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:12px}.lrank .rk.me{background:rgba(250,204,21,.1)}
 .lrank .p{width:16px;color:var(--mute);font-weight:700}.lrank .av2{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0a0d11}
-.lrank b{flex:1}.lrank .v{font-size:22px}.lrank .up{color:var(--volt);font-size:12.5px;font-weight:700}
+.lrank b{flex:1}.lrank .v{font-size:19px}.lrank .rk{padding:5px 4px}.lrank .up{color:var(--volt);font-size:12.5px;font-weight:700}
 </style>
 </head>
 <body style="background:#10141a">
@@ -303,15 +303,8 @@ a.btn,a.item{text-decoration:none;color:inherit}
   <div class="logo sm"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="9" rx="6.2" ry="6.6"/><path d="M14.3 13.6L20 20"/><path d="M19 3v5M16.5 5.5h5"/></svg></div>Pádel<b>+</b></div>
   <div id="land">
     <h1>Sube de nivel.<br><em>Dentro y fuera de la pista.</em></h1>
-    <p class="pitch">Tu nivel real, el ranking con tus amigos y el material que de verdad necesitas para tu juego. Gratis.</p>
-    <div class="dc dpad lrank" style="width:100%;margin:0">
-      <div class="dl">🏆 Ranking de tu grupo</div>
-      <div class="rk"><span class="p">1</span><span class="av2" style="background:#38bdf8">D</span><b>Daniel</b><span class="num v">4,10</span></div>
-      <div class="rk me"><span class="p">2</span><span class="av2" style="background:#d4ff3a;color:#0a0d02">T</span><b>Tú</b><span class="up">▲ +0,13</span><span class="num v" style="color:#facc15">3,89</span></div>
-      <div class="rk"><span class="p">3</span><span class="av2" style="background:#f472b6">C</span><b>Claudia</b><span class="num v">3,50</span></div>
-      <div class="tiny mute" style="margin-top:6px">Apunta el partido en 10 segundos y tu nivel se mueve según contra quién ganas.</div>
-    </div>
-    <p style="margin:24px 2px 12px;font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.25">Saber jugar es la mitad.<br><span style="color:var(--volt)">La otra mitad es el material.</span></p>
+    <p class="pitch">La pala, la zapatilla y la ropa que de verdad necesitas para tu juego, con opiniones de jugadores de tu nivel. Y tu ranking con amigos. Gratis.</p>
+    <p style="margin:6px 2px 12px;font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.25">Saber jugar es la mitad.<br><span style="color:var(--volt)">La otra mitad es el material.</span></p>
     <div class="pick">
       <button id="goPala"><svg class="pe" viewBox="8 2 48 58" width="38" height="38" aria-hidden="true"><g transform="rotate(-35 32 32)"><ellipse cx="32" cy="24" rx="15" ry="17" fill="#facc15"/><circle cx="26" cy="16" r="1.8" fill="#151b10"/><circle cx="32" cy="14" r="1.8" fill="#151b10"/><circle cx="38" cy="16" r="1.8" fill="#151b10"/><circle cx="24" cy="22" r="1.8" fill="#151b10"/><circle cx="30" cy="21" r="1.8" fill="#151b10"/><circle cx="36" cy="21" r="1.8" fill="#151b10"/><circle cx="41" cy="22" r="1.8" fill="#151b10"/><circle cx="26" cy="28" r="1.8" fill="#151b10"/><circle cx="32" cy="27" r="1.8" fill="#151b10"/><circle cx="38" cy="28" r="1.8" fill="#151b10"/><circle cx="29" cy="34" r="1.8" fill="#151b10"/><circle cx="35" cy="34" r="1.8" fill="#151b10"/><rect x="29" y="40" width="6" height="18" rx="3" fill="#facc15"/><rect x="29" y="49" width="6" height="9" rx="3" fill="#0b0f14" opacity=".55"/></g></svg><b>Pala</b><small>Para tu nivel, tu juego y tu brazo</small></button>
       <button id="goZap"><span class="pe">👟</span><b>Zapatillas</b><small>Suela, horma y tu peso</small></button>
@@ -319,8 +312,16 @@ a.btn,a.item{text-decoration:none;color:inherit}
       <button id="goAcc"><span class="pe">🎒</span><b>Accesorios</b><small>Paletero, overgrip, pelotas</small></button>
     </div>
     <p class="tiny mute" style="text-align:center;margin:2px 0 20px">Sin registrarte. Te explicamos por qué te va y dónde comprarlo.</p>
+    <div class="sec" style="margin:22px 0 10px">Y además, pícate con tus amigos</div>
+    <div class="dc dpad lrank" style="width:100%;margin:0 0 18px;padding:12px 14px">
+      <div class="dl">🏆 Ranking de tu grupo</div>
+      <div class="rk"><span class="p">1</span><span class="av2" style="background:#38bdf8">D</span><b>Daniel</b><span class="num v">4,10</span></div>
+      <div class="rk me"><span class="p">2</span><span class="av2" style="background:#d4ff3a;color:#0a0d02">T</span><b>Tú</b><span class="up">▲ +0,13</span><span class="num v" style="color:#facc15">3,89</span></div>
+      <div class="rk"><span class="p">3</span><span class="av2" style="background:#f472b6">C</span><b>Claudia</b><span class="num v">3,50</span></div>
+      <div class="tiny mute" style="margin-top:6px">Apunta el partido en 10 segundos y tu nivel se mueve según contra quién ganas.</div>
+    </div>
     <div class="what">
-      <div><span>⚔️</span><p><b>Pícate con tus amigos.</b> Cara a cara, revanchas y tu tarjeta para stories.</p></div>
+      <div><span>⭐</span><p><b>Opiniones reales.</b> Lo que dicen de cada pala jugadores de tu mismo nivel.</p></div>
       <div><span>📍</span><p><b>Pistas en tu ciudad.</b> Clubes, cubiertas o públicas, cómo llegar y dónde reservar.</p></div>
     </div>
     <button class="btn pri block big" id="goUp">Empezar gratis</button>
