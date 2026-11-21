@@ -1,0 +1,25 @@
+name: Clubes de pádel (España)
+on:
+  schedule:
+    - cron: "41 3 * * 1"   # cada lunes
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: datos
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Descargar clubes de OpenStreetMap
+        run: node scripts/clubes.mjs
+      - name: Guardar si ha cambiado
+        run: |
+          git config user.name "padelmas-bot"
+          git config user.email "holapadelmas@gmail.com"
+          git pull --rebase -q
+          git add data/clubes.json
+          git diff --cached --quiet && echo "Sin cambios" || (git commit -m "Clubes actualizados" && git push)
