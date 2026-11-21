@@ -3,15 +3,9 @@
 function openStart() {
   openSheet("Pádel", `<div class="subQuick"><button class="hi" id="sFoto">📸 Publicación</button><button id="sHist">⏱ Historia</button></div>
     <div class="row" style="margin-bottom:6px"><button class="btn block" id="sPm" style="background:#facc15;color:#1a1500;border:0;padding:18px">${svg("plus")}Apuntar partido</button><button class="btn block" id="sPc" style="padding:18px">${svg("clock")}Cronometrar</button></div>
-    <div class="sec">Físico para el pádel</div>
-    <button class="item" id="sRut"><span style="font-size:22px;width:28px;text-align:center">💪</span><div style="flex:1"><div style="font-weight:700">Rutinas de gimnasio para pádel</div><div class="tiny mute">Piernas y core, explosividad, prevención de lesiones</div></div>${svg("chev", "chev")}</button>
-    <div class="sports">${["gym", "hiit", "yoga"].map(id => SPORTS.find(s => s.id === id)).filter(Boolean).map(s => `<button data-s="${s.id}">${sportBadge(s.id)}${s.id === "gym" ? "Gimnasio libre" : s.id === "yoga" ? "Movilidad / yoga" : s.n}</button>`).join("")}</div>
-    <button class="btn block" style="margin-top:12px" id="sMan">${svg("edit")}Añadir un entreno ya hecho</button>`, s => {
+    <p class="tiny mute" style="text-align:center;margin-top:10px">Apunta el resultado al acabar, o cronometra el partido mientras juegas.</p>`, s => {
     $("#sFoto", s).onclick = () => openSubir("foto"); $("#sHist", s).onclick = () => openSubir("historia");
     $("#sPm", s).onclick = () => openPadelMatch(); $("#sPc", s).onclick = () => { sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); startRec("padel"); };
-    $$("[data-s]", s).forEach(b => b.onclick = () => { const sp = b.dataset.s; sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); sp === "gym" ? openGym() : startRec(sp); });
-    $("#sMan", s).onclick = () => openManual();
-    $("#sRut", s).onclick = () => openRutinas();
   });
 }
 

@@ -64,7 +64,7 @@ async function clubsComunidad(lat, lon) {
   try { const s = await FS().collection("clubs").where("cell", "in", geoCells(lat, lon)).limit(200).get(); return s.docs.map(d => ({ id: d.id, ...d.data(), fuente: "user" })); } catch (e) { console.warn(e); return []; }
 }
 async function buscarPistas(opts) {
-  pistas.busy = true; pistas.err = ""; pistas.sel = null; if (view === "padel") render();
+  pistas.busy = true; pistas.err = ""; pistas.sel = null; if (!pistas.paso || !/cerca/.test(pistas.paso)) pistas.paso = "Buscando pistas…"; if (view === "padel") render();
   try {
     let lugar = opts.lugar, lat = opts.lat, lon = opts.lon;
     if (lat == null) { const g = await geocode(lugar); if (!g) throw new Error("nolugar"); lat = g.lat; lon = g.lon; lugar = g.nombre; }
@@ -76,7 +76,7 @@ async function buscarPistas(opts) {
     const all = [...us]; osm.forEach(o => { if (!us.some(u => distKm(u.lat, u.lon, o.lat, o.lon) < .08)) all.push({ ...o, dist: distKm(lat, lon, o.lat, o.lon) }); });
     pistas.clubs = all.sort((a, b) => a.dist - b.dist);
   } catch (e) { console.warn(e); pistas.err = e.message === "nolugar" ? "No encuentro ese sitio. Prueba con el nombre de la ciudad." : "No se pudo cargar el mapa de pistas. Revisa tu conexión y vuelve a probar."; }
-  pistas.busy = false; if (view === "padel" && !sheetOpen) render();
+  pistas.busy = false; pistas.paso = ""; if (view === "padel" && !sheetOpen) render();
 }
 // Ubicación aproximada por internet (por si el GPS falla o tarda)
 async function ubicacionIP() {
@@ -86,22 +86,25 @@ async function ubicacionIP() {
   return null;
 }
 function cercaDeMi() {
-  pistas.busy = true; pistas.err = ""; render();
-  const fallo = async code => {
+  pistas.busy = true; pistas.err = ""; pistas.paso = "📍 Buscando tu ubicación… Si el móvil te pregunta, pulsa Permitir."; render();
+  const fallo = async (code, msg) => {
+    pistas.paso = "Probando con tu zona aproximada…"; render();
     const ip = await ubicacionIP();
     if (ip) { toast(code === 1 ? "Sin permiso de GPS: uso tu zona aproximada" : "Uso tu zona aproximada"); return buscarPistas(ip.ciudad ? { lugar: ip.ciudad, lat: ip.lat, lon: ip.lon } : { lugar: "Tu ubicación", lat: ip.lat, lon: ip.lon }); }
     pistas.busy = false;
     pistas.err = code === 1
       ? "La app no tiene permiso de ubicación. En el iPhone: Ajustes → Privacidad y seguridad → Localización → Sitios web de Safari → «Al usarse la app». En Android: mantén pulsado el icono → Información de la app → Permisos → Ubicación. O escribe tu ciudad arriba."
       : "No he podido saber dónde estás. Escribe tu ciudad arriba.";
+    pistas.err += ` (código ${code ?? "?"}${msg ? ": " + msg : ""}${window.isSecureContext ? "" : ", sin https"})`;
     render();
   };
   if (!navigator.geolocation) return fallo(2);
   let done = false;
-  const ok = p => { if (done) return; done = true; buscarPistas({ lugar: "Tu ubicación", lat: p.coords.latitude, lon: p.coords.longitude }); };
+  const ok = p => { if (done) return; done = true; pistas.paso = "Buscando pistas cerca de ti…"; buscarPistas({ lugar: "Tu ubicación", lat: p.coords.latitude, lon: p.coords.longitude }); };
   const ko = e => { if (done) return; if (e && e.code === 1) { done = true; return fallo(1); }
     // Reintenta con GPS de alta precisión antes de rendirse
-    navigator.geolocation.getCurrentPosition(ok, e2 => { if (done) return; done = true; fallo(e2 && e2.code); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }); };
+    pistas.paso = "📍 Afinando con el GPS…"; render();
+    navigator.geolocation.getCurrentPosition(ok, e2 => { if (done) return; done = true; fallo(e2 && e2.code, e2 && e2.message); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }); };
   navigator.geolocation.getCurrentPosition(ok, ko, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
   setTimeout(() => { if (!done) { done = true; fallo(3); } }, 28000); // por si el móvil nunca responde
 }
@@ -110,7 +113,7 @@ function cercaDeMi() {
 function pistasHTML() {
   const myClub = (state.perfil.padel || {}).clubId;
   const list = pistas.clubs.filter(c => pistas.filtro === "todos" || (pistas.filtro === "cubiertas" ? c.cubiertas > 0 : !c.cubiertas || c.cubiertas < (c.pistas || 1)));
-  const res = pistas.busy ? `<div class="empty">Buscando pistas…</div>`
+  const res = pistas.busy ? `<div class="card empty"><p>${esc(pistas.paso || "Buscando pistas…")}</p></div>`
     : pistas.err ? `<div class="card empty"><p>${esc(pistas.err)}</p></div><a class="btn block" href="https://www.google.com/maps/search/${encodeURIComponent("pistas de pádel " + ($("#piQ") && $("#piQ").value || ""))}" target="_blank" rel="noopener">${svg("search")}Buscar en Google Maps</a>`
     : !pistas.lugar ? `<div class="card empty">${svg("gps")}<p>Escribe tu ciudad o pulsa <b>Cerca de mí</b> para ver los clubes y pistas de pádel.</p></div>`
     : `<div class="row" style="justify-content:space-between;align-items:center;margin:4px 2px 8px"><div class="small"><b>${list.length}</b> <span class="mute">sitios en ${esc(pistas.lugar)} (${pistas.radio} km)</span></div></div>

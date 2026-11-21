@@ -58,12 +58,7 @@ function vInicio() {
   { const P = state.perfil.padel || {}; let last = null; try { last = JSON.parse(localStorage.getItem("pm-pistas-lugar")); } catch {}
     html += `<button class="card" id="hPis" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(212,255,58,.28);background:radial-gradient(300px 140px at 100% 0%,rgba(212,255,58,.14),transparent 70%),var(--card)"><span style="font-size:26px">📍</span><div style="flex:1;min-width:0"><div class="tiny" style="color:var(--volt);font-weight:700">PISTAS Y CLUBES</div><div style="font-weight:700;margin-top:2px">${P.clubId && P.club ? "Tu club: " + esc(P.club) : last && last.lugar ? "Pistas en " + esc(last.lugar) : "Busca pistas en tu ciudad"}</div><div class="small mute" style="margin-top:2px">Mapa, cubiertas o al aire libre, cómo llegar y reservar</div></div>${svg("chev", "chev")}</button>`; }
   if (nx) html += `<button class="card" id="hLes" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left"><span style="font-size:26px">🧠</span><div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:700">APRENDE · ${NIVL[nx.nivel].toUpperCase()}</div><div style="font-weight:700;margin-top:2px">${nx.t}</div><div class="small mute" style="margin-top:2px;line-height:1.4">${nx.r}</div></div>${svg("chev", "chev")}</button>`;
-  html += `${shoeAlert()}<div class="sec">Físico para el pádel</div>
-    <button class="card" id="hFis" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left"><div class="ring" style="width:64px;height:64px">${ringSVG(w.min / (+state.perfil.metaMin || 150), "var(--volt)", 64, 8)}</div><div style="flex:1"><div style="font-weight:700">${Math.round(w.min)} min esta semana</div><div class="small mute">${w.acts.length} sesion${w.acts.length === 1 ? "" : "es"}· partidos y gimnasio suman</div></div>${svg("chev", "chev")}</button>
-    <div class="grid3" style="margin-bottom:14px"><button class="stat" id="qRec" style="text-align:left"><div class="k" style="color:var(--volt)">${svg("bolt")}Rutinas</div><div class="small" style="margin-top:6px;font-weight:600">Para pádel</div></button>
-      <button class="stat" id="qGym" style="text-align:left"><div class="k" style="color:var(--hot)">${svg("gym")}Gimnasio</div><div class="small" style="margin-top:6px;font-weight:600">Series y kilos</div></button>
-      <button class="stat" id="qImp" style="text-align:left"><div class="k" style="color:var(--sky)">${svg("watch")}Reloj</div><div class="small" style="margin-top:6px;font-weight:600">Importar</div></button></div>
-    <button class="card" id="nutriMini" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left"><span style="color:var(--hot)">${svg("food")}</span><div style="flex:1">${n.target ? `<div style="font-weight:700">${nf(n.kcal)} / ${nf(n.target)} kcal hoy</div><div class="small mute">Proteína ${nf(n.p)} / ${nf(n.tp)} g</div>` : `<div style="font-weight:700">Nutrición para rendir en pista</div><div class="small mute">Calcula tus calorías y te hago un menú semanal</div>`}</div>${svg("chev", "chev")}</button>`;
+  html += `${shoeAlert()}${tablonInicioHTML()}`;
   return html;
 }
 WIRE.inicio = () => {
@@ -71,7 +66,7 @@ WIRE.inicio = () => {
   on("#hAdd", () => openPadelMatch()); on("#hPad", () => setView("padel")); on("#hTest", openNivelTest); on("#hPend", () => { padelTab = "resumen"; setView("padel"); });
   on("#hPis", () => { padelTab = "pistas"; setView("padel"); window.scrollTo(0, 0); });
   on("#hLes", () => openLesson(nextLesson().id)); on("#hPala", () => { gearSeg = "palas"; openRecPala(); }); on("#hZap", () => openRecZP()); on("#hRopa", () => { gearSeg = "outfits"; setView("material"); }); on("#hMat", () => setView("material")); on("#hFis", () => setView("progreso"));
-  on("#qRec", () => openRutinas()); on("#qGym", () => openGym()); on("#qImp", openImport); on("#nutriMini", () => setView("nutricion"));
+  on("#hTbAll", () => setView("tablon")); $$("[data-tb]").forEach(b => b.onclick = () => setView("tablon"));
   wireActs(); if (typeof loadPadelSocial === "function") loadPadelSocial();
 };
 function padelMini() {
@@ -226,11 +221,9 @@ function openPerfil() {
     <div class="card"><h3>${svg("target")}Meta semanal</h3><div class="seg" id="metaSeg">${[90, 150, 200, 300, 420].map(v => `<button data-m="${v}" class="${(+state.perfil.metaMin || 150) === v ? "on" : ""}">${v} min</button>`).join("")}</div><p class="tiny mute">La OMS recomienda al menos 150 minutos de actividad moderada a la semana.</p></div>
     <div class="card list" style="padding:4px 14px">
       <button class="item" id="pPub">${svg("users")}${typeof social !== "undefined" && social.me ? "Mi perfil público · @" + esc(social.me.usuario) : "Unirme a la comunidad"}${svg("chev", "chev")}</button>
-      <button class="item" id="pFis">${svg("bolt")}Mi físico: entrenos, progreso y nutrición${svg("chev", "chev")}</button>
+      <button class="item" id="pFis">${svg("bolt")}Tablón: torneos y novedades${svg("chev", "chev")}</button>
       <div class="item" style="cursor:default">${svg("eye")}<div style="flex:1">Tamaño del texto</div><div class="seg" id="pTxt" style="width:auto;margin:0">${[["n", "Normal"], ["g", "Grande"]].map(([k, n]) => `<button data-t="${k}" class="${(localStorage.getItem("pm-texto") || "n") === k ? "on" : ""}" style="padding:8px 12px">${n}</button>`).join("")}</div></div>
       <button class="item" id="pName">${svg("user")}Cambiar nombre${svg("chev", "chev")}</button>
-      <button class="item" id="pWatch">${svg("watch")}Conectar reloj${svg("chev", "chev")}</button>
-      <button class="item" id="pNut">${svg("food")}Mis datos de nutrición${svg("chev", "chev")}</button>
       <a class="item" href="privacidad.html">${svg("shield")}Privacidad y condiciones${svg("chev", "chev")}</a>
       <a class="item" href="mailto:holapadelmas@gmail.com?subject=P%C3%A1del%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
       <button class="item" id="pOut">${svg("logout")}Cerrar sesión${svg("chev", "chev")}</button>
@@ -239,8 +232,8 @@ function openPerfil() {
     $$("[data-m]", s).forEach(b => b.onclick = () => { savePerfil({ metaMin: +b.dataset.m }); $$("[data-m]", s).forEach(x => x.classList.toggle("on", x === b)); toast("Meta actualizada"); });
     $$("#pTxt [data-t]", s).forEach(b => b.onclick = () => { try { localStorage.setItem("pm-texto", b.dataset.t); } catch {} document.body.classList.toggle("tg", b.dataset.t === "g"); $$("#pTxt [data-t]", s).forEach(x => x.classList.toggle("on", x === b)); });
     $("#pName", s).onclick = () => openSheet("Tu nombre", `<label class="field">Nombre<input id="nN" value="${esc(name)}" maxlength="40"></label><button class="btn pri block" id="nOk">Guardar</button>`, s2 => $("#nOk", s2).onclick = async () => { const n = $("#nN", s2).value.trim(); if (!n) return; me.name = n; savePerfil({ nombre: n }); try { store.auth && await store.auth.currentUser.updateProfile({ displayName: n }); } catch {} closeSheet(); toast("Nombre guardado"); });
-    $("#pWatch", s).onclick = openImport; $("#pFis", s).onclick = () => { closeSheet(); setView("progreso"); };
-    $("#pPub", s).onclick = () => { if (social.me) openUser(me.uid); else if (store.kind === "firebase") openPerfilPublico(); else toast("Necesitas conexión"); }; $("#pNut", s).onclick = () => openNutriSetup();
+    $("#pFis", s).onclick = () => { closeSheet(); setView("tablon"); };
+    $("#pPub", s).onclick = () => { if (social.me) openUser(me.uid); else if (store.kind === "firebase") openPerfilPublico(); else toast("Necesitas conexión"); }; 
     $("#pOut", s).onclick = () => confirmSheet("¿Cerrar sesión?", "Tus datos quedan guardados en tu cuenta.", "Cerrar sesión", async () => { closeSheet(); await store.signOut(); }, false);
     $("#pDel", s).onclick = openBorrar;
   });

@@ -145,10 +145,9 @@ function boot() {
 }
 
 // ---------- iPhone: recolocar la barra de abajo tras cerrar el teclado ----------
-function fixViewport() { requestAnimationFrame(() => { window.scrollTo(window.scrollX, window.scrollY); const tb = $("#tabbar"); if (tb && !tb.hidden) { tb.style.display = "none"; void tb.offsetHeight; tb.style.display = ""; } }); }
+function fixViewport() { requestAnimationFrame(() => window.scrollTo(window.scrollX, window.scrollY)); }
 document.addEventListener("focusout", e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) setTimeout(fixViewport, 80); });
 if (window.visualViewport) { let vh = visualViewport.height; visualViewport.addEventListener("resize", () => { if (visualViewport.height > vh + 80) fixViewport(); vh = visualViewport.height; }); }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") fixViewport(); });
 window.addEventListener("orientationchange", () => setTimeout(fixViewport, 300));
 
 // ---------- Botón atrás (Android y gesto de volver) ----------
@@ -171,7 +170,7 @@ function initBackButton() {
 
 // ---------- Navegación ----------
 let view = "inicio", sheetOpen = false;
-const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], material: ["target", "Material"], comunidad: ["users", "Comunidad"], tu: ["bolt", "Físico"] };
+const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], material: ["target", "Material"], comunidad: ["users", "Comunidad"], tablon: ["bolt", "Tablón"] };
 const TU_SUB = { progreso: "Físico", nutricion: "Nutrición", entrenos: "Entrenos" };
 let tuTab = "progreso";
 function initNav() {
@@ -183,15 +182,16 @@ function initNav() {
   $("#avBtn").onclick = openPerfil; $("#chatBtn").onclick = openChats; $("#bellBtn").onclick = openAvisos;
   $("#sheetBg").onclick = closeSheet;
 }
-function setView(v) { if (TU_SUB[v]) { tuTab = v; v = "tu"; } view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); window.scrollTo(0, 0); render(); }
+function setView(v) { if (TU_SUB[v] || v === "tu") v = "tablon"; view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); window.scrollTo(0, 0); render(); }
 function render() {
   if (!me || !loaded) return;
   const name = (me.name || state.perfil.nombre || me.email || "R").trim();
   $("#avBtn").textContent = name[0].toUpperCase();
-  const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tu: vTu, material: () => materialView() }[view];
-  $("#title").textContent = view === "tu" ? TU_SUB[tuTab] : TABS[view][1];
+  if (!TABS[view]) view = "inicio";
+  const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tablon: vTablon, material: () => materialView() }[view];
+  $("#title").textContent = TABS[view][1];
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
-  (view === "tu" ? WIRE.tu : view === "material" ? () => wireMaterial($("#view")) : WIRE[view] || (() => {}))();
+  (view === "material" ? () => wireMaterial($("#view")) : WIRE[view] || (() => {}))();
 }
 const WIRE = {};
 function vTu() { const sub = { progreso: vProgreso, nutricion: vNutricion, entrenos: vEntrenos }[tuTab]; return `<div class="tabs">${Object.entries(TU_SUB).map(([k, n]) => `<button data-tu="${k}" class="${tuTab === k ? "on" : ""}">${n}</button>`).join("")}</div>` + sub(); }
