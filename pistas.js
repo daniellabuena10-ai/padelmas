@@ -93,7 +93,8 @@ async function buscarPistas(opts) {
     if (!osm) { if (ov.status === "fulfilled") { osm = agrupar(ov.value, lat, lon); if (osm.length) cacheSet(k, osm); } else { console.warn("overpass", ov.reason); osm = []; pistas.aviso = "El mapa libre no ha respondido; te enseño lo que hay y tienes Google Maps abajo."; } }
     const us = (cm.status === "fulfilled" ? cm.value : []).map(c => ({ ...c, dist: distKm(lat, lon, c.lat, c.lon) })).filter(c => c.dist <= pistas.radio + 2);
     const all = [...us]; osm.forEach(o => { if (!us.some(u => distKm(u.lat, u.lon, o.lat, o.lon) < .08)) all.push({ ...o, dist: distKm(lat, lon, o.lat, o.lon) }); });
-    pistas.clubs = all.sort((a, b) => a.dist - b.dist);
+    const gen = c => /^pistas (de padel|municipales)|^padel$/i.test(nrm(c.nombre)) ? 1.5 : 0;
+    pistas.clubs = all.sort((a, b) => (a.dist + gen(a)) - (b.dist + gen(b)));
   } catch (e) { if (busqId !== my) return; console.warn(e); pistas.err = e.message === "nolugar" ? "No encuentro ese sitio. Prueba con el nombre de la ciudad." : "No se pudo cargar el mapa de pistas. Revisa tu conexión y vuelve a probar."; }
   pistas.busy = false; pistas.paso = ""; if (view === "padel" && !sheetOpen) render();
 }
@@ -138,8 +139,8 @@ function pistasHTML() {
     : !pistas.lugar ? `<div class="card empty">${svg("gps")}<p>Escribe tu ciudad o pulsa <b>Cerca de mí</b> para ver los clubes y pistas de pádel.</p></div>`
     : `<div class="row" style="justify-content:space-between;align-items:center;margin:4px 2px 8px"><div class="small"><b>${list.length}</b> <span class="mute">sitios en ${esc(pistas.lugar)} (${pistas.radio} km)</span></div></div>
       ${pistas.aviso ? `<p class="tiny" style="color:#facc15;margin:0 2px 8px">${esc(pistas.aviso)}</p>` : ""}<div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["aire", "Al aire libre"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
-      <div id="piMap" style="height:260px;border-radius:18px;overflow:hidden;margin-bottom:12px;border:1px solid var(--line2)"></div>
-      ${list.length ? `<div class="card" style="padding:4px 14px">${list.slice(0, 60).map(c => `<button class="item" data-club="${c.id}"><span style="font-size:20px;width:28px;text-align:center">${c.id === myClub ? "⭐" : c.cubiertas ? "🏟️" : "🎾"}</span><div style="flex:1;min-width:0"><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</div><div class="tiny mute">${[c.pistas ? `${c.pistas} pista${c.pistas > 1 ? "s" : ""}` : null, c.cubiertas ? (c.cubiertas >= (c.pistas || 1) ? "cubiertas" : "cubiertas y exteriores") : c.pistas ? "al aire libre" : null, c.fuente === "user" ? "añadido por la comunidad" : null].filter(Boolean).join(" · ") || esc(c.dir || "Pádel")}</div></div><span class="small mute" style="white-space:nowrap">${kmTxt(c.dist)}</span></button>`).join("")}</div>`
+      ${pistasPromo()}
+      ${list.length ? `<div class="card" style="padding:4px 14px">${list.slice(0, 60).map(c => `<button class="item" data-club="${c.id}"><span style="font-size:20px;width:28px;text-align:center">${c.id === myClub ? "⭐" : c.cubiertas ? "🏟️" : "🎾"}</span><div style="flex:1;min-width:0"><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</div><div class="tiny mute">${[c.pistas ? `${c.pistas} pista${c.pistas > 1 ? "s" : ""}` : null, c.cubiertas ? (c.cubiertas >= (c.pistas || 1) ? "cubiertas" : "cubiertas y exteriores") : c.pistas ? "al aire libre" : null, c.fuente === "user" ? "añadido por la comunidad" : null, /^pistas (de padel|municipales)/i.test(nrm(c.nombre)) && c.dir ? esc(c.dir) : null].filter(Boolean).join(" · ") || esc(c.dir || "Pádel")}</div></div><span class="small mute" style="white-space:nowrap">${kmTxt(c.dist)}</span></button>`).join("")}</div>`
         : `<div class="card empty"><p>${pistas.clubs.length ? "No hay pistas con ese filtro." : "El mapa libre aún no tiene clubes registrados aquí."}</p></div>`}
       <a class="btn block" href="${`https://www.google.com/maps/search/${encodeURIComponent("pistas de pádel " + (pistas.lugar && pistas.lugar !== "Tu ubicación" ? pistas.lugar : ""))}${pistas.lugar === "Tu ubicación" ? `/@${pistas.lat},${pistas.lon},13z` : ""}`}" target="_blank" rel="noopener" style="margin-top:4px">${svg("search")}Ver todos los clubes en Google Maps</a>`;
   return `<div class="row" style="gap:8px;margin-bottom:10px"><label class="field" style="margin:0;flex:1"><input id="piQ" placeholder="Ciudad o barrio (ej. Zaragoza)" value="${esc(pistas.lugar && pistas.lugar !== "Tu ubicación" ? pistas.lugar : "")}" style="margin:0" enterkeyhint="search"></label><button class="btn" id="piGo" style="flex:0 0 auto">${svg("search")}</button></div>
@@ -161,7 +162,7 @@ function wirePistas(root) {
     const ciudad = social && social.me && social.me.ciudad;
     if (last) buscarPistas(last); else if (ciudad) buscarPistas({ lugar: ciudad });
   }
-  const el = $("#piMap", root); if (el && window.L) setTimeout(() => drawPistasMap(el), 30);
+  const pp = $("#piPromo", root); if (pp) pp.onclick = () => { gearSeg = "tienda"; if (typeof tdCat !== "undefined") { tdCat = "pala"; tdOrden = "oferta"; } setView("material"); };
 }
 function drawPistasMap(el) {
   if (pistasMap) { try { pistasMap.remove(); } catch {} pistasMap = null; }
@@ -177,6 +178,14 @@ function drawPistasMap(el) {
   if (pts.length) m.fitBounds(L.latLngBounds(pts).pad(.15), { maxZoom: 15 }); else m.setView([pistas.lat, pistas.lon], 12);
 }
 
+// Anuncio de la tienda (en lugar del mapa)
+function pistasPromo() {
+  const of = typeof CAT !== "undefined" && CAT ? CAT.p.filter(p => p.c === "pala" && !p.x && dto(p) >= 20 && !/\bjr\b|junior|nino|nina/.test(norm2(p.n))).sort((a, b) => dto(b) - dto(a))[0] : null;
+  return `<button id="piPromo" class="card" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-bottom:12px;border-color:rgba(250,204,21,.45);background:radial-gradient(300px 150px at 100% 0%,rgba(250,204,21,.18),transparent 70%),var(--card)">
+    ${of ? `<div class="tdimg" style="width:84px;height:84px;flex:0 0 84px">${fotoReal(of, 78)}<span class="dtob" style="position:absolute;top:4px;left:4px;font-size:11px">-${dto(of)}%</span></div>` : `<span style="font-size:34px">🎾</span>`}
+    <div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:800">PÁDEL+ · TIENDA</div><div style="font-weight:800;margin-top:2px">¿Vas a jugar? Llega con buen material</div>
+    <div class="small mute" style="margin-top:2px">${of ? `${esc(limpiaNombre(of.n, ""))} a <b style="color:#facc15">${eur(of.p)}</b>` : "Palas, zapatillas y ropa con descuento"}</div></div>${svg("chev", "chev")}</button>`;
+}
 // ---------- ficha del club ----------
 async function openClub(id) {
   const c = pistas.clubs.find(x => x.id === id); if (!c) return;
@@ -215,24 +224,21 @@ function openAddClub() {
   if (!socialOn()) { toast("Crea tu perfil en Comunidad para añadir clubes"); return; }
   const lat0 = pistasMap ? pistasMap.getCenter().lat : pistas.lat, lon0 = pistasMap ? pistasMap.getCenter().lng : pistas.lon;
   let cub = "no";
-  openSheet("Añadir club", `<p class="small mute" style="margin:-6px 0 10px">Mueve el mapa hasta que el punto amarillo quede encima del club.</p>
-    <div style="position:relative;height:220px;border-radius:16px;overflow:hidden;margin-bottom:12px;border:1px solid var(--line2)"><div id="acMap" style="position:absolute;inset:0"></div>
-      <div style="position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#facc15;border:3px solid #0a0d11;z-index:500;pointer-events:none"></div></div>
-    <button class="btn sm" id="acMe" style="margin-bottom:12px">${svg("gps")}Estoy en el club</button>
+  let pos = { lat: lat0, lng: lon0 }, gps = false;
+  openSheet("Añadir club", `<p class="small mute" style="margin:-6px 0 10px">Añade un club que no salga en la lista. Si estás allí ahora, pulsa el botón para guardar su ubicación exacta.</p>
+    <button class="btn block sm" id="acMe" style="margin-bottom:6px">${svg("gps")}Estoy en el club ahora</button><p class="tiny mute" id="acPos" style="margin:0 2px 12px">Ubicación: zona de ${esc(pistas.lugar || "tu búsqueda")}</p>
     <label class="field">Nombre del club<input id="acN" maxlength="60" placeholder="Ej. Club Pádel Zaragoza"></label>
     <div class="row"><label class="field">Nº de pistas<input id="acP" type="number" inputmode="numeric" min="1" max="40" placeholder="6"></label>
       <div class="field">Cubiertas<div class="seg" id="acC"><button data-v="no" class="on">No</button><button data-v="parte">Algunas</button><button data-v="si">Sí</button></div></div></div>
     <label class="field">Web o Playtomic (opcional)<input id="acW" maxlength="200" placeholder="https://…" autocapitalize="off"></label>
     <label class="field">Teléfono (opcional)<input id="acT" maxlength="20" inputmode="tel"></label>
     <div class="err" id="acE"></div><button class="btn pri block" id="acOk">Añadir club</button>`, s => {
-    let m = null;
-    if (window.L) setTimeout(() => { m = L.map($("#acMap", s), { zoomControl: false, attributionControl: false }).setView([lat0, lon0], 15); L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, subdomains: "abcd" }).addTo(m); }, 60);
-    $("#acMe", s).onclick = () => navigator.geolocation && navigator.geolocation.getCurrentPosition(p => m && m.setView([p.coords.latitude, p.coords.longitude], 17), () => toast("Sin permiso de ubicación"));
+    $("#acMe", s).onclick = () => navigator.geolocation && navigator.geolocation.getCurrentPosition(p => { pos = { lat: p.coords.latitude, lng: p.coords.longitude }; gps = true; $("#acPos", s).textContent = "✓ Ubicación del club guardada"; }, () => toast("Sin permiso de ubicación"), { enableHighAccuracy: true, timeout: 15000 });
     $$("#acC [data-v]", s).forEach(b => b.onclick = () => { cub = b.dataset.v; $$("#acC [data-v]", s).forEach(x => x.classList.toggle("on", x === b)); });
     $("#acOk", s).onclick = async () => {
       const nombre = $("#acN", s).value.trim(), np = Math.max(0, Math.min(40, +$("#acP", s).value || 0));
       if (nombre.length < 3) { $("#acE", s).textContent = "Pon el nombre del club."; return; }
-      const ce = m ? m.getCenter() : { lat: lat0, lng: lon0 };
+      const ce = pos;
       const d = { nombre, lat: +ce.lat.toFixed(6), lon: +ce.lng.toFixed(6), cell: geoCell(ce.lat, ce.lng), pistas: np || null, cubiertas: cub === "si" ? (np || 1) : cub === "parte" ? 1 : 0,
         web: $("#acW", s).value.trim().slice(0, 200), tel: $("#acT", s).value.trim().slice(0, 20), dir: pistas.lugar && pistas.lugar !== "Tu ubicación" ? pistas.lugar : "", by: me.uid, t: Date.now() };
       const b = $("#acOk", s); b.disabled = true;
