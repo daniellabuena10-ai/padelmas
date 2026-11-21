@@ -25,14 +25,11 @@ async function geocode(q) {
 }
 async function overpass(lat, lon, radioKm) {
   const a = `(around:${Math.round(radioKm * 1000)},${lat.toFixed(5)},${lon.toFixed(5)})`;
-  const q = `[out:json][timeout:25];(nwr["sport"~"padel|paddle",i]${a};nwr["leisure"~"sports_centre|pitch|sports_hall|fitness_centre"]["name"~"p[aá]del",i]${a};nwr["club"="sport"]["name"~"p[aá]del",i]${a};);out center tags;`;
-  let last;
-  for (const u of OVERPASS) {
-    try { const r = await fetchT(u, { method: "POST", body: "data=" + encodeURIComponent(q), headers: { "Content-Type": "application/x-www-form-urlencoded" } }, 20000);
-      if (!r.ok) throw new Error("HTTP " + r.status); const j = await r.json(); return j.elements || []; }
-    catch (e) { last = e; console.warn("overpass", u, e); }
-  }
-  throw last || new Error("overpass");
+  const q = `[out:json][timeout:12];(nwr["sport"~"padel|paddle",i]${a};nwr["leisure"~"sports_centre|pitch|sports_hall"]["name"~"p[aá]del",i]${a};);out center tags;`;
+  // Pregunta a todos los servidores a la vez y se queda con el primero que conteste bien
+  const one = u => fetchT(u, { method: "POST", body: "data=" + encodeURIComponent(q), headers: { "Content-Type": "application/x-www-form-urlencoded" } }, 14000)
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }).then(j => { if (!j || !j.elements) throw new Error("vacío"); return j.elements; });
+  return Promise.any(OVERPASS.map(one));
 }
 // Junta pistas sueltas en clubes: un polideportivo con 6 pistas es un club, no 6 resultados.
 function agrupar(els, lat0, lon0) {
@@ -61,21 +58,26 @@ function agrupar(els, lat0, lon0) {
 }
 async function clubsComunidad(lat, lon) {
   if (!socialOn()) return [];
-  try { const s = await FS().collection("clubs").where("cell", "in", geoCells(lat, lon)).limit(200).get(); return s.docs.map(d => ({ id: d.id, ...d.data(), fuente: "user" })); } catch (e) { console.warn(e); return []; }
+  try { const s = await Promise.race([FS().collection("clubs").where("cell", "in", geoCells(lat, lon)).limit(200).get(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]); return s.docs.map(d => ({ id: d.id, ...d.data(), fuente: "user" })); } catch (e) { console.warn(e); return []; }
 }
+let busqId = 0;
 async function buscarPistas(opts) {
-  pistas.busy = true; pistas.err = ""; pistas.sel = null; if (!pistas.paso || !/cerca/.test(pistas.paso)) pistas.paso = "Buscando pistas…"; if (view === "padel") render();
+  const my = ++busqId;
+  setTimeout(() => { if (busqId === my && pistas.busy) { pistas.busy = false; pistas.paso = ""; pistas.err = "El mapa está tardando demasiado. Prueba otra vez en un momento o mira los clubes en Google Maps."; if (view === "padel" && !sheetOpen) render(); } }, 25000);
+  pistas.busy = true; pistas.err = ""; pistas.aviso = ""; pistas.sel = null; if (!pistas.paso || !/cerca/.test(pistas.paso)) pistas.paso = "Buscando pistas…"; if (view === "padel") render();
   try {
     let lugar = opts.lugar, lat = opts.lat, lon = opts.lon;
     if (lat == null) { const g = await geocode(lugar); if (!g) throw new Error("nolugar"); lat = g.lat; lon = g.lon; lugar = g.nombre; }
     Object.assign(pistas, { lugar, lat, lon }); try { localStorage.setItem("pm-pistas-lugar", JSON.stringify({ lugar, lat, lon })); } catch {}
     const k = `pm-pistas3:${lat.toFixed(2)},${lon.toFixed(2)},${pistas.radio}`;
     let osm = cacheGet(k, 7 * 864e5);
-    if (!osm) { osm = agrupar(await overpass(lat, lon, pistas.radio), lat, lon); if (osm.length) cacheSet(k, osm); }
-    const us = (await clubsComunidad(lat, lon)).map(c => ({ ...c, dist: distKm(lat, lon, c.lat, c.lon) })).filter(c => c.dist <= pistas.radio + 2);
+    const [ov, cm] = await Promise.allSettled([osm ? Promise.resolve(null) : overpass(lat, lon, pistas.radio), clubsComunidad(lat, lon)]);
+    if (busqId !== my) return;
+    if (!osm) { if (ov.status === "fulfilled") { osm = agrupar(ov.value, lat, lon); if (osm.length) cacheSet(k, osm); } else { console.warn("overpass", ov.reason); osm = []; pistas.aviso = "El mapa libre no ha respondido; te enseño lo que hay y tienes Google Maps abajo."; } }
+    const us = (cm.status === "fulfilled" ? cm.value : []).map(c => ({ ...c, dist: distKm(lat, lon, c.lat, c.lon) })).filter(c => c.dist <= pistas.radio + 2);
     const all = [...us]; osm.forEach(o => { if (!us.some(u => distKm(u.lat, u.lon, o.lat, o.lon) < .08)) all.push({ ...o, dist: distKm(lat, lon, o.lat, o.lon) }); });
     pistas.clubs = all.sort((a, b) => a.dist - b.dist);
-  } catch (e) { console.warn(e); pistas.err = e.message === "nolugar" ? "No encuentro ese sitio. Prueba con el nombre de la ciudad." : "No se pudo cargar el mapa de pistas. Revisa tu conexión y vuelve a probar."; }
+  } catch (e) { if (busqId !== my) return; console.warn(e); pistas.err = e.message === "nolugar" ? "No encuentro ese sitio. Prueba con el nombre de la ciudad." : "No se pudo cargar el mapa de pistas. Revisa tu conexión y vuelve a probar."; }
   pistas.busy = false; pistas.paso = ""; if (view === "padel" && !sheetOpen) render();
 }
 // Ubicación aproximada por internet (por si el GPS falla o tarda)
@@ -117,7 +119,7 @@ function pistasHTML() {
     : pistas.err ? `<div class="card empty"><p>${esc(pistas.err)}</p></div><a class="btn block" href="https://www.google.com/maps/search/${encodeURIComponent("pistas de pádel " + ($("#piQ") && $("#piQ").value || ""))}" target="_blank" rel="noopener">${svg("search")}Buscar en Google Maps</a>`
     : !pistas.lugar ? `<div class="card empty">${svg("gps")}<p>Escribe tu ciudad o pulsa <b>Cerca de mí</b> para ver los clubes y pistas de pádel.</p></div>`
     : `<div class="row" style="justify-content:space-between;align-items:center;margin:4px 2px 8px"><div class="small"><b>${list.length}</b> <span class="mute">sitios en ${esc(pistas.lugar)} (${pistas.radio} km)</span></div></div>
-      <div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["aire", "Al aire libre"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
+      ${pistas.aviso ? `<p class="tiny" style="color:#facc15;margin:0 2px 8px">${esc(pistas.aviso)}</p>` : ""}<div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["aire", "Al aire libre"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
       <div id="piMap" style="height:260px;border-radius:18px;overflow:hidden;margin-bottom:12px;border:1px solid var(--line2)"></div>
       ${list.length ? `<div class="card" style="padding:4px 14px">${list.slice(0, 60).map(c => `<button class="item" data-club="${c.id}"><span style="font-size:20px;width:28px;text-align:center">${c.id === myClub ? "⭐" : c.cubiertas ? "🏟️" : "🎾"}</span><div style="flex:1;min-width:0"><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</div><div class="tiny mute">${[c.pistas ? `${c.pistas} pista${c.pistas > 1 ? "s" : ""}` : null, c.cubiertas ? (c.cubiertas >= (c.pistas || 1) ? "cubiertas" : "cubiertas y exteriores") : c.pistas ? "al aire libre" : null, c.fuente === "user" ? "añadido por la comunidad" : null].filter(Boolean).join(" · ") || esc(c.dir || "Pádel")}</div></div><span class="small mute" style="white-space:nowrap">${kmTxt(c.dist)}</span></button>`).join("")}</div>`
         : `<div class="card empty"><p>${pistas.clubs.length ? "No hay pistas con ese filtro." : "El mapa libre aún no tiene clubes registrados aquí."}</p></div>`}

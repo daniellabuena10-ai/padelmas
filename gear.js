@@ -189,13 +189,20 @@ const PVP = { pala_vertex05hybrid: 339.95, pala_techviper3: 370, pala_pegasuspro
 const RANGO = ["", "menos de 100 €", "100 – 200 €", "más de 200 €"];
 const priceTxt = g => PVP[g.id] ? `${Math.round(PVP[g.id])} €` : RANGO[g.precio];
 // Cuando Awin apruebe los programas, se rellena AFFIL y los enlaces pasan a ser de afiliado.
-const AFFIL = { activo: false, affid: "3159710", tiendas: [] /* {n, mid, buscar: q => url} */ };
+// Tiendas. Mientras Awin no apruebe (activo:false) el botón lleva directo a la tienda; al aprobar, pasa por Awin con nuestro ID.
+const AFFIL = { activo: false, affid: "3159710", tiendas: [
+  { n: "Padel Market", mid: "24562", buscar: q => `https://padelmarket.com/es-eu/search?type=product&q=${encodeURIComponent(q)}` }] };
+function storeUrl(t, q) { const u = t.buscar(q); return AFFIL.activo ? `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&clickref=padelmas&ued=${encodeURIComponent(u)}` : u; }
+function buyUrl(g) { const t = AFFIL.tiendas[0]; return t ? storeUrl(t, `${g.marca} ${g.modelo}`) : `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(g.marca + " " + g.modelo)}`; }
 function priceLinks(g) {
   const q = `${g.marca} ${g.modelo}`;
-  if (AFFIL.activo && AFFIL.tiendas.length) return AFFIL.tiendas.map(t => ({ n: t.n, url: `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&ued=${encodeURIComponent(t.buscar(q))}` }));
-  return [{ n: "Comparar precios", url: `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}` }];
+  return [...AFFIL.tiendas.map(t => ({ n: `Comprar en ${t.n}`, url: storeUrl(t, q), main: true })), { n: "Comparar en otras tiendas", url: `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}` }];
 }
-function priceBtns(g) { return `<div class="stat" style="margin:4px 0 10px;display:flex;align-items:center;justify-content:space-between"><div><div class="k">${PVP[g.id] ? "Precio oficial (PVP)" : "Precio orientativo"}</div><div class="num" style="font-size:26px;color:#facc15">${priceTxt(g)}</div></div><div class="tiny mute" style="text-align:right;max-width:52%">En tiendas suele haber descuentos. Compara antes de comprar.</div></div><div class="row" style="margin:4px 0 12px">${priceLinks(g).map(l => `<a class="btn block" href="${l.url}" target="_blank" rel="noopener sponsored" style="text-decoration:none;color:inherit">${svg("cart")}${esc(l.n)}</a>`).join("")}</div><p class="tiny mute" style="margin:-6px 0 12px;line-height:1.45">🤝 <b>Enlace de afiliado:</b> si compras desde aquí${AFFIL.activo ? ` en ${AFFIL.tiendas.map(t => esc(t.n)).join(", ") || "la tienda"}` : ""}, Pádel+ puede recibir una comisión. A ti no te cuesta más y no cambia nuestras recomendaciones. <a href="privacidad.html#afiliacion" target="_blank" style="color:var(--volt)">Más info</a></p>`; }
+function buyBlock(g) {
+  const t = AFFIL.tiendas[0]; if (!t) return "";
+  return `<a class="btn block buy" href="${buyUrl(g)}" target="_blank" rel="noopener sponsored">${svg("cart")}<span style="white-space:nowrap">Comprar en ${esc(t.n)}</span></a><p class="tiny mute" style="text-align:center;margin:0 0 10px">Precio: <b style="color:#facc15">${priceTxt(g)}</b> · enlace de afiliado</p>`;
+}
+function priceBtns(g) { return `<div class="stat" style="margin:4px 0 10px;display:flex;align-items:center;justify-content:space-between"><div><div class="k">${PVP[g.id] ? "Precio oficial (PVP)" : "Precio orientativo"}</div><div class="num" style="font-size:26px;color:#facc15">${priceTxt(g)}</div></div><div class="tiny mute" style="text-align:right;max-width:52%">En tiendas suele haber descuentos. Compara antes de comprar.</div></div><div style="display:flex;flex-direction:column;gap:8px;margin:4px 0 12px">${priceLinks(g).map(l => l.main ? `<a class="btn block buy" href="${l.url}" target="_blank" rel="noopener sponsored">${svg("cart")}${esc(l.n)}</a>` : `<a class="btn block sm" href="${l.url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">${svg("search")}${esc(l.n)}</a>`).join("")}</div><p class="tiny mute" style="margin:-6px 0 12px;line-height:1.45">🤝 <b>Enlace de afiliado:</b> si compras desde aquí${AFFIL.activo ? ` en ${AFFIL.tiendas.map(t => esc(t.n)).join(", ") || "la tienda"}` : ""}, Pádel+ puede recibir una comisión. A ti no te cuesta más y no cambia nuestras recomendaciones. <a href="privacidad.html#afiliacion" target="_blank" style="color:var(--volt)">Más info</a></p>`; }
 
 // ---------- Filas y fichas ----------
 function gearRow(g, tag = null, why = null) {
@@ -205,9 +212,13 @@ function gearRow(g, tag = null, why = null) {
   return `<button class="card shoe" data-gear="${g.id}" style="display:block;width:100%;text-align:left;padding:14px">${tag ? `<div class="tiny" style="color:#facc15;font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
     <div style="display:flex;align-items:center;gap:12px"><div class="gart">${gearArt(g, isP ? 64 : 70)}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right;flex:none"><div class="small" style="color:#facc15;font-weight:700;white-space:nowrap">${PVP[g.id] ? priceTxt(g) : PRECIO[g.precio]}</div>${PVP[g.id] ? `<div class="tiny mute">PVP</div>` : `<div class="tiny mute" style="white-space:nowrap">${RANGO[g.precio]}</div>`}${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px">${isP ? `<span class="chip" style="color:#facc15">${nivTxt(g.nivel)}</span>` : ""}${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
-    ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}</button>`;
+    ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}
+    ${AFFIL.tiendas.length ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span class="num" style="font-size:19px;color:#facc15">${priceTxt(g)}</span><span class="buyrow" data-buy="${g.id}">${svg("cart")}Comprar</span></div>` : ""}</button>`;
 }
-function wireGearRows(root) { $$("[data-gear]", root).forEach(b => b.onclick = () => openGear(b.dataset.gear)); wireShoeRows(root); }
+function wireGearRows(root) {
+  $$("[data-buy]", root).forEach(b => b.onclick = e => { e.stopPropagation(); e.preventDefault(); const g = gearOf(b.dataset.buy); if (g) window.open(buyUrl(g), "_blank", "noopener"); });
+  $$("[data-gear]", root).forEach(b => b.onclick = e => { if (e.target.closest("[data-buy]")) return; openGear(b.dataset.gear); }); wireShoeRows(root);
+}
 function openGear(id) {
   const g = gearOf(id); if (!g) return; if (!id.startsWith("pala_") && !id.startsWith("zp_")) return openShoe(id);
   const isP = id.startsWith("pala_");
@@ -215,7 +226,7 @@ function openGear(id) {
     : [["Amortiguación", g.amort / 5], ["Estabilidad", g.estab / 5], ["Ligereza", Math.max(.15, (430 - g.peso) / 90)], ["Precio", 1 - (g.precio - 1) / 2.5]];
   const specs = isP ? [["Forma", g.forma], ["Balance", blTxt(g.balance)], ["Tacto", durTxt(g.dureza)], ["Peso", `~${g.peso} g`], ["Caras", g.cara], ["Nivel", nivTxt(g.nivel)]]
     : [["Suela", g.suela], ["Peso", `~${g.peso} g`], ["Horma", g.horma], ["Amortiguación", `${g.amort}/5`], ["Estabilidad", `${g.estab}/5`], ["Ideal para", zpIdeal(g)]];
-  openSheet(`${g.marca} ${g.modelo}`, `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div><p style="line-height:1.5;margin-top:-4px">${g.desc}</p>
+  openSheet(`${g.marca} ${g.modelo}`, `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div><p style="line-height:1.5;margin-top:-4px">${g.desc}</p>${buyBlock(g)}
     <div class="grid3" style="margin:14px 0">${specs.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div style="font-weight:700;margin-top:4px">${String(v)[0].toUpperCase() + String(v).slice(1)}</div></div>`).join("")}</div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${Math.max(5, Math.min(100, v * 100))}%;background:#facc15"></b></i></div>`).join("")}</div>
     ${isP ? "" : `<div class="hint">${svg("info")}<span><b style="color:var(--ink)">Talla y horma:</b> pruébatelas por la tarde y con el calcetín de jugar. Debe quedar un dedo de hueco delante y el pie no debe bailar a los lados. ${g.horma === "ancha" ? "Esta horma es ancha: buena si los pies se te salen por los lados." : g.horma === "estrecha" ? "Esta horma es estrecha: si tienes el pie ancho, mejor otra o media talla más." : "Horma normal: vale para la mayoría de pies."}</span></div>`}
