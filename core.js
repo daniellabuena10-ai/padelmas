@@ -141,7 +141,7 @@ function boot() {
   store.onUser(u => {
     if (!u) { hideSplash(); me = null; state = { act: {}, com: {}, peso: {}, dia: {}, perfil: {} }; loaded = false; $("#auth").hidden = false; $("#app").hidden = true; $("#tabbar").hidden = true; return; }
     me = u; $("#auth").hidden = true; $("#app").hidden = false; $("#tabbar").hidden = false;
-    store.start(u, first => { loaded = true; if (first) { const go = () => { window.__shown = true; setView(view); requestAnimationFrame(hideSplash); }; (typeof CAT !== "undefined" && CAT) ? go() : Promise.race([catP, new Promise(r => setTimeout(r, 2500))]).then(go); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (window.__shown && !sheetOpen && !recActive) render(); });
+    store.start(u, first => { loaded = true; if (first) { const go = () => { window.__shown = true; setView(view); (typeof fotosListas === "function" ? fotosListas($("#view") || document, 2500) : Promise.resolve()).then(() => requestAnimationFrame(hideSplash)); }; (typeof CAT !== "undefined" && CAT) ? go() : Promise.race([catP, new Promise(r => setTimeout(r, 2500))]).then(go); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (window.__shown && !sheetOpen && !recActive) render(); });
   });
 }
 

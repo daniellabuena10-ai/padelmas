@@ -20,7 +20,10 @@ function loadCatalogo() {
 function realOf(g) { return CAT && g && CAT.match && CATBY[CAT.match[g.id]] || null; }
 function dto(p) { return p.o && p.o > p.p ? Math.round((1 - p.p / p.o) * 100) : 0; }
 function precioReal(p) { return `<span class="num" style="color:#facc15">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}${dto(p) >= 5 ? ` <span class="dtob">-${dto(p)}%</span>` : ""}`; }
-function fotoReal(p, size) { return `<img src="${esc(p.f)}" alt="${esc(p.n)}" decoding="async" referrerpolicy="no-referrer" style="width:${size}px;height:${size}px;object-fit:contain;background:#fff;border-radius:14px;opacity:0;transition:opacity .25s" onload="this.style.opacity=1" onerror="this.style.visibility='hidden'">`; }
+function fotoUrl(u, size) { return /cdn\.shopify\.com/.test(u) ? u + (u.includes("?") ? "&" : "?") + "width=" + Math.min(600, Math.ceil(size * 2.5 / 50) * 50) : u; }
+function fotoReal(p, size) { return `<img src="${esc(fotoUrl(p.f, size))}" alt="${esc(p.n)}" decoding="async" referrerpolicy="no-referrer" style="width:${size}px;height:${size}px;object-fit:contain;background:#fff;border-radius:14px" onerror="this.style.visibility='hidden'">`; }
+// Precarga las fotos que se ven nada más entrar (para que la pantalla aparezca ya completa)
+function fotosListas(root, max) { const imgs = [...(root || document).querySelectorAll("img")].slice(0, 8).filter(i => !i.complete); return imgs.length ? Promise.race([Promise.all(imgs.map(i => new Promise(r => { i.addEventListener("load", r, { once: true }); i.addEventListener("error", r, { once: true }); }))), new Promise(r => setTimeout(r, max))]) : Promise.resolve(); }
 
 // ---------- Tienda (en Material) ----------
 let tdCat = "pala", tdQ = "", tdOrden = "top", tdN = 30, tdGen = "";
