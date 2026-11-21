@@ -133,7 +133,7 @@ function authErr(e) {
 function boot() {
   try { if (localStorage.getItem("pm-texto") === "g") document.body.classList.add("tg"); } catch {}
   store = (window.FIREBASE_CONFIG && window.firebase) ? firebaseStore() : localStore();
-  initAuthUI(); initNav();
+  initAuthUI(); initNav(); setTimeout(() => typeof loadCatalogo === "function" && loadCatalogo(), 1500);
   const hideSplash = () => $("#splash").classList.add("out");
   setTimeout(hideSplash, 5000);
   initBackButton();

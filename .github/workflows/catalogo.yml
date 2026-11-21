@@ -1,0 +1,26 @@
+name: Catálogo Padel Market
+on:
+  schedule:
+    - cron: "17 4 * * *"   # cada día ~5:17 (hora de Madrid en invierno)
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: catalogo
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Descargar feed y generar catálogo
+        env:
+          AWIN_FEED_URL: ${{ secrets.AWIN_FEED_URL }}
+        run: node scripts/feed.mjs
+      - name: Guardar si ha cambiado
+        run: |
+          git config user.name "padelmas-bot"
+          git config user.email "holapadelmas@gmail.com"
+          git add data/catalogo.json
+          git diff --cached --quiet && echo "Sin cambios" || (git commit -m "Catálogo actualizado" && git push)

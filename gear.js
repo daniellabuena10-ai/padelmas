@@ -187,20 +187,20 @@ const PVP = { pala_vertex05hybrid: 339.95, pala_techviper3: 370, pala_pegasuspro
   pala_radicalpro: 240, pala_radicallight: 150, pala_vertex05w: 269.95, pala_neuron02: 269.95, pala_coelloteam: 191, pala_trilogypro: 179.9,
   zp_noxat10pro: 120, zp_noxnerbo: 140, zp_premura3: 159.95, zp_xplovibram: 174.95, zp_crazyquickls: 120, zp_barricade14: 160 };
 const RANGO = ["", "menos de 100 €", "100 – 200 €", "más de 200 €"];
-const priceTxt = g => PVP[g.id] ? `${Math.round(PVP[g.id])} €` : RANGO[g.precio];
+const priceTxt = g => { const r = typeof realOf === "function" && realOf(g); return r ? eur(r.p) : PVP[g.id] ? `${Math.round(PVP[g.id])} €` : RANGO[g.precio]; };
 // Cuando Awin apruebe los programas, se rellena AFFIL y los enlaces pasan a ser de afiliado.
 // Tiendas. Mientras Awin no apruebe (activo:false) el botón lleva directo a la tienda; al aprobar, pasa por Awin con nuestro ID.
 const AFFIL = { activo: true, affid: "3159710", tiendas: [
   { n: "Padel Market", mid: "24562", buscar: q => `https://padelmarket.com/es-eu/search?type=product&q=${encodeURIComponent(q)}` }] };
 function storeUrl(t, q) { const u = t.buscar(q); return AFFIL.activo ? `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&clickref=padelmas&ued=${encodeURIComponent(u)}` : u; }
-function buyUrl(g) { const t = AFFIL.tiendas[0]; return t ? storeUrl(t, `${g.marca} ${g.modelo}`) : `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(g.marca + " " + g.modelo)}`; }
+function buyUrl(g) { const r = typeof realOf === "function" && realOf(g); if (r) return r.u; const t = AFFIL.tiendas[0]; return t ? storeUrl(t, `${g.marca} ${g.modelo}`) : `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(g.marca + " " + g.modelo)}`; }
 function priceLinks(g) {
   const q = `${g.marca} ${g.modelo}`;
   return [...AFFIL.tiendas.map(t => ({ n: `Comprar en ${t.n}`, url: storeUrl(t, q), main: true })), { n: "Comparar en otras tiendas", url: `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}` }];
 }
 function buyBlock(g) {
   const t = AFFIL.tiendas[0]; if (!t) return "";
-  return `<a class="btn block buy" href="${buyUrl(g)}" target="_blank" rel="noopener sponsored">${svg("cart")}<span style="white-space:nowrap">Comprar en ${esc(t.n)}</span></a><p class="tiny mute" style="text-align:center;margin:0 0 10px">Precio: <b style="color:#facc15">${priceTxt(g)}</b> · enlace de afiliado</p>`;
+  return `<a class="btn block buy" href="${buyUrl(g)}" target="_blank" rel="noopener sponsored">${svg("cart")}<span style="white-space:nowrap">Comprar en ${esc(t.n)}</span></a><p class="tiny mute" style="text-align:center;margin:0 0 10px">${(() => { const r = typeof realOf === "function" && realOf(g); return r ? `Hoy en ${esc(t.n)}: ${precioReal(r)}${r.x ? " · sin stock ahora" : ""}` : `Precio: <b style="color:#facc15">${priceTxt(g)}</b>`; })()} · enlace de afiliado</p>`;
 }
 function priceBtns(g) { return `<div class="stat" style="margin:4px 0 10px;display:flex;align-items:center;justify-content:space-between"><div><div class="k">${PVP[g.id] ? "Precio oficial (PVP)" : "Precio orientativo"}</div><div class="num" style="font-size:26px;color:#facc15">${priceTxt(g)}</div></div><div class="tiny mute" style="text-align:right;max-width:52%">En tiendas suele haber descuentos. Compara antes de comprar.</div></div><div style="display:flex;flex-direction:column;gap:8px;margin:4px 0 12px">${priceLinks(g).map(l => l.main ? `<a class="btn block buy" href="${l.url}" target="_blank" rel="noopener sponsored">${svg("cart")}${esc(l.n)}</a>` : `<a class="btn block sm" href="${l.url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">${svg("search")}${esc(l.n)}</a>`).join("")}</div><p class="tiny mute" style="margin:-6px 0 12px;line-height:1.45">🤝 <b>Enlace de afiliado:</b> si compras desde aquí${AFFIL.activo ? ` en ${AFFIL.tiendas.map(t => esc(t.n)).join(", ") || "la tienda"}` : ""}, Pádel+ puede recibir una comisión. A ti no te cuesta más y no cambia nuestras recomendaciones. <a href="privacidad.html#afiliacion" target="_blank" style="color:var(--volt)">Más info</a></p>`; }
 
@@ -210,10 +210,10 @@ function gearRow(g, tag = null, why = null) {
   const isP = g.id.startsWith("pala_"); const st = shoeStats[g.id];
   const chips = isP ? [g.forma, perfilTxt(g.perfil), `balance ${blTxt(g.balance).toLowerCase()}`, `~${g.peso} g`] : [`suela ${g.suela}`, `~${g.peso} g`, g.horma !== "normal" ? `horma ${g.horma}` : null].filter(Boolean);
   return `<button class="card shoe" data-gear="${g.id}" style="display:block;width:100%;text-align:left;padding:14px">${tag ? `<div class="tiny" style="color:#facc15;font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
-    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${gearArt(g, isP ? 64 : 70)}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right;flex:none"><div class="small" style="color:#facc15;font-weight:700;white-space:nowrap">${PVP[g.id] ? priceTxt(g) : PRECIO[g.precio]}</div>${PVP[g.id] ? `<div class="tiny mute">PVP</div>` : `<div class="tiny mute" style="white-space:nowrap">${RANGO[g.precio]}</div>`}${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${(() => { const r = typeof realOf === "function" && realOf(g); return r ? fotoReal(r, 64) : gearArt(g, isP ? 64 : 70); })()}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right;flex:none"><div class="small" style="color:#facc15;font-weight:700;white-space:nowrap">${PVP[g.id] ? priceTxt(g) : PRECIO[g.precio]}</div>${PVP[g.id] ? `<div class="tiny mute">PVP</div>` : `<div class="tiny mute" style="white-space:nowrap">${RANGO[g.precio]}</div>`}${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px">${isP ? `<span class="chip" style="color:#facc15">${nivTxt(g.nivel)}</span>` : ""}${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
     ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}
-    ${AFFIL.tiendas.length ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span class="num" style="font-size:19px;color:#facc15">${priceTxt(g)}</span><span class="buyrow" data-buy="${g.id}">${svg("cart")}Comprar</span></div>` : ""}</button>`;
+    ${AFFIL.tiendas.length ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span style="font-size:17px">${(() => { const r = typeof realOf === "function" && realOf(g); return r ? precioReal(r) : `<span class="num" style="font-size:19px;color:#facc15">${priceTxt(g)}</span>`; })()}</span><span class="buyrow" data-buy="${g.id}">${svg("cart")}Comprar</span></div>` : ""}</button>`;
 }
 function wireGearRows(root) {
   $$("[data-buy]", root).forEach(b => b.onclick = e => { e.stopPropagation(); e.preventDefault(); const g = gearOf(b.dataset.buy); if (g) window.open(buyUrl(g), "_blank", "noopener"); });
@@ -226,7 +226,8 @@ function openGear(id) {
     : [["Amortiguación", g.amort / 5], ["Estabilidad", g.estab / 5], ["Ligereza", Math.max(.15, (430 - g.peso) / 90)], ["Precio", 1 - (g.precio - 1) / 2.5]];
   const specs = isP ? [["Forma", g.forma], ["Balance", blTxt(g.balance)], ["Tacto", durTxt(g.dureza)], ["Peso", `~${g.peso} g`], ["Caras", g.cara], ["Nivel", nivTxt(g.nivel)]]
     : [["Suela", g.suela], ["Peso", `~${g.peso} g`], ["Horma", g.horma], ["Amortiguación", `${g.amort}/5`], ["Estabilidad", `${g.estab}/5`], ["Ideal para", zpIdeal(g)]];
-  openSheet(`${g.marca} ${g.modelo}`, `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div><p style="line-height:1.5;margin-top:-4px">${g.desc}</p>${buyBlock(g)}
+  const R = typeof realOf === "function" ? realOf(g) : null;
+  openSheet(`${g.marca} ${g.modelo}`, `${R ? `<div class="gartbig" style="background:#fff">${fotoReal(R, 230)}</div>` : `<div class="gartbig">${gearArt(g, isP ? 180 : 230)}<span class="tiny mute">Ilustración orientativa · forma ${isP ? g.forma : "y suela"}</span></div>`}<p style="line-height:1.5;margin-top:-4px">${g.desc}</p>${buyBlock(g)}
     <div class="grid3" style="margin:14px 0">${specs.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div style="font-weight:700;margin-top:4px">${String(v)[0].toUpperCase() + String(v).slice(1)}</div></div>`).join("")}</div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${Math.max(5, Math.min(100, v * 100))}%;background:#facc15"></b></i></div>`).join("")}</div>
     ${isP ? "" : `<div class="hint">${svg("info")}<span><b style="color:var(--ink)">Talla y horma:</b> pruébatelas por la tarde y con el calcetín de jugar. Debe quedar un dedo de hueco delante y el pie no debe bailar a los lados. ${g.horma === "ancha" ? "Esta horma es ancha: buena si los pies se te salen por los lados." : g.horma === "estrecha" ? "Esta horma es estrecha: si tienes el pie ancho, mejor otra o media talla más." : "Horma normal: vale para la mayoría de pies."}</span></div>`}
@@ -255,9 +256,10 @@ function openGearReview(g) {
 // ---------- Hub de material ----------
 let gearSeg = "palas", gearFilter = "todas", gearBrand = "todas";
 function materialView() {
-  const segs = [["palas", "Palas"], ["zpadel", "Zapatillas"], ["outfits", "Outfits"], ["acces", "Accesorios"]];
+  const segs = [["tienda", "🛒 Tienda"], ["palas", "Palas"], ["zpadel", "Zapatillas"], ["outfits", "Ropa"], ["acces", "Accesorios"]];
   const seg = `<div class="seg" style="margin-bottom:14px">${segs.map(([k, n]) => `<button data-gs="${k}" class="${gearSeg === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   if (gearSeg === "running") gearSeg = "palas";
+  if (gearSeg === "tienda") return seg + tiendaHTML();
   if (gearSeg === "outfits") return seg + outfitsHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   if (gearSeg === "acces") return seg + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
@@ -278,6 +280,7 @@ function materialView() {
 function wireMaterial(root) {
   $$("[data-gs]", root).forEach(b => b.onclick = () => { gearSeg = b.dataset.gs; gearFilter = "todas"; gearBrand = "todas"; render(); });
   if (gearSeg === "running") { wireZapasView(root); return; }
+  if (gearSeg === "tienda") { wireTienda(root); return; }
   if (gearSeg === "outfits") { wireOutfits(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
   if (gearSeg === "acces") { wireAcces(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
   $("#gRec", root).onclick = gearSeg === "palas" ? openRecPala : openRecZP; wireGearRows(root);
