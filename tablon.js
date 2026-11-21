@@ -13,7 +13,7 @@ const TABLON = [
   { id: "t-guia", tipo: "consejo", fecha: "2026-11-21", e: "📘", t: "Guía: qué pala de pádel comprarte",
     d: "Redonda, lágrima o diamante, suelas espiga u omni… todo explicado sin tecnicismos.", cta: ["Leer la guía", "guia.html"] }
 ];
-const TB_TIPO = { torneo: ["Torneo", "#facc15"], patrocinado: ["Patrocinado", "#38bdf8"], patrocinio: ["Patrocinios", "#38bdf8"], novedad: ["Novedad", "#d4ff3a"], consejo: ["Consejo", "#fb923c"], oferta: ["Oferta", "#f472b6"] };
+const TB_TIPO = { torneo: ["Torneo", "#a16207"], patrocinado: ["Patrocinado", "#0284c7"], patrocinio: ["Patrocinios", "#0284c7"], novedad: ["Novedad", "#4d7c0f"], consejo: ["Consejo", "#c2410c"], oferta: ["Oferta", "#be185d"] };
 let tbFiltro = "todo";
 
 function tablonCard(p, compact = false) {
@@ -34,6 +34,6 @@ function vTablon() {
 }
 WIRE.tablon = () => { $$("#tbF [data-f]").forEach(b => b.onclick = () => { tbFiltro = b.dataset.f; render(); }); };
 function tablonInicioHTML() {
-  return `<div class="sec" style="display:flex;justify-content:space-between;align-items:center">Tablón<button class="tiny" id="hTbAll" style="color:var(--volt);font-weight:700;text-transform:none;letter-spacing:0">Ver todo</button></div>
+  return `<div class="sec" style="display:flex;justify-content:space-between;align-items:center">Tablón<button class="tiny" id="hTbAll" style="color:var(--vt);font-weight:700;text-transform:none;letter-spacing:0">Ver todo</button></div>
     ${TABLON.slice(0, 2).map(p => `<button data-tb="${p.id}" style="display:block;width:100%;text-align:left">${tablonCard(p, true)}</button>`).join("")}`;
 }

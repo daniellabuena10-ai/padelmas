@@ -10,10 +10,10 @@ const HIST_MS = 24 * 3600e3;
 .stbar .ring{width:62px;height:62px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#facc15,#d4ff3a 45%,#38bdf8);display:grid;place-items:center}
 .stbar .ring.seen{background:rgba(255,255,255,.18)}
 .stbar .ring>.av,.stbar .ring>.addst{border:3px solid var(--bg,#0a0d11)}
-.stbar .addst{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--card,#141a20);font-size:26px;color:var(--volt,#d4ff3a)}
+.stbar .addst{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--card,#f6f9fc);font-size:26px;color:var(--volt,#d4ff3a)}
 .stbar .nm{font-size:11.5px;max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .subQuick{display:flex;gap:10px;margin-bottom:12px}
-.subQuick button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border-radius:16px;font-weight:800;background:var(--card,#141a20);border:1px solid var(--line,rgba(255,255,255,.08))}
+.subQuick button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border-radius:16px;font-weight:800;background:var(--card,#f6f9fc);border:1px solid var(--line,rgba(255,255,255,.08))}
 .subQuick button.hi{background:linear-gradient(135deg,rgba(250,204,21,.18),rgba(212,255,58,.12));border-color:rgba(250,204,21,.4)}
 .subPrev{width:100%;border-radius:18px;overflow:hidden;background:#000;display:grid;place-items:center;margin-bottom:12px;max-height:52vh}
 .subPrev img{max-width:100%;max-height:52vh;display:block;object-fit:contain}

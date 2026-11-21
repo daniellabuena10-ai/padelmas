@@ -66,9 +66,9 @@ async function unpublishAct(a) { if (socialOn() && a.postId) { try { await FS().
 function vComunidad() {
   if (store.kind !== "firebase") return `<div class="card empty">${svg("users")}<p>La comunidad necesita conexión.</p></div>`;
   if (!social.loaded) return `<div class="empty">Cargando…</div>`;
-  if (!social.me) return `<div class="hero" style="background:radial-gradient(400px 220px at 100% 0%,rgba(56,189,248,.25),transparent 70%),linear-gradient(160deg,#0e1620,#0a0d11 60%);border-color:rgba(56,189,248,.22)">
-      <div class="lbl" style="color:#9cc9e6">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Juega con tu gente</h2>
-      <p class="small" style="color:#cbd6df;line-height:1.55">Sigue a tus amigos, mira sus partidos, dales <b>kudos</b>, comenta y habla por mensaje. Pregunta por palas y zapatillas a gente que juega como tú.</p>
+  if (!social.me) return `<div class="hero" style="background:radial-gradient(400px 220px at 100% 0%,rgba(56,189,248,.25),transparent 70%),linear-gradient(160deg,#f3f7fc,#f9fafc 60%);border-color:rgba(56,189,248,.22)">
+      <div class="lbl" style="color:var(--mute)">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Juega con tu gente</h2>
+      <p class="small" style="color:var(--mute);line-height:1.55">Sigue a tus amigos, mira sus partidos, dales <b>kudos</b>, comenta y habla por mensaje. Pregunta por palas y zapatillas a gente que juega como tú.</p>
       <div class="chips"><span class="chip">${svg("heart")}Kudos</span><span class="chip">${svg("mail")}Mensajes</span><span class="chip">${svg("trophy")}Ranking</span><span class="chip">${svg("shield")}Zona privada</span></div>
       <button class="btn pri block" id="cpStart" style="margin-top:16px">Crear mi perfil público</button></div>
       <p class="tiny mute" style="text-align:center;margin-bottom:18px">Tus datos de salud y nutrición nunca se publican.</p>`;
@@ -115,7 +115,7 @@ function postCard(p) {
     <div class="hd"><button data-user="${p.uid}" style="display:flex;align-items:center;gap:10px;text-align:left;min-width:0">${avatar(p, 40)}<div style="min-width:0"><div class="t" style="font-size:14.5px">${esc(p.autor)}${mine ? ` <span class="mute small">· tú</span>` : ""}</div><div class="s">${relDate(p.fecha)} · ${s.n}</div></div></button>
       <div style="margin-left:auto" class="sp" title="${s.n}"><span style="color:${s.c}">${svg(s.ic)}</span></div></div>
     <div class="t" style="margin-top:10px;font-size:17px">${esc(p.titulo || s.n)}</div>
-    ${p.notas ? `<p class="small" style="color:#cfd6de;margin-top:4px;line-height:1.45">${esc(p.notas)}</p>` : ""}
+    ${p.notas ? `<p class="small" style="color:var(--mute);margin-top:4px;line-height:1.45">${esc(p.notas)}</p>` : ""}
     ${p.ganado != null ? `<span class="badge ${p.ganado ? "" : "l"}" style="display:inline-block;margin-top:6px">${p.ganado ? "🏆 Victoria" : "Derrota"}${p.companero ? ` · con ${esc(p.companero)}` : ""}</span>` : ""}
     ${(p.pr || []).length ? `<div class="chip volt" style="margin-top:8px">${svg("trophy")}Récord en ${p.pr.join(", ")}</div>` : ""}
     <div class="mets">${mets.map(([a, b]) => `<div>${a}<b>${b}</b></div>`).join("")}</div>
@@ -132,7 +132,7 @@ function weeklyRanking() {
 function rankHTML(r) {
   const mx = Math.max(1, ...r.map(x => x.min));
   return `<div class="card"><h3>${svg("trophy")}Ranking semanal<span class="small mute" style="white-space:nowrap">minutos</span></h3>
-    ${r.map((x, i) => `<button class="item" data-user="${x.uid}" style="${x.uid === me.uid ? "background:var(--volt-soft);border-radius:14px;padding-left:8px;padding-right:8px" : ""}"><span class="num" style="width:22px;font-size:20px;color:${i === 0 ? "#facc15" : i === 1 ? "#cbd5e1" : i === 2 ? "#d97706" : "var(--mute)"}">${i + 1}</span>${avatar(x, 34)}<div style="flex:1;min-width:0"><div style="font-weight:600">${esc(x.autor)}${x.uid === me.uid ? " (tú)" : ""}</div><div style="height:6px;border-radius:9px;background:rgba(255,255,255,.06);margin-top:6px"><div style="height:100%;width:${x.min / mx * 100}%;border-radius:9px;background:var(--volt)"></div></div></div><span class="num" style="font-size:20px;margin-left:8px">${Math.round(x.min)}<small class="mute" style="font-size:12px"> min</small></span></button>`).join("")}
+    ${r.map((x, i) => `<button class="item" data-user="${x.uid}" style="${x.uid === me.uid ? "background:var(--volt-soft);border-radius:14px;padding-left:8px;padding-right:8px" : ""}"><span class="num" style="width:22px;font-size:20px;color:${i === 0 ? "#facc15" : i === 1 ? "#cbd5e1" : i === 2 ? "#d97706" : "var(--mute)"}">${i + 1}</span>${avatar(x, 34)}<div style="flex:1;min-width:0"><div style="font-weight:600">${esc(x.autor)}${x.uid === me.uid ? " (tú)" : ""}</div><div style="height:6px;border-radius:9px;background:rgba(15,23,42,.06);margin-top:6px"><div style="height:100%;width:${x.min / mx * 100}%;border-radius:9px;background:var(--volt)"></div></div></div><span class="num" style="font-size:20px;margin-left:8px">${Math.round(x.min)}<small class="mute" style="font-size:12px"> min</small></span></button>`).join("")}
     ${r.length < 2 ? `<p class="small mute" style="margin-top:10px">Sigue a tus amigos para competir con ellos cada semana. El ranking se reinicia los lunes.</p>` : ""}</div>
     <p class="tiny mute" style="text-align:center">Cuenta pádel, gimnasio, fútbol… todo suma. Nada de pagar por ver tus propias estadísticas.</p>`;
 }

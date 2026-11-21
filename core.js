@@ -259,7 +259,7 @@ function routeSVG(trk, w = 600, h = 240, color = "#d4ff3a") {
   const P = trk.map(p => [ox + (p[1] - c) * k * sc, oy + (b - p[0]) * sc]);
   const step = Math.max(1, Math.floor(P.length / 400)); const pts = P.filter((_, i) => i % step === 0 || i === P.length - 1).map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
   const s = P[0], e = P[P.length - 1];
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet"><defs><pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="rgba(255,255,255,.035)"/></pattern></defs><rect width="100%" height="100%" fill="url(#g)"/>
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet"><defs><pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="rgba(15,23,42,.035)"/></pattern></defs><rect width="100%" height="100%" fill="url(#g)"/>
   <polyline points="${pts}" fill="none" stroke="${color}" stroke-opacity=".25" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
   <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="${s[0]}" cy="${s[1]}" r="6" fill="#4ade80" stroke="#0a0d11" stroke-width="2.5"/><circle cx="${e[0]}" cy="${e[1]}" r="6" fill="#ff6a3d" stroke="#0a0d11" stroke-width="2.5"/></svg>`;

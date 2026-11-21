@@ -138,7 +138,7 @@ function pistasHTML() {
     : pistas.err ? `<div class="card empty"><p>${esc(pistas.err)}</p></div><a class="btn block" href="https://www.google.com/maps/search/${encodeURIComponent("pistas de pádel " + ($("#piQ") && $("#piQ").value || ""))}" target="_blank" rel="noopener">${svg("search")}Buscar en Google Maps</a>`
     : !pistas.lugar ? `<div class="card empty">${svg("gps")}<p>Escribe tu ciudad o pulsa <b>Cerca de mí</b> para ver los clubes y pistas de pádel.</p></div>`
     : `<div class="row" style="justify-content:space-between;align-items:center;margin:4px 2px 8px"><div class="small"><b>${list.length}</b> <span class="mute">sitios en ${esc(pistas.lugar)} (${pistas.radio} km)</span></div></div>
-      ${pistas.aviso ? `<p class="tiny" style="color:#facc15;margin:0 2px 8px">${esc(pistas.aviso)}</p>` : ""}<div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["aire", "Al aire libre"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
+      ${pistas.aviso ? `<p class="tiny" style="color:#a16207;margin:0 2px 8px">${esc(pistas.aviso)}</p>` : ""}<div class="seg" id="piF" style="margin-bottom:10px">${[["todos", "Todos"], ["cubiertas", "Cubiertas"], ["aire", "Al aire libre"]].map(([k, n]) => `<button data-f="${k}" class="${pistas.filtro === k ? "on" : ""}">${n}</button>`).join("")}</div>
       ${pistasPromo()}
       ${list.length ? `<div class="card" style="padding:4px 14px">${list.slice(0, 60).map(c => `<button class="item" data-club="${c.id}"><span style="font-size:20px;width:28px;text-align:center">${c.id === myClub ? "⭐" : c.cubiertas ? "🏟️" : "🎾"}</span><div style="flex:1;min-width:0"><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</div><div class="tiny mute">${[c.pistas ? `${c.pistas} pista${c.pistas > 1 ? "s" : ""}` : null, c.cubiertas ? (c.cubiertas >= (c.pistas || 1) ? "cubiertas" : "cubiertas y exteriores") : c.pistas ? "al aire libre" : null, c.fuente === "user" ? "añadido por la comunidad" : null, /^pistas (de padel|municipales)/i.test(nrm(c.nombre)) && c.dir ? esc(c.dir) : null].filter(Boolean).join(" · ") || esc(c.dir || "Pádel")}</div></div><span class="small mute" style="white-space:nowrap">${kmTxt(c.dist)}</span></button>`).join("")}</div>`
         : `<div class="card empty"><p>${pistas.clubs.length ? "No hay pistas con ese filtro." : "El mapa libre aún no tiene clubes registrados aquí."}</p></div>`}
@@ -183,8 +183,8 @@ function pistasPromo() {
   const of = typeof CAT !== "undefined" && CAT ? CAT.p.filter(p => p.c === "pala" && !p.x && dto(p) >= 20 && !/\bjr\b|junior|nino|nina/.test(norm2(p.n))).sort((a, b) => dto(b) - dto(a))[0] : null;
   return `<button id="piPromo" class="card" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-bottom:12px;border-color:rgba(250,204,21,.45);background:radial-gradient(300px 150px at 100% 0%,rgba(250,204,21,.18),transparent 70%),var(--card)">
     ${of ? `<div class="tdimg" style="width:84px;height:84px;flex:0 0 84px">${fotoReal(of, 78)}<span class="dtob" style="position:absolute;top:4px;left:4px;font-size:11px">-${dto(of)}%</span></div>` : `<span style="font-size:34px">🎾</span>`}
-    <div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:800">PÁDEL+ · TIENDA</div><div style="font-weight:800;margin-top:2px">¿Vas a jugar? Llega con buen material</div>
-    <div class="small mute" style="margin-top:2px">${of ? `${esc(limpiaNombre(of.n, ""))} a <b style="color:#facc15">${eur(of.p)}</b>` : "Palas, zapatillas y ropa con descuento"}</div></div>${svg("chev", "chev")}</button>`;
+    <div style="flex:1;min-width:0"><div class="tiny" style="color:#a16207;font-weight:800">PÁDEL+ · TIENDA</div><div style="font-weight:800;margin-top:2px">¿Vas a jugar? Llega con buen material</div>
+    <div class="small mute" style="margin-top:2px">${of ? `${esc(limpiaNombre(of.n, ""))} a <b style="color:#a16207">${eur(of.p)}</b>` : "Palas, zapatillas y ropa con descuento"}</div></div>${svg("chev", "chev")}</button>`;
 }
 // ---------- ficha del club ----------
 async function openClub(id) {
@@ -212,7 +212,7 @@ async function openClub(id) {
       const box = $("#clGente", s); if (!box) return;
       const lv = g.map(x => x.nivelPadel).filter(Boolean); const media = lv.length ? lv.reduce((a, b) => a + b, 0) / lv.length : null;
       box.innerHTML = `<h3>${svg("users")}Gente de Pádel+ aquí</h3>` + (g.length
-        ? `<p class="small" style="margin:6px 0 10px"><b>${g.length}</b> jugador${g.length > 1 ? "es" : ""}${media ? ` · nivel medio <b style="color:var(--volt)">${nf(media, 1)}</b>` : ""}</p><div style="display:flex;gap:8px;flex-wrap:wrap">${g.slice(0, 12).map(p => `<button data-user="${p.uid}" title="${esc(p.nombre)}">${avatar(p, 38)}</button>`).join("")}</div>`
+        ? `<p class="small" style="margin:6px 0 10px"><b>${g.length}</b> jugador${g.length > 1 ? "es" : ""}${media ? ` · nivel medio <b style="color:var(--vt)">${nf(media, 1)}</b>` : ""}</p><div style="display:flex;gap:8px;flex-wrap:wrap">${g.slice(0, 12).map(p => `<button data-user="${p.uid}" title="${esc(p.nombre)}">${avatar(p, 38)}</button>`).join("")}</div>`
         : `<p class="small mute" style="margin-top:6px">Aún nadie lo ha marcado como su club. ¡Sé el primero!</p>`);
       $$("[data-user]", box).forEach(b => b.onclick = () => openUser(b.dataset.user));
     } catch (e) { console.warn(e); }

@@ -19,7 +19,7 @@ function loadCatalogo() {
 // Producto real enlazado a una de nuestras fichas
 function realOf(g) { return CAT && g && CAT.match && CATBY[CAT.match[g.id]] || null; }
 function dto(p) { return p.o && p.o > p.p ? Math.round((1 - p.p / p.o) * 100) : 0; }
-function precioReal(p) { return `<span class="num" style="color:#facc15">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}${dto(p) >= 5 ? ` <span class="dtob">-${dto(p)}%</span>` : ""}`; }
+function precioReal(p) { return `<span class="num" style="color:#a16207">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}${dto(p) >= 5 ? ` <span class="dtob">-${dto(p)}%</span>` : ""}`; }
 function fotoUrl(u, size) { return /cdn\.shopify\.com/.test(u) ? u + (u.includes("?") ? "&" : "?") + "width=" + Math.min(600, Math.ceil(size * 2.5 / 50) * 50) : u; }
 function fotoReal(p, size) { return `<img src="${esc(fotoUrl(p.f, size))}" alt="${esc(p.n)}" decoding="async" referrerpolicy="no-referrer" style="width:${size}px;height:${size}px;object-fit:contain;background:#fff;border-radius:14px" onerror="this.style.visibility='hidden'">`; }
 // Precarga las fotos que se ven nada más entrar (para que la pantalla aparezca ya completa)
@@ -46,7 +46,7 @@ function tiendaHTML() {
     <div class="tdgrid">${L.map(p => `<a class="tdcard" href="${esc(p.u)}" target="_blank" rel="noopener sponsored" data-out="${esc(p.i)}">
       <div class="tdimg">${fotoReal(p, 130)}${dto(p) >= 5 ? `<span class="dtob" style="position:absolute;top:8px;left:8px">-${dto(p)}%</span>` : ""}</div>
       <div class="tiny mute" style="margin-top:8px">${esc(p.m || "")}</div><div class="tdname">${esc(limpiaNombre(p.n, p.m))}</div>
-      <div style="margin-top:4px"><span class="num" style="color:#facc15;font-size:17px">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}</div><span class="buyrow" style="margin-top:8px;justify-content:center">${svg("cart")}Comprar</span></a>`).join("")}</div>
+      <div style="margin-top:4px"><span class="num" style="color:#a16207;font-size:17px">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}</div><span class="buyrow" style="margin-top:8px;justify-content:center">${svg("cart")}Comprar</span></a>`).join("")}</div>
     ${tot > tdN ? `<button class="btn block" id="tdMas" style="margin-top:10px">Ver más</button>` : ""}
     <p class="tiny mute" style="text-align:center;margin:12px 0 4px">🤝 Enlaces de afiliado: si compras, Pádel+ recibe una comisión sin coste para ti. Precios y stock de ${esc(CAT.tienda)}, actualizados a diario.</p>`;
 }
@@ -65,17 +65,17 @@ function inicioTiendaHTML(pala) {
   const zp = typeof recZP === "function" ? (recZP({ pista: "arena", frec: 2, horma: "normal", kg: Math.round(weightKg()), precio: 0 }) || [])[0] : null;
   const picks = [pala && pala.s, zp && zp.s].filter(Boolean);
   const card = (g, lbl) => { const r = realOf(g); return `<button class="hpick" data-gear="${g.id}"><div class="tdimg" style="height:118px">${r ? fotoReal(r, 110) : CAT ? gearArt(g, 90) : ""}${r && dto(r) >= 5 ? `<span class="dtob" style="position:absolute;top:6px;left:6px">-${dto(r)}%</span>` : ""}</div>
-    <div class="tiny" style="color:#facc15;font-weight:800;margin-top:8px">${lbl}</div><div class="tdname" style="min-height:0">${esc(g.marca)} ${esc(g.modelo)}</div>
-    <div style="margin-top:4px">${r ? `<span class="num" style="color:#facc15;font-size:17px">${eur(r.p)}</span>${r.o ? ` <s class="tiny mute">${eur(r.o)}</s>` : ""}` : `<span class="small mute">${priceTxt(g)}</span>`}</div>
+    <div class="tiny" style="color:#a16207;font-weight:800;margin-top:8px">${lbl}</div><div class="tdname" style="min-height:0">${esc(g.marca)} ${esc(g.modelo)}</div>
+    <div style="margin-top:4px">${r ? `<span class="num" style="color:#a16207;font-size:17px">${eur(r.p)}</span>${r.o ? ` <s class="tiny mute">${eur(r.o)}</s>` : ""}` : `<span class="small mute">${priceTxt(g)}</span>`}</div>
     <span class="buyrow" data-buy="${g.id}" style="margin-top:8px;justify-content:center">${svg("cart")}Comprar</span></button>`; };
   const ofertas = CAT ? CAT.p.filter(p => p.c === "pala" && !p.x && dto(p) >= 15 && !/\bjr\b|junior|nino|nina/.test(norm2(p.n))).sort((a, b) => dto(b) - dto(a)).slice(0, 10) : [];
   return `<div class="card" style="padding:16px 14px;border-color:rgba(250,204,21,.4);background:radial-gradient(340px 170px at 100% 0%,rgba(250,204,21,.16),transparent 70%),var(--card)">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><h3 style="margin:0">${svg("target")}Elegido para ti</h3><p class="tiny mute" style="margin-top:3px">Según tu nivel${state.perfil.padel && state.perfil.padel.nivel0 ? "" : " (haz el test para afinar)"} · cómpralo aquí</p></div></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">${card(picks[0] || PALAS[0], "TU PALA")}${picks[1] ? card(picks[1], "TUS ZAPATILLAS") : ""}</div>
     <div class="row" style="gap:8px;margin-top:12px"><button class="btn sm" id="hRec" style="flex:1">${svg("target")}Afinar a mi juego</button><button class="btn sm" id="hShop" style="flex:1;background:#facc15;color:#1a1500;border:0">${svg("cart")}Ir a la tienda</button></div></div>
-  ${ofertas.length ? `<div class="sec" style="display:flex;justify-content:space-between;align-items:center">🔥 Ofertas en palas<button class="tiny" id="hOfAll" style="color:var(--volt);font-weight:700;text-transform:none;letter-spacing:0">Ver todas</button></div>
+  ${ofertas.length ? `<div class="sec" style="display:flex;justify-content:space-between;align-items:center">🔥 Ofertas en palas<button class="tiny" id="hOfAll" style="color:var(--vt);font-weight:700;text-transform:none;letter-spacing:0">Ver todas</button></div>
     <div class="hscroll">${ofertas.map(p => `<a class="tdcard" href="${esc(p.u)}" target="_blank" rel="noopener sponsored" style="flex:0 0 150px"><div class="tdimg" style="height:120px">${fotoReal(p, 110)}<span class="dtob" style="position:absolute;top:6px;left:6px">-${dto(p)}%</span></div>
-      <div class="tdname" style="margin-top:8px;font-size:13px">${esc(limpiaNombre(p.n, ""))}</div><div><span class="num" style="color:#facc15">${eur(p.p)}</span> <s class="tiny mute">${eur(p.o)}</s></div></a>`).join("")}</div>` : ""}`;
+      <div class="tdname" style="margin-top:8px;font-size:13px">${esc(limpiaNombre(p.n, ""))}</div><div><span class="num" style="color:#a16207">${eur(p.p)}</span> <s class="tiny mute">${eur(p.o)}</s></div></a>`).join("")}</div>` : ""}`;
 }
 function wireInicioTienda() {
   const v = $("#view"); if (typeof wireGearRows === "function") wireGearRows(v);

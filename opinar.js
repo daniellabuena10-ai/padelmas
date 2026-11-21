@@ -74,7 +74,7 @@ function opinionCard(p) {
   const cr = OP_CRIT[p.gear && (p.gear.tipo === "pala" || p.gear.tipo === "zapa") ? p.gear.tipo : "otro"];
   return `<div class="act post" data-post="${p.id}">
     <div class="hd"><button data-user="${p.uid}" style="display:flex;align-items:center;gap:10px;text-align:left;min-width:0">${avatar(p, 40)}<div style="min-width:0"><div class="t" style="font-size:14.5px">${esc(p.autor)}${mine ? ` <span class="tiny mute">(tú)</span>` : ""}</div><div class="tiny mute">${relDate(p.fecha)}${p.nivel ? ` · nivel ${nf(p.nivel, 1)}` : ""}</div></div></button>
-      <span class="chip" style="margin-left:auto;color:#facc15">✍️ Opinión</span></div>
+      <span class="chip" style="margin-left:auto;color:#a16207">✍️ Opinión</span></div>
     <button ${g ? `data-gear="${g.id}"` : ""} style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-top:12px;padding:10px;border-radius:14px;background:var(--card2)">
       <span style="width:46px;display:grid;place-items:center">${g ? gearArt(g, 42) : `<span style="font-size:30px">${{ pala: "🎾", zapa: "👟", ropa: "👕", acces: "🎒" }[p.gear && p.gear.tipo] || "🏷️"}</span>`}</span>
       <div style="flex:1;min-width:0"><div class="tiny mute">${tipoN}</div><div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.gear ? p.gear.marca + " " + p.gear.modelo : p.titulo)}</div><div style="font-size:18px">${stars(p.nota || 0)}</div></div>${g ? svg("chev", "chev") : ""}</button>

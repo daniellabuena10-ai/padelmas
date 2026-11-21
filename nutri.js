@@ -23,9 +23,9 @@ function nutriToday(day = todayStr()) {
 let nTab = "partido", nDay = todayStr(), nMom = "antes";
 function vNutricion() {
   const T = nutriTargets();
-  if (!T) return `<div class="hero" style="background:radial-gradient(400px 200px at 100% 0%,rgba(255,106,61,.25),transparent 70%),linear-gradient(160deg,#1b130f,#0f0c0a 60%);border-color:rgba(255,106,61,.2)">
-    <div class="lbl" style="color:#e8b9a5">Nutrición para el pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Come para rendir en la pista</h2>
-    <p class="small" style="color:#d9cfc9;line-height:1.55">Con tu edad, altura, peso y actividad calculo tus calorías y macros, y te preparo un <b>plan de comidas para la semana</b> con lista de la compra. Además puedes apuntar lo que comes.</p>
+  if (!T) return `<div class="hero" style="background:radial-gradient(400px 200px at 100% 0%,rgba(255,106,61,.25),transparent 70%),linear-gradient(160deg,#fcf8f6,#fcfbfa 60%);border-color:rgba(255,106,61,.2)">
+    <div class="lbl" style="color:var(--mute)">Nutrición para el pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Come para rendir en la pista</h2>
+    <p class="small" style="color:var(--mute);line-height:1.55">Con tu edad, altura, peso y actividad calculo tus calorías y macros, y te preparo un <b>plan de comidas para la semana</b> con lista de la compra. Además puedes apuntar lo que comes.</p>
     <button class="btn hot block" id="nStart" style="margin-top:16px">Calcular mi plan</button></div>
     ${nPartido()}
     <p class="tiny mute" style="text-align:center;line-height:1.5">Recomendaciones generales y orientativas. No sustituyen a un médico ni a un dietista-nutricionista.</p>`;
@@ -57,7 +57,7 @@ function nPartido() {
   const M = N_PARTIDO[nMom] || N_PARTIDO.antes;
   return `<div class="sec" style="margin-top:6px">Come para jugar mejor</div>
     <div class="seg" id="nMo" style="margin-bottom:10px">${Object.entries(N_PARTIDO).map(([k, m]) => `<button data-m="${k}" class="${nMom === k ? "on" : ""}" style="padding-left:4px;padding-right:4px">${({ antes: "Antes", durante: "Durante", despues: "Después", torneo: "Torneo" })[k]}</button>`).join("")}</div>
-    <div class="card"><h3>${M.e} ${M.t}</h3>${M.items.map(([k, v]) => `<div style="padding:10px 0;border-top:1px solid var(--line)"><div class="small" style="color:var(--volt);font-weight:700">${k}</div><div style="line-height:1.5;margin-top:2px">${v}</div></div>`).join("")}</div>
+    <div class="card"><h3>${M.e} ${M.t}</h3>${M.items.map(([k, v]) => `<div style="padding:10px 0;border-top:1px solid var(--line)"><div class="small" style="color:var(--vt);font-weight:700">${k}</div><div style="line-height:1.5;margin-top:2px">${v}</div></div>`).join("")}</div>
     <p class="tiny mute" style="text-align:center;line-height:1.5">Consejos generales para deportistas aficionados. No sustituyen a un dietista-nutricionista.</p>`;
 }
 function nHoy(T) {
@@ -111,8 +111,8 @@ function nPlan(T) {
 function nDatos(T) {
   const p = state.perfil.nutri;
   return `<div class="grid2"><div class="stat"><div class="k">${svg("flame")}Objetivo diario</div><div class="v num">${nf(T.kcal)}<small>kcal</small></div></div><div class="stat"><div class="k">${svg("bolt")}Gasto estimado</div><div class="v num">${nf(T.tdee)}<small>kcal</small></div></div>
-    <div class="stat"><div class="k" style="color:#d4ff3a">Proteína</div><div class="v num">${T.prot}<small>g</small></div></div><div class="stat"><div class="k" style="color:#38bdf8">Carbohidratos</div><div class="v num">${T.carb}<small>g</small></div></div>
-    <div class="stat"><div class="k" style="color:#ff6a3d">Grasa</div><div class="v num">${T.fat}<small>g</small></div></div><div class="stat"><div class="k" style="color:var(--sky)">${svg("water")}Agua</div><div class="v num">${nf(T.agua * .25, 1)}<small>L</small></div></div></div>
+    <div class="stat"><div class="k" style="color:var(--mute)">Proteína</div><div class="v num">${T.prot}<small>g</small></div></div><div class="stat"><div class="k" style="color:#0284c7">Carbohidratos</div><div class="v num">${T.carb}<small>g</small></div></div>
+    <div class="stat"><div class="k" style="color:var(--mute)">Grasa</div><div class="v num">${T.fat}<small>g</small></div></div><div class="stat"><div class="k" style="color:var(--sky)">${svg("water")}Agua</div><div class="v num">${nf(T.agua * .25, 1)}<small>L</small></div></div></div>
   <div class="hint">${svg("info")}<span>Metabolismo basal ${nf(T.bmr)} kcal (fórmula Mifflin-St Jeor) × nivel de actividad. Objetivo: <b style="color:var(--ink)">${OBJ.find(o => o[0] === p.obj)[1].toLowerCase()}</b>${p.obj === "perder" ? " con un déficit moderado (~18 %), sin bajar nunca de tu basal" : p.obj === "ganar" ? " con un superávit suave (+300 kcal)" : ""}.</span></div>
   <button class="btn block" id="nEdit">${svg("edit")}Cambiar mis datos</button>`;
 }
@@ -158,7 +158,7 @@ function openNutriSetup() {
   openSheet("Tus datos", `
     <div class="field">Sexo<div class="seg" id="sx"><button data-v="h" class="${p.sexo === "h" ? "on" : ""}">Hombre</button><button data-v="m" class="${p.sexo === "m" ? "on" : ""}">Mujer</button></div></div>
     <div class="row"><label class="field">Edad<input id="nE" type="number" inputmode="numeric" value="${p.edad}" placeholder="28"></label><label class="field">Altura (cm)<input id="nA" type="number" inputmode="numeric" value="${p.altura}" placeholder="175"></label><label class="field">Peso (kg)<input id="nP" type="number" step="0.1" inputmode="decimal" value="${p.peso}" placeholder="72"></label></div>
-    <div class="field">Nivel de actividad<div id="ac">${ACT_LV.map(([v, n, d]) => `<button class="item" data-v="${v}" style="${+p.act === v ? "color:var(--volt)" : ""}"><span style="width:20px">${+p.act === v ? svg("check") : ""}</span><div><div style="font-weight:600">${n}</div><div class="small mute">${d}</div></div></button>`).join("")}</div></div>
+    <div class="field">Nivel de actividad<div id="ac">${ACT_LV.map(([v, n, d]) => `<button class="item" data-v="${v}" style="${+p.act === v ? "color:var(--vt)" : ""}"><span style="width:20px">${+p.act === v ? svg("check") : ""}</span><div><div style="font-weight:600">${n}</div><div class="small mute">${d}</div></div></button>`).join("")}</div></div>
     <div class="field">Objetivo<div class="seg" id="ob">${OBJ.map(([v, n]) => `<button data-v="${v}" class="${p.obj === v ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <div class="field">Alimentación<div class="seg" id="di"><button data-v="todo" class="${p.dieta !== "veg" ? "on" : ""}">Como de todo</button><button data-v="veg" class="${p.dieta === "veg" ? "on" : ""}">Vegetariana</button></div></div>
     <div class="err" id="nErr"></div><button class="btn hot block" id="nOk">Calcular mi plan</button>`, s => {

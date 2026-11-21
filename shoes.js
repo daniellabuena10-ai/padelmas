@@ -91,7 +91,7 @@ function openRecomendador() {
   openSheet("¿Qué zapatilla me compro?", `
     <div class="field">¿Para qué la quieres?<div class="seg" id="qUso">${[["diario", "Rodajes diarios"], ["tempo", "Series / tempo"], ["carrera", "Competir"], ["larga", "Tiradas largas"], ["trail", "Montaña"]].map(([k, n]) => `<button data-v="${k}" class="${q.uso === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <div class="field" id="qTerr" hidden>Terreno<div class="seg">${[["pista", "Pistas y caminos"], ["tecnico", "Técnico / rocas"], ["barro", "Barro"], ["mixto", "Asfalto + caminos"]].map(([k, n]) => `<button data-t="${k}" class="${q.terreno === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
-    <div class="field">Ritmo al que la vas a usar: <b id="qPv" class="num" style="font-size:22px;color:var(--volt)">${fmtPace(q.ritmo)}</b> /km<input type="range" id="qP" min="180" max="480" step="5" value="${q.ritmo}" style="width:100%;margin-top:8px;accent-color:#d4ff3a"><div class="row tiny mute" style="justify-content:space-between"><span>3:00 rápido</span><span>8:00 suave</span></div></div>
+    <div class="field">Ritmo al que la vas a usar: <b id="qPv" class="num" style="font-size:22px;color:var(--vt)">${fmtPace(q.ritmo)}</b> /km<input type="range" id="qP" min="180" max="480" step="5" value="${q.ritmo}" style="width:100%;margin-top:8px;accent-color:#d4ff3a"><div class="row tiny mute" style="justify-content:space-between"><span>3:00 rápido</span><span>8:00 suave</span></div></div>
     <div class="field">Tu pisada<div class="seg" id="qPis">${[["neutra", "Neutra"], ["prona", "Prono (se me va hacia dentro)"], ["nose", "No lo sé"]].map(([k, n]) => `<button data-v="${k}" class="${q.pisada === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
     <div class="field">Kilómetros a la semana<div class="seg" id="qKm">${[[10, "< 20"], [30, "20–50"], [60, "> 50"]].map(([k, n]) => `<button data-v="${k}" class="${q.km === k ? "on" : ""}">${n} km</button>`).join("")}</div></div>
     <div class="field">Presupuesto<div class="seg" id="qPr">${[[0, "Me da igual"], [1, "Económica"], [2, "Media"], [3, "Top"]].map(([k, n]) => `<button data-v="${k}" class="${q.precio === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
@@ -115,12 +115,12 @@ function showRecs(q) {
 function shoeRow(sh, tag = null, why = null) {
   const st = shoeStats[sh.id];
   return `<button class="card shoe" data-shoe="${sh.id}" style="display:block;width:100%;text-align:left;padding:14px">
-    ${tag ? `<div class="tiny" style="color:var(--volt);font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
+    ${tag ? `<div class="tiny" style="color:var(--vt);font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
     <div style="display:flex;align-items:center;gap:12px"><div class="gart">${shoeArt(sh, 70)}</div>
       <div style="min-width:0;flex:1"><div class="small mute">${sh.marca}</div><div style="font-weight:700;font-size:16px">${sh.modelo}</div></div>
-      <div style="text-align:right;flex:none"><div class="small" style="color:var(--volt)">${PRECIO[sh.precio]}</div><div class="tiny mute" style="white-space:nowrap">${["", "menos de 100 €", "100 – 160 €", "más de 160 €"][sh.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
+      <div style="text-align:right;flex:none"><div class="small" style="color:var(--vt)">${PRECIO[sh.precio]}</div><div class="tiny mute" style="white-space:nowrap">${["", "menos de 100 €", "100 – 160 €", "más de 160 €"][sh.precio]}</div>${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px"><span class="chip" style="color:${SHOE_CAT_C[sh.cat]}">${SHOE_CATS[sh.cat]}</span><span class="chip">${sh.peso} g</span><span class="chip">drop ${sh.drop} mm</span>${sh.placa !== "no" ? `<span class="chip">placa ${sh.placa}</span>` : ""}</div>
-    ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}</button>`;
+    ${why && why.length ? `<p class="small" style="margin-top:10px;color:var(--mute)">✓ ${why.join(" · ")}</p>` : ""}</button>`;
 }
 function wireShoeRows(root) { $$("[data-shoe]", root).forEach(b => b.onclick = () => openShoe(b.dataset.shoe)); }
 
@@ -130,7 +130,7 @@ async function openShoe(id) {
   const sh = shoeOf(id); if (!sh) return; const mine = (state.perfil.zapas || []).some(z => z.modelo === id);
   const bars = [["Amortiguación", sh.amort / 5], ["Ligereza", Math.max(0, Math.min(1, (330 - sh.peso) / 160))], ["Estabilidad", [.35, .7, 1][sh.estab]], ["Precio", 1 - (sh.precio - 1) / 2.5]];
   openSheet(`${sh.marca} ${sh.modelo}`, `<div class="gartbig">${shoeArt(sh, 230)}<span class="tiny mute">Ilustración orientativa</span></div>
-    <div class="chips" style="margin:-6px 0 12px"><span class="chip" style="color:${SHOE_CAT_C[sh.cat]}">${SHOE_CATS[sh.cat]}</span><span class="chip">${sh.terreno === "trail" ? "Montaña" : sh.terreno === "mixto" ? "Asfalto y caminos" : "Asfalto"}</span><span class="chip" style="color:var(--volt)">${PRECIO[sh.precio]}</span></div>
+    <div class="chips" style="margin:-6px 0 12px"><span class="chip" style="color:${SHOE_CAT_C[sh.cat]}">${SHOE_CATS[sh.cat]}</span><span class="chip">${sh.terreno === "trail" ? "Montaña" : sh.terreno === "mixto" ? "Asfalto y caminos" : "Asfalto"}</span><span class="chip" style="color:var(--vt)">${PRECIO[sh.precio]}</span></div>
     <p style="line-height:1.5">${sh.desc}</p>
     <div class="grid3" style="margin:14px 0"><div class="stat"><div class="k">Peso aprox.</div><div class="v num" style="font-size:24px">${sh.peso}<small>g</small></div></div><div class="stat"><div class="k">Drop</div><div class="v num" style="font-size:24px">${sh.drop}<small>mm</small></div></div><div class="stat"><div class="k">Placa</div><div class="v num" style="font-size:20px">${sh.placa === "no" ? "No" : sh.placa[0].toUpperCase() + sh.placa.slice(1)}</div></div></div>
     <div class="card bars">${bars.map(([n, v]) => `<div class="b"><div><span>${n}</span></div><i><b style="width:${v * 100}%;background:${SHOE_CAT_C[sh.cat]}"></b></i></div>`).join("")}
@@ -148,8 +148,8 @@ async function loadReviews(id) {
     const q = await FS().collection("zapas").doc(id).collection("opiniones").orderBy("t", "desc").limit(50).get();
     const rs = q.docs.map(d => d.data()); const box = $("#shRevs"); if (!box) return;
     if (rs.length) shoeStats[id] = { n: rs.length, avg: rs.reduce((s, r) => s + r.nota, 0) / rs.length };
-    box.innerHTML = rs.length ? `<div class="row" style="align-items:center;margin-bottom:8px"><span class="num" style="font-size:40px;flex:none">${nf(shoeStats[id].avg, 1)}</span><div><div style="color:#facc15">${"★".repeat(Math.round(shoeStats[id].avg))}${"☆".repeat(5 - Math.round(shoeStats[id].avg))}</div><div class="small mute">${rs.length} opinion${rs.length > 1 ? "es" : ""}</div></div></div>` +
-      rs.map(r => `<div class="meal" style="align-items:flex-start"><button data-user="${r.uid}">${avatar(r, 34)}</button><div style="flex:1;min-width:0"><div class="small"><b>${esc(r.autor)}</b> <span style="color:#facc15">${"★".repeat(r.nota)}</span></div><div class="tiny mute">${r.km ? `${nf(r.km)} km con ellas · ` : ""}${r.ritmo ? `ritmo ${fmtPace(r.ritmo)}/km · ` : ""}${ago(r.t)}</div>${r.texto ? `<div style="margin-top:4px;line-height:1.45">${esc(r.texto)}</div>` : ""}</div></div>`).join("")
+    box.innerHTML = rs.length ? `<div class="row" style="align-items:center;margin-bottom:8px"><span class="num" style="font-size:40px;flex:none">${nf(shoeStats[id].avg, 1)}</span><div><div style="color:#a16207">${"★".repeat(Math.round(shoeStats[id].avg))}${"☆".repeat(5 - Math.round(shoeStats[id].avg))}</div><div class="small mute">${rs.length} opinion${rs.length > 1 ? "es" : ""}</div></div></div>` +
+      rs.map(r => `<div class="meal" style="align-items:flex-start"><button data-user="${r.uid}">${avatar(r, 34)}</button><div style="flex:1;min-width:0"><div class="small"><b>${esc(r.autor)}</b> <span style="color:#a16207">${"★".repeat(r.nota)}</span></div><div class="tiny mute">${r.km ? `${nf(r.km)} km con ellas · ` : ""}${r.ritmo ? `ritmo ${fmtPace(r.ritmo)}/km · ` : ""}${ago(r.t)}</div>${r.texto ? `<div style="margin-top:4px;line-height:1.45">${esc(r.texto)}</div>` : ""}</div></div>`).join("")
       : `<p class="small mute">Nadie ha opinado todavía. ¡Sé el primero!</p>`;
     $$("[data-user]", box).forEach(b => b.onclick = () => openUser(b.dataset.user));
   } catch (e) { console.warn(e); const box = $("#shRevs"); if (box) box.innerHTML = `<p class="small mute">No se pudieron cargar las opiniones.</p>`; }
@@ -191,7 +191,7 @@ function zapasHTML() {
   const zs = (state.perfil.zapas || []).filter(z => z.activa !== false);
   if (!zs.length) return `<p class="small mute">Añade tus zapatillas y te contamos los kilómetros que llevan. Te avisamos cuando toque cambiarlas (~${ZAPA_VIDA} km).</p><button class="btn sm" id="zAdd" style="margin-top:10px">${svg("plus")}Añadir mis zapatillas</button>`;
   return zs.map(z => { const k = zapaKm(z), pct = k / ZAPA_VIDA; return `<div class="item" style="display:block"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>${esc(z.apodo || z.nombre)}</b>${z.apodo ? `<div class="tiny mute">${esc(z.nombre)}</div>` : ""}${state.perfil.zapaDef === z.id ? `<span class="badge" style="margin-left:6px">por defecto</span>` : ""}</div><span class="num" style="font-size:22px">${nf(k)}<small class="mute" style="font-size:13px"> km</small></span></div>
-    <div style="height:7px;border-radius:9px;background:rgba(255,255,255,.07);margin-top:8px"><div style="height:100%;width:${Math.min(100, pct * 100)}%;border-radius:9px;background:${pct > .9 ? "var(--neg)" : pct > .7 ? "var(--hot)" : "var(--volt)"}"></div></div>
+    <div style="height:7px;border-radius:9px;background:rgba(15,23,42,.07);margin-top:8px"><div style="height:100%;width:${Math.min(100, pct * 100)}%;border-radius:9px;background:${pct > .9 ? "var(--neg)" : pct > .7 ? "var(--hot)" : "var(--volt)"}"></div></div>
     ${pct > .9 ? `<p class="tiny" style="color:var(--neg);margin-top:6px">Ya llevan muchos kilómetros: es buen momento para cambiarlas.</p>` : ""}
     <div class="row" style="margin-top:8px"><button class="btn sm" data-zdef="${z.id}">Por defecto</button><button class="btn sm" data-zret="${z.id}">Retirar</button></div></div>`; }).join("") + `<button class="btn sm" id="zAdd" style="margin-top:10px">${svg("plus")}Añadir otras</button>`;
 }
@@ -211,9 +211,9 @@ function zapaSelect(a) {
 let shoeFilter = "todas", shoeBrand = "todas";
 function zapasView() {
   const list = SHOES.filter(s => (shoeFilter === "todas" || s.cat === shoeFilter) && (shoeBrand === "todas" || s.marca === shoeBrand));
-  return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(212,255,58,.22),transparent 70%),linear-gradient(160deg,#141a10,#0b0e0a 60%)">
+  return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(212,255,58,.22),transparent 70%),linear-gradient(160deg,#f9fcf7,#fbfcfa 60%)">
       <div class="lbl">Recomendador</div><h2 style="font-size:24px;letter-spacing:-.5px;margin:6px 0 8px">¿Qué zapatilla me va?</h2>
-      <p class="small" style="color:#d5dcc6;line-height:1.5">Dime para qué, a qué ritmo y tu pisada, y te digo las que mejor te van de ${SHOES.length} modelos de ${new Set(SHOES.map(s => s.marca)).size} marcas.</p>
+      <p class="small" style="color:var(--mute);line-height:1.5">Dime para qué, a qué ritmo y tu pisada, y te digo las que mejor te van de ${SHOES.length} modelos de ${new Set(SHOES.map(s => s.marca)).size} marcas.</p>
       <button class="btn pri block" id="zRec" style="margin-top:14px">${svg("target")}Encontrar mis zapatillas</button></div>
     <div class="card"><h3>${svg("run")}Mis zapatillas</h3>${zapasHTML()}</div>
     ${socialOn() ? `<div class="sec">Preguntas de la comunidad <button id="qAsk">Preguntar</button></div><div id="qList"><p class="small mute" style="margin:0 4px">Cargando…</p></div>` : ""}
@@ -266,5 +266,5 @@ function openQuestion(qd) {
   });
 }
 function linkShoes(txt) { // convierte menciones de modelos en enlaces a su ficha
-  let out = txt; for (const s of [...SHOES, ...(typeof PALAS !== "undefined" ? PALAS : []), ...(typeof ZPADEL !== "undefined" ? ZPADEL : [])]) { const re = new RegExp(`\\b(${s.modelo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i"); if (re.test(out)) { out = out.replace(re, `<a data-gear="${s.id}" style="color:var(--volt);font-weight:600">$1</a>`); } } return out;
+  let out = txt; for (const s of [...SHOES, ...(typeof PALAS !== "undefined" ? PALAS : []), ...(typeof ZPADEL !== "undefined" ? ZPADEL : [])]) { const re = new RegExp(`\\b(${s.modelo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i"); if (re.test(out)) { out = out.replace(re, `<a data-gear="${s.id}" style="color:var(--vt);font-weight:600">$1</a>`); } } return out;
 }
