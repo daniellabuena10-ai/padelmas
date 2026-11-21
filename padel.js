@@ -90,7 +90,7 @@ function vPadel() {
   if (!P.nivel0) return `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
       <p class="small" style="color:var(--mute);line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel del 1 al 7</b> (la escala de los clubes), que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
-      <button class="btn block" id="pdTest" style="margin-top:16px;background:var(--volt);color:#0b0f02;border:0">Calcular mi nivel</button></div>
+      <button class="btn block" id="pdTest" style="margin-top:16px;background:var(--ink);color:#fff;border:0">Calcular mi nivel</button></div>
       <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
   const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
@@ -101,7 +101,7 @@ function vPadel() {
       <div class="ringwrap"><div><div class="lbl" style="color:var(--mute)">Tu nivel</div><div style="display:flex;align-items:baseline;gap:6px"><div class="big num" style="color:var(--vt)">${fmtNivel(lv)}</div><span class="num" style="color:var(--mute);font-size:22px">/ 7</span></div><div class="small" style="color:var(--mute)">${nivelTxt(lv)}${r.n ? ` · fiabilidad ${r.fiab}%` : " · nivel de partida"}</div><button class="tiny" id="pdHow" style="color:var(--vt);font-weight:700;margin-top:6px;text-decoration:underline">¿Cómo se calcula?</button></div>
         <div style="margin-left:auto;text-align:right">${r.n ? `<span class="chip ${tr >= 0 ? "volt" : "hot"}">${tr >= 0 ? "▲" : "▼"} ${nf(Math.abs(tr), 2)}</span><div class="tiny mute" style="margin-top:6px">últimos 5</div>` : ""}</div></div>
       ${r.hist.length > 2 ? `<div class="chartbox" style="margin-top:10px">${lineChart(r.hist.map(h => h.n).concat(r.hist.length < 5 ? Array(5 - r.hist.length).fill(lv) : []), "#65a30d", { fmt: v => nf(v, 2) })}</div>` : ""}
-      <button class="btn block" id="pdAdd" style="margin-top:14px;background:var(--volt);color:#0b0f02;border:0">${svg("plus")}Apuntar partido</button></div>
+      <button class="btn block" id="pdAdd" style="margin-top:14px;background:var(--ink);color:#fff;border:0">${svg("plus")}Apuntar partido</button></div>
       ${pend}
       ${st.n ? `<div class="grid3"><div class="stat"><div class="k">Partidos</div><div class="v num">${st.n}</div></div><div class="stat"><div class="k">Victorias</div><div class="v num" style="color:var(--vt)">${Math.round(st.w / Math.max(1, st.w + st.l) * 100)}<small>%</small></div></div><div class="stat"><div class="k">Racha</div><div class="v num" style="color:${st.racha >= 0 ? "var(--volt)" : "var(--neg)"}">${st.racha > 0 ? "+" : ""}${st.racha}</div></div></div>
       <div class="grid2" style="margin-top:10px"><div class="stat"><div class="k">Sets</div><div class="v num" style="font-size:24px">${st.sw}<small>–${st.sl}</small></div></div><div class="stat"><div class="k">Juegos</div><div class="v num" style="font-size:24px">${st.gw}<small>–${st.gl}</small></div></div></div>
@@ -204,7 +204,7 @@ function openPadelMatch(base = {}) {
       <div class="field">Tu lado<div class="seg" id="pmL"><button data-v="drive" class="${lado === "drive" ? "on" : ""}">Drive</button><button data-v="reves" class="${lado === "reves" ? "on" : ""}">Revés</button></div></div>
       <div class="field">Tipo<div class="seg" id="pmT"><button data-v="amistoso" class="on">Amistoso</button><button data-v="liga">Liga</button><button data-v="torneo">Torneo</button></div></div></details>
     ${socialOn() ? `<p class="tiny mute" style="margin-bottom:10px">Etiqueta con @ a tus amigos de Pádel+: les llega el partido y lo confirman con un toque.</p>` : ""}
-    <div class="err" id="pmE"></div><button class="btn block" id="pmOk" style="background:var(--volt);color:#0b0f02;border:0">Guardar partido</button>`, async s => {
+    <div class="err" id="pmE"></div><button class="btn block" id="pmOk" style="background:var(--ink);color:#fff;border:0">Guardar partido</button>`, async s => {
     const dl = $("#pl", s); const opts = [];
     if (people.length) { await fetchProfiles(people); people.forEach(u => { const p = profCache[u]; if (p) opts.push(`@${p.usuario}`); }); }
     const names = new Set(); padelActs().forEach(a => [a.padel.comp, ...(a.padel.riv || [])].forEach(x => x && x.n && !x.uid && names.add(x.n)));
@@ -266,7 +266,7 @@ let qCity = "";
 function buscarHTML() {
   if (!socialOn()) return `<div class="card empty">${svg("users")}<p>Para buscar partido necesitas tu perfil en la comunidad.</p><button class="btn sm pri" id="bqJoin" style="margin-top:10px">Crear perfil</button></div>`;
   const lv = (computeNivel() || {}).nivel || 0; const list = quedadas.filter(q => !qCity || (q.ciudad || "").toLowerCase().includes(qCity.toLowerCase()) || (q.club || "").toLowerCase().includes(qCity.toLowerCase()));
-  return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="bqC" placeholder="Filtrar por ciudad o club" value="${esc(qCity)}" style="margin:0"></label><button class="btn" id="bqNew" style="flex:none;background:var(--volt);color:#0b0f02;border:0">${svg("plus")}Crear</button></div>
+  return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="bqC" placeholder="Filtrar por ciudad o club" value="${esc(qCity)}" style="margin:0"></label><button class="btn" id="bqNew" style="flex:none;background:var(--ink);color:#fff;border:0">${svg("plus")}Crear</button></div>
     ${list.length ? list.map(q => quedadaCard(q, lv)).join("") : `<div class="card empty">${svg("padel")}<p>No hay partidos abiertos${qCity ? " ahí" : ""}.<br>¡Crea uno y que se apunte gente de tu nivel!</p></div>`}`;
 }
 function quedadaCard(q, lv) {
@@ -300,7 +300,7 @@ function openQuedada() {
     <div class="row"><label class="field">Nivel mínimo<input id="qdMin" type="number" step="0.25" value="${nf(Math.max(1, lv - .5), 2).replace(",", ".")}"></label><label class="field">Nivel máximo<input id="qdMax" type="number" step="0.25" value="${nf(Math.min(7, lv + .5), 2).replace(",", ".")}"></label></div>
     <div class="field">Ya somos<div class="seg" id="qdN"><button data-v="1" class="on">Solo yo</button><button data-v="2">2</button><button data-v="3">3 (falta 1)</button></div></div>
     <label class="field">Notas (opcional)<input id="qdNo" maxlength="120" placeholder="Pista cubierta, pagamos a medias…"></label>
-    <button class="btn block" id="qdOk" style="background:var(--volt);color:#0b0f02;border:0">Publicar</button>`, s => {
+    <button class="btn block" id="qdOk" style="background:var(--ink);color:#fff;border:0">Publicar</button>`, s => {
     let ya = 1; $$("#qdN [data-v]", s).forEach(b => b.onclick = () => { ya = +b.dataset.v; $$("#qdN [data-v]", s).forEach(x => x.classList.toggle("on", x === b)); });
     $("#qdOk", s).onclick = async () => {
       const club = $("#qdC", s).value.trim(); if (!club) { toast("Pon el club"); return; }

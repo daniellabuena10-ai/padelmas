@@ -38,7 +38,7 @@ function openOpinarForm(g) {
     <label class="field">Tiempo usándola<select id="opU"><option value="">Elige…</option><option>Menos de 1 mes</option><option>1–6 meses</option><option>6–12 meses</option><option>Más de 1 año</option></select></label>
     <label class="check"><input type="checkbox" id="opRec" checked> <span>La recomendaría</span></label>
     <div class="err" id="opE"></div>
-    <button class="btn block" id="opOk" style="background:var(--volt);color:#0b0f02;border:0">Publicar en la comunidad</button>
+    <button class="btn block" id="opOk" style="background:var(--ink);color:#fff;border:0">Publicar en la comunidad</button>
     <p class="tiny mute" style="text-align:center;margin-top:8px">Se publica con tu nombre y tu nivel. También aparece en la ficha del producto.</p>`, s => {
     const wireCrit = () => $$("[data-crit]", s).forEach(sg => $$("button", sg).forEach(b => b.onclick = () => { crit[sg.dataset.crit] = +b.dataset.v; $$("button", sg).forEach(x => x.classList.toggle("on", x === b)); }));
     wireCrit();

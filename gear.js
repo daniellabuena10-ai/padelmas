@@ -105,7 +105,7 @@ function openRecPala() {
     <label class="check"><input type="checkbox" id="rpB"> <span>Tengo o he tenido molestias de <b>codo u hombro</b></span></label>
     <label class="check"><input type="checkbox" id="rpLi"> <span>Prefiero una pala <b>ligera</b></span></label>
     <div class="field">Presupuesto<div class="seg" id="rpP">${[[0, "Me da igual"], [1, "Hasta ~100 €"], [2, "Hasta ~200 €"], [3, "Top"]].map(([k, n]) => `<button data-v="${k}" class="${q.precio === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
-    <button class="btn block" id="rpGo" style="background:var(--volt);color:#0b0f02;border:0">Ver mis palas ideales</button>`, s => {
+    <button class="btn block" id="rpGo" style="background:var(--ink);color:#fff;border:0">Ver mis palas ideales</button>`, s => {
     const seg = (id, k, num) => $$(`#${id} [data-v]`, s).forEach(b => b.onclick = () => { q[k] = num ? +b.dataset.v : b.dataset.v || null; $$(`#${id} [data-v]`, s).forEach(x => x.classList.toggle("on", x === b)); });
     seg("rpN", "nivel", 1); seg("rpE", "estilo", 1); seg("rpL", "lado"); seg("rpP", "precio", 1);
     $("#rpGo", s).onclick = () => { q.brazo = $("#rpB", s).checked; q.ligera = $("#rpLi", s).checked;
@@ -152,7 +152,7 @@ function openRecZP() {
     <label class="field">Tu peso (kg)<input id="rzK" type="number" inputmode="numeric" min="35" max="160" value="${q.kg}"><span class="tiny mute">Con más peso conviene más amortiguación y estabilidad.</span></label>
     <label class="check"><input type="checkbox" id="rzL"> <span>Quiero algo <b>ligero y rápido</b></span></label>
     <div class="field">Presupuesto<div class="seg" id="rzPr">${[[0, "Me da igual"], [1, "Económica"], [2, "Media"], [3, "Top"]].map(([k, n]) => `<button data-v="${k}" class="${q.precio === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
-    <button class="btn block" id="rzGo" style="background:var(--volt);color:#0b0f02;border:0">Ver mis zapatillas ideales</button>`, s => {
+    <button class="btn block" id="rzGo" style="background:var(--ink);color:#fff;border:0">Ver mis zapatillas ideales</button>`, s => {
     const seg = (id, k, num) => $$(`#${id} [data-v]`, s).forEach(b => b.onclick = () => { q[k] = num ? +b.dataset.v : b.dataset.v; $$(`#${id} [data-v]`, s).forEach(x => x.classList.toggle("on", x === b)); });
     seg("rzP", "pista"); seg("rzF", "frec", 1); seg("rzPr", "precio", 1); seg("rzH", "horma");
     $("#rzGo", s).onclick = () => { q.rodilla = $("#rzR", s).checked; q.tobillo = $("#rzT", s).checked; q.rapido = $("#rzL", s).checked; q.kg = Math.max(35, Math.min(160, +$("#rzK", s).value || q.kg));
@@ -245,7 +245,7 @@ function openGearReview(g) {
   openSheet(`Opinar: ${g.modelo}`, `<div class="field">Tu nota<div class="seg" id="rvN">${[1, 2, 3, 4, 5].map(n => `<button data-n="${n}" style="font-size:20px">★</button>`).join("")}</div></div>
     <label class="field">Meses usándola<input id="rvK" type="number" inputmode="numeric" placeholder="6"></label>
     <label class="field">Tu opinión<textarea id="rvT" rows="3" maxlength="600" placeholder="${g.id.startsWith("pala_") ? "Potencia, control, tacto, punto dulce, ¿te ha dado molestias?…" : "Agarre, comodidad, talla, cuánto te han durado…"}"></textarea></label>
-    <button class="btn block" id="rvOk" style="background:var(--volt);color:#0b0f02;border:0">Publicar opinión</button>`, s => {
+    <button class="btn block" id="rvOk" style="background:var(--ink);color:#fff;border:0">Publicar opinión</button>`, s => {
     $$("#rvN button", s).forEach(b => b.onclick = () => { nota = +b.dataset.n; $$("#rvN button", s).forEach(x => x.style.color = +x.dataset.n <= nota ? "#facc15" : ""); });
     $("#rvOk", s).onclick = async () => {
       if (!nota) { toast("Pon una nota"); return; }
@@ -271,7 +271,7 @@ function materialView() {
   return seg + `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Recomendador</div><h2 style="font-size:24px;letter-spacing:-.5px;margin:6px 0 8px">${isP ? "¿Qué pala me va?" : "¿Qué zapatillas de pádel?"}</h2>
       <p class="small" style="color:var(--mute);line-height:1.5">${isP ? `Tu nivel, cómo juegas, tu lado y si te molesta el codo. Te digo las mejores de ${PALAS.length} palas y te explico por qué.` : `Tu pista, cuánto juegas, tus rodillas y tobillos. Te recomiendo entre ${ZPADEL.length} modelos y te explico el tipo de suela.`}</p>
-      <button class="btn block" id="gRec" style="margin-top:14px;background:var(--volt);color:#0b0f02;border:0">${svg("target")}${isP ? "Encontrar mi pala" : "Encontrar mis zapatillas"}</button></div>
+      <button class="btn block" id="gRec" style="margin-top:14px;background:var(--ink);color:#fff;border:0">${svg("target")}${isP ? "Encontrar mi pala" : "Encontrar mis zapatillas"}</button></div>
     ${isP ? `<div class="card"><h3>${svg("info")}Cómo leer una pala</h3><p class="small mute" style="line-height:1.6"><b style="color:var(--ink)">Forma:</b> redonda = control y punto dulce grande; lágrima = equilibrio; diamante = potencia, más exigente.<br><b style="color:var(--ink)">Balance:</b> alto = más pegada pero más brazo; bajo = más manejable.<br><b style="color:var(--ink)">Tacto:</b> blando = salida de bola y cuida el codo; duro = control y potencia si golpeas fuerte.</p></div>` : ""}
     ${socialOn() ? `<div class="sec">Preguntas sobre ${isP ? "palas" : "zapatillas de pádel"} <button id="qAsk">Preguntar</button></div><div id="qList"><p class="small mute" style="margin:0 4px">Cargando…</p></div>` : ""}
     <div class="sec">Catálogo</div>

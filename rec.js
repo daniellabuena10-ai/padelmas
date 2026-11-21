@@ -2,7 +2,7 @@
 
 function openStart() {
   openSheet("Pádel", `<div class="subQuick"><button class="hi" id="sFoto">📸 Publicación</button><button id="sHist">⏱ Historia</button></div>
-    <div class="row" style="margin-bottom:6px"><button class="btn block" id="sPm" style="background:var(--volt);color:#0b0f02;border:0;padding:18px">${svg("plus")}Apuntar partido</button><button class="btn block" id="sPc" style="padding:18px">${svg("clock")}Cronometrar</button></div>
+    <div class="row" style="margin-bottom:6px"><button class="btn block" id="sPm" style="background:var(--ink);color:#fff;border:0;padding:18px">${svg("plus")}Apuntar partido</button><button class="btn block" id="sPc" style="padding:18px">${svg("clock")}Cronometrar</button></div>
     <p class="tiny mute" style="text-align:center;margin-top:10px">Apunta el resultado al acabar, o cronometra el partido mientras juegas.</p>`, s => {
     $("#sFoto", s).onclick = () => openSubir("foto"); $("#sHist", s).onclick = () => openSubir("historia");
     $("#sPm", s).onclick = () => openPadelMatch(); $("#sPc", s).onclick = () => { sheetOpen = false; $("#sheet").classList.remove("on"); $("#sheetBg").classList.remove("on"); startRec("padel"); };

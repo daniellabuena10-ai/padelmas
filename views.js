@@ -41,11 +41,11 @@ function vInicio() {
   html += r ? `<div class="hero">
       <div style="display:flex;align-items:flex-start;gap:12px"><div><div class="lbl" style="color:var(--mute)">Tu nivel de pádel</div><div class="big num" style="color:var(--vt)">${fmtNivel(r.nivel)}</div><div class="small" style="color:var(--mute)">${nivelTxt(r.nivel)}${r.n ? ` · fiabilidad ${r.fiab}%` : ""}</div></div>
         <div style="margin-left:auto;text-align:right;line-height:1.7" class="small"><div><b class="num" style="font-size:20px">${st.n}</b> <span class="mute">partidos</span></div><div><b class="num" style="font-size:20px;color:var(--vt)">${st.w + st.l ? Math.round(st.w / (st.w + st.l) * 100) : 0}%</b> <span class="mute">victorias</span></div>${st.racha > 1 ? `<div style="color:var(--vt)">🔥 ${st.racha} seguidas</div>` : ""}</div></div>
-      <div class="row" style="margin-top:14px"><button class="btn block" id="hAdd" style="background:var(--volt);color:#0b0f02;border:0">${svg("plus")}Apuntar partido</button><button class="btn" id="hPad" style="flex:none">Ver todo</button></div></div>`
+      <div class="row" style="margin-top:14px"><button class="btn block" id="hAdd" style="background:var(--ink);color:#fff;border:0">${svg("plus")}Apuntar partido</button><button class="btn" id="hPad" style="flex:none">Ver todo</button></div></div>`
     : `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Empieza aquí</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 8px">¿Cuál es tu nivel de pádel?</h2>
       <p class="small" style="color:var(--mute);line-height:1.5">5 preguntas y lo sabes. Luego sube o baja solo con cada partido que apuntes.</p>
-      <button class="btn block" id="hTest" style="margin-top:14px;background:var(--volt);color:#0b0f02;border:0">Calcular mi nivel</button></div>`;
+      <button class="btn block" id="hTest" style="margin-top:14px;background:var(--ink);color:#fff;border:0">Calcular mi nivel</button></div>`;
   if (typeof partidosPend !== "undefined" && partidosPend.length) html += `<button class="hint" id="hPend" style="width:100%;text-align:left;background:rgba(132,204,22,.1);margin-bottom:14px"><span style="font-size:18px">🎾</span><span style="color:var(--ink)">Te han apuntado en <b>${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</b>. Toca para confirmar.</span></button>`;
   if (last) html += `<div class="sec">Último partido</div>${matchCard(last)}`;
   html += `<div class="sec">Para ti</div>`;
