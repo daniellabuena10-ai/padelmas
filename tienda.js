@@ -61,8 +61,11 @@ const norm2 = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, 
 const limpiaNombre = (n, m) => { let s = n.replace(/\s*\((pala|zapatillas?|racket|ropa)\)\s*$/i, ""); if (m && norm2(s).startsWith(norm2(m) + " ")) s = s.slice(m.length + 1); return s; };
 
 // ---------- Bloque de tienda en Inicio ----------
-function inicioTiendaHTML(pala) {
-  const zp = typeof recZP === "function" ? (recZP({ pista: "arena", frec: 2, horma: "normal", kg: Math.round(weightKg()), precio: 0 }) || [])[0] : null;
+function inicioTiendaHTML(palas) {
+  // Siempre un producto que se pueda comprar y con foto real (el mejor de los recomendados que esté en la tienda)
+  const conFoto = l => { l = Array.isArray(l) ? l : [l]; return l.slice(0, 12).find(x => x && x.s && realOf(x.s)) || l[0]; };
+  const pala = conFoto(palas);
+  const zp = typeof recZP === "function" ? conFoto(recZP({ pista: "arena", frec: 2, horma: "normal", kg: Math.round(weightKg()), precio: 0 }) || []) : null;
   const picks = [pala && pala.s, zp && zp.s].filter(Boolean);
   const card = (g, lbl) => { const r = realOf(g); return `<button class="hpick" data-gear="${g.id}"><div class="tdimg" style="height:118px">${r ? fotoReal(r, 110) : CAT ? gearArt(g, 90) : ""}${r && dto(r) >= 5 ? `<span class="dtob" style="position:absolute;top:6px;left:6px">-${dto(r)}%</span>` : ""}</div>
     <div class="tiny" style="color:var(--vt);font-weight:800;margin-top:8px">${lbl}</div><div class="tdname" style="min-height:0">${esc(g.marca)} ${esc(g.modelo)}</div>

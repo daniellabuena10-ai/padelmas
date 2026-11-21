@@ -92,6 +92,7 @@ function recPala(q) {
     if (q.nivel === 1 && p.forma === "redonda") { sc += .5; why.push("redonda, punto dulce grande"); }
     if (q.nivel === 1 && p.forma === "diamante") sc -= .8;
     if (q.precio && p.precio > q.precio) sc -= .9 * (p.precio - q.precio); if (q.precio === 1 && p.precio === 1) why.push("económica");
+    if (typeof realOf === "function" && realOf(p)) sc += .5;
     return { s: p, sc, why: [...new Set(why)].slice(0, 3) };
   }).sort((a, b) => b.sc - a.sc).slice(0, 6);
 }
@@ -130,6 +131,7 @@ function recZP(q) {
     const kg = q.kg || weightKg();
     if (kg >= 85) { sc += (z.amort + z.estab - 6) * .35; if (z.amort >= 4 && z.estab >= 4) why.push(`buena para tu peso (${kg} kg)`); if (z.peso <= 340) sc -= .5; }
     else if (kg <= 65) { if (z.peso <= 360) { sc += .5; why.push("ligera, ideal para tu peso"); } if (z.amort >= 5) sc -= .2; }
+    if (typeof realOf === "function" && realOf(z)) sc += .5;
     return { s: z, sc, why: [...new Set(why)].slice(0, 3) };
   }).sort((a, b) => b.sc - a.sc).slice(0, 6);
 }
