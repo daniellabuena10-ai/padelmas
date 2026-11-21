@@ -133,14 +133,15 @@ function authErr(e) {
 function boot() {
   try { if (localStorage.getItem("pm-texto") === "g") document.body.classList.add("tg"); } catch {}
   store = (window.FIREBASE_CONFIG && window.firebase) ? firebaseStore() : localStore();
-  initAuthUI(); initNav(); setTimeout(() => typeof loadCatalogo === "function" && loadCatalogo(), 1500);
+  const catP = typeof loadCatalogo === "function" ? loadCatalogo() : Promise.resolve();
+  initAuthUI(); initNav();
   const hideSplash = () => $("#splash").classList.add("out");
   setTimeout(hideSplash, 5000);
   initBackButton();
   store.onUser(u => {
     if (!u) { hideSplash(); me = null; state = { act: {}, com: {}, peso: {}, dia: {}, perfil: {} }; loaded = false; $("#auth").hidden = false; $("#app").hidden = true; $("#tabbar").hidden = true; return; }
     me = u; $("#auth").hidden = true; $("#app").hidden = false; $("#tabbar").hidden = false;
-    store.start(u, first => { loaded = true; if (first) { setView(view); requestAnimationFrame(hideSplash); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (!sheetOpen && !recActive) render(); });
+    store.start(u, first => { loaded = true; if (first) { const go = () => { window.__shown = true; setView(view); requestAnimationFrame(hideSplash); }; (typeof CAT !== "undefined" && CAT) ? go() : Promise.race([catP, new Promise(r => setTimeout(r, 2500))]).then(go); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (window.__shown && !sheetOpen && !recActive) render(); });
   });
 }
 

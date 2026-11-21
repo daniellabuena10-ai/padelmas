@@ -1,20 +1,26 @@
 // ===== Pádel+ · Catálogo real de Padel Market (data/catalogo.json, se actualiza cada noche) =====
 let CAT = null, CATBY = {}, catLoading = null;
+// Copia guardada en el móvil: así la primera pantalla sale ya con fotos y precios, sin parpadeos
+try { const c = JSON.parse(localStorage.getItem("pm-cat") || "null"); if (c && c.p) { CAT = c; CATBY = Object.fromEntries(c.p.map(p => [p.i, p])); } } catch {}
 const eur = n => n == null ? "" : n.toLocaleString("es-ES", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }) + " €";
 function loadCatalogo() {
-  if (CAT || catLoading) return catLoading;
+  if (catLoading) return catLoading;
+  const had = !!CAT, oldT = CAT && CAT.t;
   catLoading = fetch("data/catalogo.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).then(d => {
-    if (!d || !d.p) return null; CAT = d; CATBY = Object.fromEntries(d.p.map(p => [p.i, p]));
-    if (typeof view !== "undefined" && ["material", "inicio"].includes(view) && !sheetOpen) render();
+    if (!d || !d.p) return CAT; if (d.t === oldT) return CAT;
+    CAT = d; CATBY = Object.fromEntries(d.p.map(p => [p.i, p]));
+    try { localStorage.setItem("pm-cat", JSON.stringify(d)); } catch {}
+    // Si ya se veía la tienda con datos, no redibujamos Inicio (evita el salto); la tienda sí se refresca
+    if (typeof view !== "undefined" && !sheetOpen && (!had ? ["material", "inicio"].includes(view) : view === "material")) render();
     return d;
-  }).catch(() => null);
+  }).catch(() => CAT);
   return catLoading;
 }
 // Producto real enlazado a una de nuestras fichas
 function realOf(g) { return CAT && g && CAT.match && CATBY[CAT.match[g.id]] || null; }
 function dto(p) { return p.o && p.o > p.p ? Math.round((1 - p.p / p.o) * 100) : 0; }
 function precioReal(p) { return `<span class="num" style="color:#facc15">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}${dto(p) >= 5 ? ` <span class="dtob">-${dto(p)}%</span>` : ""}`; }
-function fotoReal(p, size) { return `<img src="${esc(p.f)}" alt="${esc(p.n)}" loading="lazy" referrerpolicy="no-referrer" style="width:${size}px;height:${size}px;object-fit:contain;background:#fff;border-radius:14px" onerror="this.style.display='none'">`; }
+function fotoReal(p, size) { return `<img src="${esc(p.f)}" alt="${esc(p.n)}" decoding="async" referrerpolicy="no-referrer" style="width:${size}px;height:${size}px;object-fit:contain;background:#fff;border-radius:14px;opacity:0;transition:opacity .25s" onload="this.style.opacity=1" onerror="this.style.visibility='hidden'">`; }
 
 // ---------- Tienda (en Material) ----------
 let tdCat = "pala", tdQ = "", tdOrden = "top", tdN = 30, tdGen = "";
@@ -55,7 +61,7 @@ const limpiaNombre = (n, m) => { let s = n.replace(/\s*\((pala|zapatillas?|racke
 function inicioTiendaHTML(pala) {
   const zp = typeof recZP === "function" ? (recZP({ pista: "arena", frec: 2, horma: "normal", kg: Math.round(weightKg()), precio: 0 }) || [])[0] : null;
   const picks = [pala && pala.s, zp && zp.s].filter(Boolean);
-  const card = (g, lbl) => { const r = realOf(g); return `<button class="hpick" data-gear="${g.id}"><div class="tdimg" style="height:118px">${r ? fotoReal(r, 110) : gearArt(g, 90)}${r && dto(r) >= 5 ? `<span class="dtob" style="position:absolute;top:6px;left:6px">-${dto(r)}%</span>` : ""}</div>
+  const card = (g, lbl) => { const r = realOf(g); return `<button class="hpick" data-gear="${g.id}"><div class="tdimg" style="height:118px">${r ? fotoReal(r, 110) : CAT ? gearArt(g, 90) : ""}${r && dto(r) >= 5 ? `<span class="dtob" style="position:absolute;top:6px;left:6px">-${dto(r)}%</span>` : ""}</div>
     <div class="tiny" style="color:#facc15;font-weight:800;margin-top:8px">${lbl}</div><div class="tdname" style="min-height:0">${esc(g.marca)} ${esc(g.modelo)}</div>
     <div style="margin-top:4px">${r ? `<span class="num" style="color:#facc15;font-size:17px">${eur(r.p)}</span>${r.o ? ` <s class="tiny mute">${eur(r.o)}</s>` : ""}` : `<span class="small mute">${priceTxt(g)}</span>`}</div>
     <span class="buyrow" data-buy="${g.id}" style="margin-top:8px;justify-content:center">${svg("cart")}Comprar</span></button>`; };
