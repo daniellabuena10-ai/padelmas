@@ -60,7 +60,7 @@ slides = [page(f'<div class="dark">{logo}<div class="tag">🔥 {html.escape(etiq
 for i in range(0, len(top), 5):
     rows = "".join(f'<div class="row"><div class="off">-{dto(p)}%</div><div class="nm"><div class="br">{html.escape(p.get("m") or "")}</div><div class="md">{html.escape(limpia(p))}</div></div><div class="pr"><b>{eur(p["p"])}</b><s>{eur(p["o"])}</s></div></div>' for p in top[i:i + 5])
     slides.append(page(f'<div class="light">{logo}<h2>{"Top 5" if i == 0 else "Y estas también"} 🎾</h2>{rows}<div class="ft">Precios en Padel Market a {fecha}. Pueden cambiar: mira el precio de hoy en la app.</div></div>'))
-slides.append(page(f'<div class="dark cta">{logo}<h1>Todas las ofertas, <em>al día</em></h1><div class="url">padelmas.club</div><p>Y descubre qué pala va con tu juego en 1 minuto.<br>Enlace en el perfil 👆</p></div>'))
+slides.append(page(f'<div class="dark cta">{logo}<h1>Todas las ofertas, <em>al día</em></h1><div class="url">padelmas.club</div><p>Y descubre tu pala ideal en 1 minuto.<br>Enlace en el perfil 👆</p></div>'))
 
 async def main():
     os.makedirs(os.path.join(ROOT, "ig"), exist_ok=True)

@@ -89,7 +89,7 @@ function vPadel() {
     : `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sm" id="piBack" style="flex:0 0 auto">${svg("back")}Pádel</button><h3 style="margin:0 0 0 6px">Pistas y clubes</h3></div>`) + pistasHTML();
   if (!P.nivel0) return `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
-      <p class="small" style="color:var(--mute);line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel del 1 al 7</b> (la escala de los clubes), que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y qué pala te va de verdad.</p>
+      <p class="small" style="color:var(--mute);line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel del 1 al 7</b> (la escala de los clubes), que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y cuál es tu pala ideal.</p>
       <button class="btn block" id="pdTest" style="margin-top:16px;background:var(--ink);color:#fff;border:0">Calcular mi nivel</button></div>
       <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
@@ -114,7 +114,7 @@ function vPadel() {
         ${st.lado.drive[1] || st.lado.reves[1] ? statItem("↔️", "Por lado", `Drive ${st.lado.drive[1] ? Math.round(st.lado.drive[0] / st.lado.drive[1] * 100) + "%" : "–"} · Revés ${st.lado.reves[1] ? Math.round(st.lado.reves[0] / st.lado.reves[1] * 100) + "%" : "–"}`, "porcentaje de victorias") : ""}
         ${st.tie[0] + st.tie[1] ? statItem("🧊", "Tie-breaks", `${st.tie[0]} ganados · ${st.tie[1]} perdidos`, "") : ""}
       </div>
-      <button class="item" id="pdGear" style="margin-top:4px"><span style="font-size:22px;width:28px;text-align:center">🎾</span><div style="flex:1"><div style="font-weight:700">¿Qué pala me va?</div><div class="tiny mute">Recomendador según tu nivel (${fmtNivel(lv)}) y tu juego</div></div>${svg("chev", "chev")}</button>
+      <button class="item" id="pdGear" style="margin-top:4px"><span style="font-size:22px;width:28px;text-align:center">🎾</span><div style="flex:1"><div style="font-weight:700">¿Cuál es mi pala ideal?</div><div class="tiny mute">Recomendador según tu nivel (${fmtNivel(lv)}) y tu juego</div></div>${svg("chev", "chev")}</button>
       <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>
       <button class="item" id="pdFind"><span style="font-size:22px;width:28px;text-align:center">👥</span><div style="flex:1"><div style="font-weight:700">Buscar partido</div><div class="tiny mute">Partidos abiertos de tu nivel</div></div>${svg("chev", "chev")}</button>` : `<div class="card empty">${svg("padel")}<p>Apunta tu primer partido y empieza a mover tu nivel.</p></div>`}`;
   } else if (padelTab === "partidos") {

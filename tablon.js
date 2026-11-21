@@ -2,7 +2,7 @@
 // Las publicaciones se editan aquí (las gestiona Pádel+). Cuando haya anunciantes, se añaden como tipo "patrocinado".
 const TABLON = [
   { id: "t-bienvenida", tipo: "novedad", fecha: "2026-11-21", e: "🎾", t: "Bienvenido a Pádel+",
-    d: "Apunta tus partidos, descubre qué material te va y pica a tus amigos en el ranking. Cuéntanos qué te gustaría ver en la app.",
+    d: "Apunta tus partidos, descubre tu material ideal y pica a tus amigos en el ranking. Cuéntanos qué te gustaría ver en la app.",
     cta: ["Escríbenos", "mailto:holapadelmas@gmail.com?subject=Idea%20para%20P%C3%A1del%2B"] },
   { id: "t-torneos", tipo: "torneo", fecha: "2026-11-21", e: "🏆", t: "¿Organizas un torneo o una liga?",
     d: "Anúnciala gratis en el tablón de Pádel+: fechas, club, niveles y cómo apuntarse. La verán los jugadores de tu zona.",
