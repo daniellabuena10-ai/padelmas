@@ -60,6 +60,22 @@ async function clubsComunidad(lat, lon) {
   if (!socialOn()) return [];
   try { const s = await Promise.race([FS().collection("clubs").where("cell", "in", geoCells(lat, lon)).limit(200).get(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]); return s.docs.map(d => ({ id: d.id, ...d.data(), fuente: "user" })); } catch (e) { console.warn(e); return []; }
 }
+// ---------- Clubes de España guardados en la app (data/clubes.json) ----------
+let CLUBES = null, clubesP = null;
+function loadClubes() { if (CLUBES) return Promise.resolve(CLUBES); if (!clubesP) clubesP = fetch("data/clubes.json").then(r => r.ok ? r.json() : null).then(d => (CLUBES = d && d.c ? d : null)).catch(() => (clubesP = null)); return clubesP; }
+const nrm = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+function lugarLocal(q) {
+  if (!CLUBES) return null; const n = nrm(q); if (!n) return null;
+  let best = null, bs = -1;
+  for (const l of CLUBES.l) { const ln = nrm(l[0]); let s = ln === n ? 100 : ln.startsWith(n) ? 60 : (" " + ln).includes(" " + n) ? 30 : -1; if (s < 0) continue; s += l[3] * 10; if (s > bs) { bs = s; best = l; } }
+  return best ? { lat: best[1], lon: best[2], nombre: best[0] } : null;
+}
+function clubesLocales(lat, lon, radio) {
+  const out = []; const dlat = radio / 111, dlon = radio / (111 * Math.cos(lat * Math.PI / 180));
+  for (const c of CLUBES.c) { if (Math.abs(c[1] - lat) > dlat || Math.abs(c[2] - lon) > dlon) continue; const d = distKm(lat, lon, c[1], c[2]); if (d > radio) continue;
+    out.push({ id: `es_${c[1]}_${c[2]}`, nombre: c[0], lat: c[1], lon: c[2], pistas: c[3] || null, cubiertas: c[4], dir: c[5], web: c[6], tel: c[7], fuente: "osm", dist: d }); }
+  return out;
+}
 let busqId = 0;
 async function buscarPistas(opts) {
   const my = ++busqId;
@@ -67,10 +83,11 @@ async function buscarPistas(opts) {
   pistas.busy = true; pistas.err = ""; pistas.aviso = ""; pistas.sel = null; if (!pistas.paso || !/cerca/.test(pistas.paso)) pistas.paso = "Buscando pistas…"; if (view === "padel") render();
   try {
     let lugar = opts.lugar, lat = opts.lat, lon = opts.lon;
-    if (lat == null) { const g = await geocode(lugar); if (!g) throw new Error("nolugar"); lat = g.lat; lon = g.lon; lugar = g.nombre; }
+    await loadClubes();
+    if (lat == null) { const g = lugarLocal(lugar) || await geocode(lugar); if (!g) throw new Error("nolugar"); lat = g.lat; lon = g.lon; lugar = g.nombre; }
     Object.assign(pistas, { lugar, lat, lon }); try { localStorage.setItem("pm-pistas-lugar", JSON.stringify({ lugar, lat, lon })); } catch {}
     const k = `pm-pistas3:${lat.toFixed(2)},${lon.toFixed(2)},${pistas.radio}`;
-    let osm = cacheGet(k, 7 * 864e5);
+    let osm = CLUBES ? clubesLocales(lat, lon, pistas.radio) : cacheGet(k, 7 * 864e5);
     const [ov, cm] = await Promise.allSettled([osm ? Promise.resolve(null) : overpass(lat, lon, pistas.radio), clubsComunidad(lat, lon)]);
     if (busqId !== my) return;
     if (!osm) { if (ov.status === "fulfilled") { osm = agrupar(ov.value, lat, lon); if (osm.length) cacheSet(k, osm); } else { console.warn("overpass", ov.reason); osm = []; pistas.aviso = "El mapa libre no ha respondido; te enseño lo que hay y tienes Google Maps abajo."; } }
@@ -102,6 +119,7 @@ function cercaDeMi() {
   };
   if (!navigator.geolocation) return fallo(2);
   let done = false;
+  loadClubes();
   const ok = p => { if (done) return; done = true; pistas.paso = "Buscando pistas cerca de ti…"; buscarPistas({ lugar: "Tu ubicación", lat: p.coords.latitude, lon: p.coords.longitude }); };
   const ko = e => { if (done) return; if (e && e.code === 1) { done = true; return fallo(1); }
     // Reintenta con GPS de alta precisión antes de rendirse
