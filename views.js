@@ -232,7 +232,7 @@ function openPerfil() {
       <button class="item" id="pWatch">${svg("watch")}Conectar reloj${svg("chev", "chev")}</button>
       <button class="item" id="pNut">${svg("food")}Mis datos de nutrición${svg("chev", "chev")}</button>
       <a class="item" href="privacidad.html">${svg("shield")}Privacidad y condiciones${svg("chev", "chev")}</a>
-      <a class="item" href="mailto:soporte.ahorra@gmail.com?subject=P%C3%A1del%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
+      <a class="item" href="mailto:holapadelmas@gmail.com?subject=P%C3%A1del%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
       <button class="item" id="pOut">${svg("logout")}Cerrar sesión${svg("chev", "chev")}</button>
       <button class="item" id="pDel" style="color:var(--neg)">${svg("trash")}Borrar mi cuenta${svg("chev", "chev")}</button>
     </div><p class="tiny mute" style="text-align:center;margin-top:8px">Pádel+ · versión 1.0</p>`, s => {

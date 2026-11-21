@@ -44,6 +44,7 @@ footer{margin-top:40px;font-size:13px;color:var(--mute);text-align:center}
   <header><a class="logo" href="./"><img src="icon-192.png" alt="">Pádel<b>+</b></a><a class="cta" href="./">Abrir la app</a></header>
   <h1>¿Qué pala de pádel me compro? <em>Guía 2026</em></h1>
   <p class="lead">La pregunta que más se oye en cualquier tienda de deportes. Aquí tienes cómo elegir pala, zapatillas y accesorios según tu nivel y tu forma de jugar, explicado sin tecnicismos.</p>
+  <p class="lead" style="font-size:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)">🤝 <b>Aviso de afiliación:</b> Pádel+ es gratis porque se financia con enlaces de afiliado. Si compras desde nuestros enlaces a tiendas como Padel Market, podemos recibir una comisión. A ti no te cuesta más y no cambia nuestras recomendaciones. <a href="privacidad.html#afiliacion">Más info</a></p>
   <nav class="toc"><a href="#elegir">Cómo elegir pala</a><a href="#palas">Palas por nivel</a><a href="#suelas">Suelas de zapatilla</a><a href="#zapatillas">Zapatillas</a><a href="#accesorios">Accesorios</a><a href="#aprende">Aprende</a></nav>
 
   <h2 id="elegir">Cómo elegir pala en 1 minuto</h2>
@@ -89,5 +90,6 @@ document.getElementById("zp-list").innerHTML = ZPADEL.map(z => card(z, `<div cla
 document.getElementById("acc-list").innerHTML = ACCES.map(a => `<div class="card"><div style="font-size:24px">${a.e}</div><div style="font-weight:700;margin-top:4px">${a.t}</div><p class="small mute" style="margin-top:4px">${a.r}</p><ul class="small" style="margin:8px 0 0 18px;color:#c5cdd6">${a.tips.map(t => `<li>${t}</li>`).join("")}</ul></div>`).join("");
 document.getElementById("les-list").innerHTML = LESSONS.map(l => `<div class="card"><div class="chips" style="margin:0 0 6px"><span class="chip g">${l.cat}</span><span class="chip">${NIVL[l.nivel]}</span></div><div style="font-weight:700">${l.t}</div><p class="small mute" style="margin-top:4px">${l.r}</p></div>`).join("");
 </script>
+<p style="text-align:center;font-size:13px;opacity:.7;margin:30px 0"><a href="privacidad.html#afiliacion">Aviso de afiliación</a> · <a href="privacidad.html">Privacidad y condiciones</a> · <a href="mailto:holapadelmas@gmail.com">holapadelmas@gmail.com</a></p>
 </body>
 </html>
