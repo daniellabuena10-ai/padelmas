@@ -190,7 +190,7 @@ const RANGO = ["", "menos de 100 €", "100 – 200 €", "más de 200 €"];
 const priceTxt = g => PVP[g.id] ? `${Math.round(PVP[g.id])} €` : RANGO[g.precio];
 // Cuando Awin apruebe los programas, se rellena AFFIL y los enlaces pasan a ser de afiliado.
 // Tiendas. Mientras Awin no apruebe (activo:false) el botón lleva directo a la tienda; al aprobar, pasa por Awin con nuestro ID.
-const AFFIL = { activo: false, affid: "3159710", tiendas: [
+const AFFIL = { activo: true, affid: "3159710", tiendas: [
   { n: "Padel Market", mid: "24562", buscar: q => `https://padelmarket.com/es-eu/search?type=product&q=${encodeURIComponent(q)}` }] };
 function storeUrl(t, q) { const u = t.buscar(q); return AFFIL.activo ? `https://www.awin1.com/cread.php?awinmid=${t.mid}&awinaffid=${AFFIL.affid}&clickref=padelmas&ued=${encodeURIComponent(u)}` : u; }
 function buyUrl(g) { const t = AFFIL.tiendas[0]; return t ? storeUrl(t, `${g.marca} ${g.modelo}`) : `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(g.marca + " " + g.modelo)}`; }
