@@ -47,7 +47,8 @@ const KEY = /^(\d+k|hybrid|light|lite|attack|ultra|jr|junior|w|woman|women|mujer
 
 function categoria(p) {
   const s = norm(`${p.n} ${p.catTxt}`);
-  if (/\bjunior\b|\bjr\b|\bnino|\bkid/.test(s) && /pala|racket/.test(s)) return "pala";
+  const ACC = /paletero|funda|cover|protector|grip|bolsa|mochila|bag|pelota|ball|muñequera|munequera|gorra|visera|calcetin|cinta|toalla|antivibrador/;
+  if (/\bjunior\b|\bjr\b|\bnino|\bkid/.test(s) && /pala|racket/.test(s) && !ACC.test(s)) return "pala";
   if (/\b(pala|palas|racket|raqueta)\b/.test(s) && !/paletero|funda|protector|grip|bolsa|mochila/.test(s)) return "pala";
   if (/zapatilla|calzado|\bshoe|sneaker/.test(s)) return "zapa";
   if (/paletero|mochila|bolsa|bag|overgrip|grip|pelota|ball|protector|muñequera|munequera|gorra|visera|calcetin|cinta|toalla|antivibrador|funda/.test(s)) return "acces";
@@ -66,6 +67,7 @@ function nuestrosModelos() {
 
 // ---------- principal ----------
 const raw = parseCSV(await getText(SRC));
+console.log("Ejemplo precios:", raw.slice(0, 5).map(r => [r.search_price, r.store_price, r.display_price, r.rrp_price, r.saving].join(" / ")).join(" | "));
 console.log("Filas en el feed:", raw.length, "· columnas:", Object.keys(raw[0] || {}).join(", "));
 let prods = raw.map(r => {
   const p = {
@@ -74,7 +76,7 @@ let prods = raw.map(r => {
     marca: pick(r, "brand_name", "brand"),
     catTxt: [pick(r, "merchant_category"), pick(r, "category_name"), pick(r, "product_type"), pick(r, "merchant_product_category_path")].join(" "),
     precio: num(pick(r, "search_price", "store_price", "display_price", "price")),
-    pvp: num(pick(r, "rrp_price", "product_price_old", "base_price", "saving")),
+    pvp: num(pick(r, "rrp_price", "product_price_old", "base_price")) || (num(r.store_price) > num(pick(r, "search_price", "display_price")) ? num(r.store_price) : null),
     img: pick(r, "merchant_image_url", "large_image", "aw_image_url", "image_url", "merchant_thumb_url", "aw_thumb_url"),
     url: pick(r, "aw_deep_link", "deep_link"),
     land: pick(r, "merchant_deep_link", "product_url", "link"),
