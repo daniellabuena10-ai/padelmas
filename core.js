@@ -191,6 +191,7 @@ function render() {
   if (!TABS[view]) view = "inicio";
   const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tablon: vTablon, material: () => materialView() }[view];
   $("#title").textContent = TABS[view][1];
+  document.body.classList.toggle("shopw", view === "material" && typeof gearSeg !== "undefined" && gearSeg === "tienda");
   $("#view").innerHTML = `<div class="fade">${V()}</div>`;
   (view === "material" ? () => wireMaterial($("#view")) : WIRE[view] || (() => {}))();
 }
