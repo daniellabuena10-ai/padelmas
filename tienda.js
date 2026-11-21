@@ -17,18 +17,21 @@ function precioReal(p) { return `<span class="num" style="color:#facc15">${eur(p
 function fotoReal(p, size) { return `<img src="${esc(p.f)}" alt="${esc(p.n)}" loading="lazy" referrerpolicy="no-referrer" style="width:${size}px;height:${size}px;object-fit:contain;background:#fff;border-radius:14px" onerror="this.style.display='none'">`; }
 
 // ---------- Tienda (en Material) ----------
-let tdCat = "pala", tdQ = "", tdOrden = "oferta", tdN = 30, tdGen = "";
+let tdCat = "pala", tdQ = "", tdOrden = "top", tdN = 30, tdGen = "";
 const TD_CATS = [["pala", "Palas"], ["zapa", "Zapatillas"], ["ropa", "Ropa"], ["acces", "Accesorios"]];
 function tiendaHTML() {
   if (!CAT) { loadCatalogo(); return `<div class="card empty"><p>${catLoading ? "Cargando el catálogo de Padel Market…" : "El catálogo se está preparando. Vuelve en un rato."}</p></div>`; }
   const qs = norm2(tdQ).split(/\s+/).filter(Boolean);
   let L = CAT.p.filter(p => p.c === tdCat && !p.x && (!tdGen || p.g === tdGen) && (!qs.length || (s => qs.every(w => s.includes(w)))(norm2(`${p.m} ${p.n}`))));
-  L.sort(tdOrden === "barato" ? (a, b) => a.p - b.p : tdOrden === "caro" ? (a, b) => b.p - a.p : (a, b) => dto(b) - dto(a) || a.p - b.p);
+  const TOPM = ["nox", "bullpadel", "adidas", "head", "babolat", "siux", "starvie", "star vie", "wilson", "black crown", "kombat", "drop shot", "asics"];
+  const rec = new Set(Object.values(CAT.match || {}));
+  const score = p => (rec.has(p.i) ? 100 : 0) + (dto(p) * 2) + (TOPM.some(m => norm2(p.m || p.n).startsWith(m)) ? 20 : 0) + (/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n)) ? -40 : 0) + Math.min(10, p.p / 30);
+  L.sort(tdOrden === "barato" ? (a, b) => a.p - b.p : tdOrden === "caro" ? (a, b) => b.p - a.p : tdOrden === "oferta" ? (a, b) => dto(b) - dto(a) || a.p - b.p : (a, b) => score(b) - score(a));
   const tot = L.length; L = L.slice(0, tdN);
   return `<div class="card" style="padding:12px;border-color:rgba(250,204,21,.3)"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">🛒</span><div style="flex:1"><div style="font-weight:800">Tienda Pádel+</div><div class="tiny mute">${CAT.p.length.toLocaleString("es-ES")} productos de ${esc(CAT.tienda)} · precios de hoy</div></div></div></div>
     <div class="seg" id="tdC" style="margin:4px 0 10px">${TD_CATS.map(([k, n]) => `<button data-c="${k}" class="${tdCat === k ? "on" : ""}">${n}</button>`).join("")}</div>
     <div class="row" style="gap:8px;margin-bottom:10px"><label class="field" style="margin:0;flex:1"><input id="tdQ" value="${esc(tdQ)}" placeholder="Busca marca o modelo (ej. Bullpadel)" style="margin:0" enterkeyhint="search"></label>
-      <select id="tdO" style="flex:0 0 auto;width:auto;margin:0;padding:0 10px;border-radius:14px;background:var(--card2);color:var(--ink);border:1px solid var(--line2)"><option value="oferta" ${tdOrden === "oferta" ? "selected" : ""}>Ofertas</option><option value="barato" ${tdOrden === "barato" ? "selected" : ""}>Más barato</option><option value="caro" ${tdOrden === "caro" ? "selected" : ""}>Más caro</option></select></div>
+      <select id="tdO" style="flex:0 0 auto;width:auto;margin:0;padding:0 10px;border-radius:14px;background:var(--card2);color:var(--ink);border:1px solid var(--line2)"><option value="top" ${tdOrden === "top" ? "selected" : ""}>Destacadas</option>${CAT.p.some(p => p.o) ? `<option value="oferta" ${tdOrden === "oferta" ? "selected" : ""}>Ofertas</option>` : ""}<option value="barato" ${tdOrden === "barato" ? "selected" : ""}>Más barato</option><option value="caro" ${tdOrden === "caro" ? "selected" : ""}>Más caro</option></select></div>
     ${tdCat === "ropa" || tdCat === "zapa" ? `<div class="seg" id="tdG" style="margin-bottom:10px">${[["", "Todo"], ["m", "Mujer"], ["h", "Hombre"]].map(([k, n]) => `<button data-g="${k}" class="${tdGen === k ? "on" : ""}">${n}</button>`).join("")}</div>` : ""}
     <p class="tiny mute" style="margin:0 2px 8px">${tot.toLocaleString("es-ES")} resultados</p>
     <div class="tdgrid">${L.map(p => `<a class="tdcard" href="${esc(p.u)}" target="_blank" rel="noopener sponsored" data-out="${esc(p.i)}">
