@@ -37,13 +37,7 @@ function vInicio() {
   const band = myPadelBand(); const pala = recPala({ nivel: band, estilo: 2, lado: P.lado || null, brazo: false, ligera: false, precio: 0 })[0];
   const w = weekStats(monday(new Date())); const n = nutriToday();
   let html = `<p class="mute" style="margin:-6px 2px 14px">${saludo}${nombre ? ", " + esc(nombre) : ""} 👋</p>`;
-  { const zp = recZP({ pista: "arena", frec: 2, horma: "normal", kg: Math.round(weightKg()), precio: 0 })[0];
-    const row = (id, e, lbl, s, sub) => `<button class="item" id="${id}"><span style="font-size:24px;width:30px;text-align:center">${e}</span><div style="flex:1;min-width:0"><div class="tiny" style="color:#facc15;font-weight:700">${lbl}</div><div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.marca)} ${esc(s.modelo)}</div><div class="tiny mute">${sub}</div></div>${svg("chev", "chev")}</button>`;
-    html += `<div class="card" style="padding:14px 14px 10px;border-color:rgba(250,204,21,.35);background:radial-gradient(320px 160px at 100% 0%,rgba(250,204,21,.14),transparent 70%),var(--card)"><h3 style="margin-bottom:2px">${svg("target")}Tu material</h3><p class="tiny mute" style="margin-bottom:4px">Elegido para tu nivel${P.nivel0 ? " (" + fmtNivel(r.nivel) + ")" : ""}. Toca para afinarlo a tu juego.</p>
-      ${pala ? row("hPala", "🎾", "TU PALA", pala.s, `${perfilTxt(pala.s.perfil)} · ${pala.s.forma} · ~${pala.s.peso} g`) : ""}
-      ${zp ? row("hZap", "👟", "TUS ZAPATILLAS", zp.s, `Suela ${zp.s.suela} · horma ${zp.s.horma} · ~${zp.s.peso} g`) : ""}
-      <button class="item" id="hRopa"><span style="font-size:24px;width:30px;text-align:center">👕</span><div style="flex:1"><div class="tiny" style="color:#facc15;font-weight:700">ROPA</div><div style="font-weight:700">Qué ponerte esta temporada</div><div class="tiny mute">Mujer y hombre</div></div>${svg("chev", "chev")}</button>
-      <button class="btn block sm" id="hMat" style="margin-top:6px">Ver todo el material</button></div>`; }
+  html += inicioTiendaHTML(pala);
   html += r ? `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.24),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.25)">
       <div style="display:flex;align-items:flex-start;gap:12px"><div><div class="lbl" style="color:#e5d38f">Tu nivel de pádel</div><div class="big num" style="color:#facc15">${fmtNivel(r.nivel)}</div><div class="small" style="color:#ddd6bf">${nivelTxt(r.nivel)}${r.n ? ` · fiabilidad ${r.fiab}%` : ""}</div></div>
         <div style="margin-left:auto;text-align:right;line-height:1.7" class="small"><div><b class="num" style="font-size:20px">${st.n}</b> <span class="mute">partidos</span></div><div><b class="num" style="font-size:20px;color:var(--volt)">${st.w + st.l ? Math.round(st.w / (st.w + st.l) * 100) : 0}%</b> <span class="mute">victorias</span></div>${st.racha > 1 ? `<div style="color:var(--volt)">🔥 ${st.racha} seguidas</div>` : ""}</div></div>
@@ -65,7 +59,7 @@ WIRE.inicio = () => {
   const on = (id, f) => { const e = $(id); if (e) e.onclick = f; };
   on("#hAdd", () => openPadelMatch()); on("#hPad", () => setView("padel")); on("#hTest", openNivelTest); on("#hPend", () => { padelTab = "resumen"; setView("padel"); });
   on("#hPis", () => { padelTab = "pistas"; setView("padel"); window.scrollTo(0, 0); });
-  on("#hLes", () => openLesson(nextLesson().id)); on("#hPala", () => { gearSeg = "palas"; openRecPala(); }); on("#hZap", () => openRecZP()); on("#hRopa", () => { gearSeg = "outfits"; setView("material"); }); on("#hMat", () => setView("material")); on("#hFis", () => setView("progreso"));
+  on("#hLes", () => openLesson(nextLesson().id)); wireInicioTienda(); on("#hFis", () => setView("progreso"));
   on("#hTbAll", () => setView("tablon")); $$("[data-tb]").forEach(b => b.onclick = () => setView("tablon"));
   wireActs(); if (typeof loadPadelSocial === "function") loadPadelSocial();
 };

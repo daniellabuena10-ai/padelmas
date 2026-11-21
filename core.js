@@ -170,7 +170,7 @@ function initBackButton() {
 
 // ---------- Navegación ----------
 let view = "inicio", sheetOpen = false;
-const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], material: ["target", "Material"], comunidad: ["users", "Comunidad"], tablon: ["bolt", "Tablón"] };
+const TABS = { inicio: ["home", "Inicio"], padel: ["padel", "Pádel"], grabar: ["plus", "Grabar"], material: ["cart", "Tienda"], comunidad: ["users", "Comunidad"], tablon: ["bolt", "Tablón"] };
 const TU_SUB = { progreso: "Físico", nutricion: "Nutrición", entrenos: "Entrenos" };
 let tuTab = "progreso";
 function initNav() {

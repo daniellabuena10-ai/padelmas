@@ -300,6 +300,8 @@ a.btn.buy{background:#facc15;color:#1a1500!important;border:0;font-weight:800;pa
 .dtob{background:#ef4444;color:#fff;font-weight:800;font-size:12px;padding:2px 7px;border-radius:999px}
 .tdgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tdcard{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line2);border-radius:18px;padding:10px;color:inherit;text-decoration:none}
 .tdimg{position:relative;display:grid;place-items:center;background:#fff;border-radius:14px;height:140px;overflow:hidden}.tdname{font-weight:700;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+.hpick{display:flex;flex-direction:column;text-align:left;background:var(--card2);border:1px solid var(--line2);border-radius:16px;padding:10px;color:inherit}
+.hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin:0 -2px 14px;scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body style="background:#10141a">
@@ -355,9 +357,9 @@ a.btn.buy{background:#facc15;color:#1a1500!important;border:0;font-weight:800;pa
 </div>
 <nav class="tabbar" id="tabbar" hidden>
   <button data-v="inicio" class="on"></button>
-  <button data-v="padel"></button>
-  <button data-v="grabar"><span class="rec"></span></button>
   <button data-v="material"></button>
+  <button data-v="grabar"><span class="rec"></span></button>
+  <button data-v="padel"></button>
   <button data-v="comunidad"></button>
 </nav>
 <div id="sheetBg"></div><div id="sheet"></div>
