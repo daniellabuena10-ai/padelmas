@@ -43,7 +43,7 @@ const num = v => { const n = parseFloat(String(v || "").replace(/[^\d.,]/g, "").
 const pick = (o, ...k) => { for (const x of k) if (o[x]) return o[x]; return ""; };
 const STOP = new Set("pala padel racket raquette raqueta zapatillas zapatilla shoes by de la el the y and con for para edition edicion".split(" "));
 const toks = s => norm(s).split(" ").filter(w => w && !STOP.has(w));
-const KEY = /^(\d+k|hybrid|light|lite|attack|ultra|jr|junior|w|woman|women|mujer|pro|soft|hard|hrd|xtreme|xtrem|comfort|ctrl|control|power|alum|luxury|team|elite|lux|limited|ltd|plus|carbon|evo|speed|tour|boost|ls|clay|cc|kids|kid)$/;
+const KEY = /^(\d+k|hybrid|light|lite|attack|ultra|jr|junior|w|woman|women|mujer|pro|soft|hard|hrd|xtreme|xtrem|comfort|ctrl|control|power|alum|luxury|team|elite|lux|limited|ltd|plus|carbon|evo|speed|tour|boost|ls|clay|cc|kids|kid|technical|pack|motion|buenos|aires|edicion|lmtd|jr)$/;
 
 function categoria(p) {
   const s = norm(`${p.n} ${p.catTxt}`);
@@ -104,15 +104,18 @@ for (const m of mod) {
   for (const p of prods) {
     if (p.cat !== m.cat) continue;
     const pn = norm(`${p.marca} ${p.n}`); if (!pn.includes(brand)) continue;
-    const pt = new Set(toks(p.n)); let hit = 0; for (const t of mt) if (pt.has(t)) hit++;
-    let sc = hit / mt.length; if (!p.stock) sc -= .15;
+    const ptl = toks(p.n), pt = new Set(ptl); let hit = 0; for (const t of mt) if (pt.has(t)) hit++;
+    // las palabras propias del modelo (sin marca ni año) tienen que estar casi todas
+    const core = mt.filter(t => t !== brand && !/^20\d\d$/.test(t)); const ch = core.filter(t => pt.has(t)).length;
+    if (core.length && ch / core.length < .8) continue;
+    let sc = hit / mt.length - .03 * ptl.filter(t => !mt.includes(t)).length; if (!p.stock) sc -= .15;
     // versiones distintas (12K/18K, Hybrid, W, Light, Attack, Jr…) que el producto tiene y nuestro modelo no
     const mset = new Set(mt);
     for (const t of pt) if (KEY.test(t) && !mset.has(t) && !(t === "xtrem" && mset.has("xtreme"))) sc -= .45;
     const yr = (m.modelo.match(/20\d\d/) || [])[0]; if (yr && !pn.includes(yr)) sc -= .2;
     if (sc > bs) { bs = sc; best = p; }
   }
-  if (best && bs >= .6) match[m.id] = best.id;
+  if (best && bs >= .45) match[m.id] = best.id;
 }
 
 // tamaño: todas las palas y zapatillas en stock; ropa y accesorios, los 600 primeros de cada
