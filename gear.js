@@ -210,7 +210,7 @@ function gearRow(g, tag = null, why = null) {
   const isP = g.id.startsWith("pala_"); const st = shoeStats[g.id];
   const chips = isP ? [g.forma, perfilTxt(g.perfil), `balance ${blTxt(g.balance).toLowerCase()}`, `~${g.peso} g`] : [`suela ${g.suela}`, `~${g.peso} g`, g.horma !== "normal" ? `horma ${g.horma}` : null].filter(Boolean);
   return `<button class="card shoe" data-gear="${g.id}" style="display:block;width:100%;text-align:left;padding:14px">${tag ? `<div class="tiny" style="color:#facc15;font-weight:700;margin-bottom:6px">${tag}</div>` : ""}
-    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${(() => { const r = typeof realOf === "function" && realOf(g); return r ? fotoReal(r, 64) : gearArt(g, isP ? 64 : 70); })()}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right;flex:none"><div class="small" style="color:#facc15;font-weight:700;white-space:nowrap">${PVP[g.id] ? priceTxt(g) : PRECIO[g.precio]}</div>${PVP[g.id] ? `<div class="tiny mute">PVP</div>` : `<div class="tiny mute" style="white-space:nowrap">${RANGO[g.precio]}</div>`}${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div class="gart">${(() => { const r = typeof realOf === "function" && realOf(g); return r ? fotoReal(r, 64) : gearArt(g, isP ? 64 : 70); })()}</div><div style="min-width:0;flex:1"><div class="small mute">${g.marca}</div><div style="font-weight:700;font-size:15.5px">${g.modelo}</div></div><div style="text-align:right;flex:none">${(typeof realOf === "function" && realOf(g)) ? (dto(realOf(g)) >= 5 ? `<span class="dtob">-${dto(realOf(g))}%</span>` : "") : `<div class="small" style="color:#facc15;font-weight:700;white-space:nowrap">${PVP[g.id] ? priceTxt(g) : PRECIO[g.precio]}</div>${PVP[g.id] ? `<div class="tiny mute">PVP</div>` : ""}`}${st && st.n ? `<div class="tiny mute">★ ${nf(st.avg, 1)} (${st.n})</div>` : ""}</div></div>
     <div class="chips" style="margin-top:10px">${isP ? `<span class="chip" style="color:#facc15">${nivTxt(g.nivel)}</span>` : ""}${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
     ${why && why.length ? `<p class="small" style="margin-top:10px;color:#cfd6de">✓ ${why.join(" · ")}</p>` : ""}
     ${AFFIL.tiendas.length ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span style="font-size:17px">${(() => { const r = typeof realOf === "function" && realOf(g); return r ? precioReal(r) : `<span class="num" style="font-size:19px;color:#facc15">${priceTxt(g)}</span>`; })()}</span><span class="buyrow" data-buy="${g.id}">${svg("cart")}Comprar</span></div>` : ""}</button>`;
@@ -254,7 +254,7 @@ function openGearReview(g) {
 }
 
 // ---------- Hub de material ----------
-let gearSeg = "palas", gearFilter = "todas", gearBrand = "todas";
+let gearSeg = "tienda", gearFilter = "todas", gearBrand = "todas";
 function materialView() {
   const segs = [["tienda", "🛒 Tienda"], ["palas", "Palas"], ["zpadel", "Zapatillas"], ["outfits", "Ropa"], ["acces", "Accesorios"]];
   const seg = `<div class="seg" style="margin-bottom:14px">${segs.map(([k, n]) => `<button data-gs="${k}" class="${gearSeg === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
@@ -264,7 +264,8 @@ function materialView() {
   if (gearSeg === "acces") return seg + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
   const cats = isP ? [["todas", "Todas"], ["1", "Control"], ["2", "Polivalente"], ["3", "Potencia"]] : [["todas", "Todas"], ["espiga", "Espiga"], ["omni", "Omni"], ["híbrida", "Híbrida"]];
-  const list = all.filter(g => (gearFilter === "todas" || (isP ? String(Math.round(g.perfil)) === gearFilter : g.suela === gearFilter)) && (gearBrand === "todas" || g.marca === gearBrand));
+  const list0 = all.filter(g => (gearFilter === "todas" || (isP ? String(Math.round(g.perfil)) === gearFilter : g.suela === gearFilter)) && (gearBrand === "todas" || g.marca === gearBrand));
+  const list = typeof realOf === "function" ? [...list0].sort((a, b) => (realOf(b) ? 1 : 0) - (realOf(a) ? 1 : 0)) : list0;
   return seg + `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(250,204,21,.22),transparent 70%),linear-gradient(160deg,#1a170c,#0d0c08 60%);border-color:rgba(250,204,21,.22)">
       <div class="lbl" style="color:#e5d38f">Recomendador</div><h2 style="font-size:24px;letter-spacing:-.5px;margin:6px 0 8px">${isP ? "¿Qué pala me va?" : "¿Qué zapatillas de pádel?"}</h2>
       <p class="small" style="color:#ddd6bf;line-height:1.5">${isP ? `Tu nivel, cómo juegas, tu lado y si te molesta el codo. Te digo las mejores de ${PALAS.length} palas y te explico por qué.` : `Tu pista, cuánto juegas, tus rodillas y tobillos. Te recomiendo entre ${ZPADEL.length} modelos y te explico el tipo de suela.`}</p>
