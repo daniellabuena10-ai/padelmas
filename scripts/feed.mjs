@@ -43,7 +43,7 @@ const num = v => { const n = parseFloat(String(v || "").replace(/[^\d.,]/g, "").
 const pick = (o, ...k) => { for (const x of k) if (o[x]) return o[x]; return ""; };
 const STOP = new Set("pala padel racket raquette raqueta zapatillas zapatilla shoes by de la el the y and con for para edition edicion".split(" "));
 const toks = s => norm(s).split(" ").filter(w => w && !STOP.has(w));
-const KEY = /^(\d+k|hybrid|light|lite|attack|ultra|jr|junior|w|woman|women|mujer|pro|soft|hard|hrd|xtreme|xtrem|comfort|ctrl|control|power|alum|luxury|team|elite|lux|limited|ltd|plus|carbon|evo|speed|tour|boost|ls|clay|cc|kids|kid|technical|pack|motion|buenos|aires|edicion|lmtd|jr)$/;
+const KEY = /^(\d+k|hybrid|light|lite|attack|ultra|jr|junior|w|woman|women|mujer|pro|soft|hard|hrd|xtreme|xtrem|comfort|ctrl|control|power|alum|luxury|team|elite|lux|limited|ltd|plus|carbon|evo|speed|tour|boost|ls|clay|cc|kids|kid|technical|pack|motion|buenos|aires|edicion|lmtd|jr|superlight|hyb|special|man|woman)$/;
 
 function categoria(p) {
   const s = norm(`${p.n} ${p.catTxt}`);
