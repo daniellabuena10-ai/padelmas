@@ -293,6 +293,15 @@ a.btn,a.item{text-decoration:none;color:inherit}
 .lrank{padding:14px 15px}.lrank .rk{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:12px}.lrank .rk.me{background:rgba(132,204,22,.1)}
 .lrank .p{width:16px;color:var(--mute);font-weight:700}.lrank .av2{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0a0d11}
 .lrank b{flex:1}.lrank .v{font-size:19px}.lrank .rk{padding:5px 4px}.lrank .up{color:var(--vt);font-size:12.5px;font-weight:700}
+@media (min-width:960px){
+#auth.wide{max-width:1120px;padding:40px 48px}
+#auth.wide #land{display:grid;grid-template-columns:1.05fr 1fr;grid-template-areas:"l r" "c r" "f f";grid-template-rows:auto 1fr auto;column-gap:64px;align-items:start}
+#auth.wide .lcol{grid-area:l;padding-top:30px}#auth.wide .rcol{grid-area:r;padding-top:30px}#auth.wide .lcta{grid-area:c;max-width:420px;margin-top:30px;align-self:start}#auth.wide .lfoot{grid-area:f;margin-top:30px}#auth.wide #authForm{width:100%;max-width:420px;margin:0 auto}#auth.wide .logo{margin-bottom:6px}
+#auth.wide h1{font-size:60px;letter-spacing:-2.4px;line-height:1.02}
+#auth.wide .pitch{font-size:19px;max-width:520px}
+#auth.wide .lcol>p:last-child{font-size:24px!important}
+#auth.wide .pick button{padding:20px 18px}
+}
 .gbanner{display:flex;align-items:center;gap:14px;padding:16px;border-radius:20px;background:#0f172a;color:#fff;text-decoration:none;margin:0 0 14px;box-shadow:0 8px 24px rgba(15,23,42,.18)}.gbanner .gi{width:52px;height:52px;flex:none;border-radius:14px;background:#d4ff3a;display:grid;place-items:center;font-size:26px}.gbanner small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.5px;color:#d4ff3a;text-transform:uppercase}.gbanner b{display:block;font-size:17px;line-height:1.2;margin-top:2px}.gbanner span.s{display:block;font-size:13px;color:#cbd5e1;margin-top:3px}.gbanner .ar{margin-left:auto;font-size:22px;color:#d4ff3a}
 .affnote{display:flex;gap:10px;align-items:flex-start;margin:0 0 20px;padding:12px 14px;border-radius:14px;background:rgba(15,23,42,.05);border:1px solid var(--line2);font-size:13px;line-height:1.45;color:var(--mute)}.affnote a{color:var(--vt)}
 a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:800;padding:16px;margin:12px 0 6px;text-decoration:none}
@@ -307,12 +316,15 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 <body style="background:#f7f9fc">
 <div id="splash"><div class="logo"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="9" rx="6.2" ry="6.6"/><path d="M14.3 13.6L20 20"/><path d="M19 3v5M16.5 5.5h5"/></svg></div>Pádel<b>+</b></div></div>
 
-<section id="auth" hidden>
+<section id="auth" class="wide" hidden>
   <div class="logo sm"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="9" rx="6.2" ry="6.6"/><path d="M14.3 13.6L20 20"/><path d="M19 3v5M16.5 5.5h5"/></svg></div>Pádel<b>+</b></div>
   <div id="land">
+    <div class="lcol">
     <h1>Sube de nivel.<br><em>Dentro y fuera de la pista.</em></h1>
     <p class="pitch">La pala, la zapatilla y la ropa que de verdad necesitas para tu juego, con opiniones de jugadores de tu nivel. Y tu ranking con amigos. Gratis.</p>
     <p style="margin:6px 2px 12px;font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.25">Saber jugar es la mitad.<br><span style="color:var(--vt)">La otra mitad es el material.</span></p>
+    </div>
+    <div class="rcol">
     <div class="pick">
       <button id="goPala"><svg class="pe" viewBox="8 2 48 58" width="38" height="38" aria-hidden="true"><g transform="rotate(-35 32 32)"><ellipse cx="32" cy="24" rx="15" ry="17" fill="#facc15"/><circle cx="26" cy="16" r="1.8" fill="#151b10"/><circle cx="32" cy="14" r="1.8" fill="#151b10"/><circle cx="38" cy="16" r="1.8" fill="#151b10"/><circle cx="24" cy="22" r="1.8" fill="#151b10"/><circle cx="30" cy="21" r="1.8" fill="#151b10"/><circle cx="36" cy="21" r="1.8" fill="#151b10"/><circle cx="41" cy="22" r="1.8" fill="#151b10"/><circle cx="26" cy="28" r="1.8" fill="#151b10"/><circle cx="32" cy="27" r="1.8" fill="#151b10"/><circle cx="38" cy="28" r="1.8" fill="#151b10"/><circle cx="29" cy="34" r="1.8" fill="#151b10"/><circle cx="35" cy="34" r="1.8" fill="#151b10"/><rect x="29" y="40" width="6" height="18" rx="3" fill="#facc15"/><rect x="29" y="49" width="6" height="9" rx="3" fill="#0b0f14" opacity=".55"/></g></svg><b>Pala</b><small>Para tu nivel, tu juego y tu brazo</small></button>
       <button id="goZap"><span class="pe">👟</span><b>Zapatillas</b><small>Suela, horma y tu peso</small></button>
@@ -333,10 +345,15 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
       <div><span>⭐</span><p><b>Opiniones reales.</b> Lo que dicen de cada pala jugadores de tu mismo nivel.</p></div>
       <div><span>📍</span><p><b>Pistas en tu ciudad.</b> Clubes, pistas cubiertas o al aire libre, cómo llegar y dónde reservar.</p></div>
     </div>
+    </div>
+    <div class="lcta">
     <button class="btn pri block big" id="goUp">Empezar gratis</button>
     <button class="btn block ghost" id="goIn">Ya tengo cuenta</button>
+    </div>
+    <div class="lfoot">
     <p class="small" style="text-align:center;margin-top:10px"><a class="link" href="guia.html">Ver la guía de palas y zapatillas →</a></p>
     <p class="tiny mute" style="text-align:center;margin-top:8px">Enlaces de afiliado: podemos recibir una comisión, sin coste para ti.<br><a class="link" href="privacidad.html#afiliacion">Aviso de afiliación</a> · <a class="link" href="privacidad.html">Privacidad y condiciones</a></p>
+    </div>
   </div>
   <form id="authForm" hidden>
     <button type="button" class="link small" id="aBack" style="margin:22px 0 10px">‹ Volver</button>
