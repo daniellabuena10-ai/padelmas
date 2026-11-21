@@ -66,7 +66,7 @@ async function unpublishAct(a) { if (socialOn() && a.postId) { try { await FS().
 function vComunidad() {
   if (store.kind !== "firebase") return `<div class="card empty">${svg("users")}<p>La comunidad necesita conexión.</p></div>`;
   if (!social.loaded) return `<div class="empty">Cargando…</div>`;
-  if (!social.me) return `<div class="hero" style="background:radial-gradient(400px 220px at 100% 0%,rgba(56,189,248,.25),transparent 70%),linear-gradient(160deg,#f3f7fc,#f9fafc 60%);border-color:rgba(56,189,248,.22)">
+  if (!social.me) return `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Juega con tu gente</h2>
       <p class="small" style="color:var(--mute);line-height:1.55">Sigue a tus amigos, mira sus partidos, dales <b>kudos</b>, comenta y habla por mensaje. Pregunta por palas y zapatillas a gente que juega como tú.</p>
       <div class="chips"><span class="chip">${svg("heart")}Kudos</span><span class="chip">${svg("mail")}Mensajes</span><span class="chip">${svg("trophy")}Ranking</span><span class="chip">${svg("shield")}Zona privada</span></div>
@@ -76,7 +76,7 @@ function vComunidad() {
   return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="srch" placeholder="Buscar personas por @usuario o nombre" autocomplete="off" style="margin:0"></label></div>
     <div id="srchRes"></div>
     ${historiasHTML()}
-    <button class="card" id="opNew" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(250,204,21,.35);background:radial-gradient(300px 140px at 100% 0%,rgba(250,204,21,.12),transparent 70%),var(--card)"><span style="font-size:26px">✍️</span><div style="flex:1"><div style="font-weight:800">Opina sobre tu material</div><div class="small mute">Pala, zapatillas, ropa o accesorios. Ayuda a otros a acertar.</div></div>${svg("chev", "chev")}</button>
+    <button class="card" id="opNew" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(132,204,22,.35);background:radial-gradient(300px 140px at 100% 0%,rgba(132,204,22,.12),transparent 70%),var(--card)"><span style="font-size:26px">✍️</span><div style="flex:1"><div style="font-weight:800">Opina sobre tu material</div><div class="small mute">Pala, zapatillas, ropa o accesorios. Ayuda a otros a acertar.</div></div>${svg("chev", "chev")}</button>
     <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["opiniones", "Opiniones"], ["ranking", "Ranking"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
     ${social.tab === "ranking" ? rankHTML(rank) : social.tab === "opiniones" ? `<div id="feed">${opinionesHTML()}</div>` : `${genteHTML()}<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
 }

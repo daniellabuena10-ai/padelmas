@@ -38,7 +38,7 @@ function openOpinarForm(g) {
     <label class="field">Tiempo usándola<select id="opU"><option value="">Elige…</option><option>Menos de 1 mes</option><option>1–6 meses</option><option>6–12 meses</option><option>Más de 1 año</option></select></label>
     <label class="check"><input type="checkbox" id="opRec" checked> <span>La recomendaría</span></label>
     <div class="err" id="opE"></div>
-    <button class="btn block" id="opOk" style="background:#facc15;color:#1a1500;border:0">Publicar en la comunidad</button>
+    <button class="btn block" id="opOk" style="background:var(--volt);color:#0b0f02;border:0">Publicar en la comunidad</button>
     <p class="tiny mute" style="text-align:center;margin-top:8px">Se publica con tu nombre y tu nivel. También aparece en la ficha del producto.</p>`, s => {
     const wireCrit = () => $$("[data-crit]", s).forEach(sg => $$("button", sg).forEach(b => b.onclick = () => { crit[sg.dataset.crit] = +b.dataset.v; $$("button", sg).forEach(x => x.classList.toggle("on", x === b)); }));
     wireCrit();
@@ -74,7 +74,7 @@ function opinionCard(p) {
   const cr = OP_CRIT[p.gear && (p.gear.tipo === "pala" || p.gear.tipo === "zapa") ? p.gear.tipo : "otro"];
   return `<div class="act post" data-post="${p.id}">
     <div class="hd"><button data-user="${p.uid}" style="display:flex;align-items:center;gap:10px;text-align:left;min-width:0">${avatar(p, 40)}<div style="min-width:0"><div class="t" style="font-size:14.5px">${esc(p.autor)}${mine ? ` <span class="tiny mute">(tú)</span>` : ""}</div><div class="tiny mute">${relDate(p.fecha)}${p.nivel ? ` · nivel ${nf(p.nivel, 1)}` : ""}</div></div></button>
-      <span class="chip" style="margin-left:auto;color:#a16207">✍️ Opinión</span></div>
+      <span class="chip" style="margin-left:auto;color:var(--vt)">✍️ Opinión</span></div>
     <button ${g ? `data-gear="${g.id}"` : ""} style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-top:12px;padding:10px;border-radius:14px;background:var(--card2)">
       <span style="width:46px;display:grid;place-items:center">${g ? gearArt(g, 42) : `<span style="font-size:30px">${{ pala: "🎾", zapa: "👟", ropa: "👕", acces: "🎒" }[p.gear && p.gear.tipo] || "🏷️"}</span>`}</span>
       <div style="flex:1;min-width:0"><div class="tiny mute">${tipoN}</div><div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.gear ? p.gear.marca + " " + p.gear.modelo : p.titulo)}</div><div style="font-size:18px">${stars(p.nota || 0)}</div></div>${g ? svg("chev", "chev") : ""}</button>

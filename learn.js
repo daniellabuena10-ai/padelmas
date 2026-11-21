@@ -49,7 +49,7 @@ function aprendeHTML() {
   const list = LESSONS.filter(l => learnCat === "todas" || l.cat === learnCat);
   const nx = nextLesson();
   return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="small mute">Tu progreso</div><div class="num" style="font-size:30px">${done}<small class="mute" style="font-size:16px"> / ${LESSONS.length} lecciones</small></div></div><div class="ring" style="width:64px;height:64px">${ringSVG(done / LESSONS.length, "#facc15", 64, 8)}</div></div></div>
-    ${nx ? `<button class="card" data-les="${nx.id}" style="display:block;width:100%;text-align:left;border-color:rgba(250,204,21,.3)"><div class="tiny" style="color:#a16207;font-weight:700">SIGUIENTE PARA TU NIVEL</div><div style="font-weight:800;font-size:18px;margin-top:4px">${nx.t}</div><div class="small mute" style="margin-top:4px">${nx.r}</div></button>` : ""}
+    ${nx ? `<button class="card" data-les="${nx.id}" style="display:block;width:100%;text-align:left;border-color:rgba(132,204,22,.3)"><div class="tiny" style="color:var(--vt);font-weight:700">SIGUIENTE PARA TU NIVEL</div><div style="font-weight:800;font-size:18px;margin-top:4px">${nx.t}</div><div class="small mute" style="margin-top:4px">${nx.r}</div></button>` : ""}
     <div class="seg">${["todas", "Golpes", "Táctica", "Físico"].map(c => `<button data-lc="${c}" class="${learnCat === c ? "on" : ""}">${c === "todas" ? "Todas" : c}</button>`).join("")}</div>
     <div class="card" style="padding:4px 14px">${list.map(l => `<button class="item" data-les="${l.id}"><span style="font-size:18px;width:26px;text-align:center">${s[l.id] ? "✅" : l.cat === "Golpes" ? "🎾" : l.cat === "Táctica" ? "🧠" : "💪"}</span><div style="flex:1;min-width:0"><div style="font-weight:600">${l.t}</div><div class="tiny mute">${l.cat} · ${NIVL[l.nivel]}${l.nivel === b ? " · tu nivel" : ""}</div></div>${svg("chev", "chev")}</button>`).join("")}</div>
     ${socialOn() ? `<div class="sec">Dudas de técnica y táctica <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : ""}`;
@@ -57,11 +57,11 @@ function aprendeHTML() {
 function wireAprende(root) { $$("[data-les]", root).forEach(b => b.onclick = () => openLesson(b.dataset.les)); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("juego"); loadQuestions("juego"); } $$("[data-lc]", root).forEach(b => b.onclick = () => { learnCat = b.dataset.lc; render(); }); }
 function openLesson(id) {
   const l = LESSONS.find(x => x.id === id); if (!l) return; const seen = !!learnSeen()[id];
-  openSheet(l.t, `<div class="chips" style="margin:-6px 0 12px"><span class="chip" style="color:#a16207">${l.cat}</span><span class="chip">${NIVL[l.nivel]}</span></div>
+  openSheet(l.t, `<div class="chips" style="margin:-6px 0 12px"><span class="chip" style="color:var(--vt)">${l.cat}</span><span class="chip">${NIVL[l.nivel]}</span></div>
     <p style="font-size:17px;line-height:1.45;font-weight:600">${l.r}</p>
-    <div class="sec">Cómo se hace</div><div class="card">${l.p.map((x, i) => `<div style="display:flex;gap:12px;margin-bottom:${i < l.p.length - 1 ? 12 : 0}px"><span class="num" style="font-size:22px;color:#a16207;width:18px;flex:none">${i + 1}</span><p style="line-height:1.5">${x}</p></div>`).join("")}</div>
+    <div class="sec">Cómo se hace</div><div class="card">${l.p.map((x, i) => `<div style="display:flex;gap:12px;margin-bottom:${i < l.p.length - 1 ? 12 : 0}px"><span class="num" style="font-size:22px;color:var(--vt);width:18px;flex:none">${i + 1}</span><p style="line-height:1.5">${x}</p></div>`).join("")}</div>
     <div class="sec">Errores típicos</div><div class="card">${l.e.map(x => `<p style="line-height:1.5;margin-bottom:8px">❌ ${x}</p>`).join("")}</div>
-    <div class="hint" style="background:rgba(250,204,21,.08)"><span style="font-size:18px">💡</span><span style="color:var(--ink)">${l.tip}</span></div>
+    <div class="hint" style="background:rgba(132,204,22,.08)"><span style="font-size:18px">💡</span><span style="color:var(--ink)">${l.tip}</span></div>
     ${socialOn() ? `<button class="btn block" id="lAsk" style="margin-top:6px">${svg("mail")}Preguntar a la comunidad</button>` : ""}
     <button class="btn block ${seen ? "" : "pri"}" id="lDone" style="margin-top:10px">${seen ? "✓ Aprendida" : "Marcar como aprendida"}</button>`, s => {
     $("#lDone", s).onclick = () => { const a = { ...learnSeen() }; if (a[id]) delete a[id]; else a[id] = Date.now(); savePerfil({ aprende: a }); closeSheet(); toast(a[id] ? "¡Una lección menos! 🎾" : "Lección desmarcada"); };
@@ -81,7 +81,7 @@ const ACCES = [
   { id: "munequera", e: "🎽", t: "Muñequeras y cinta del pelo", r: "Evitan que el sudor te baje a la mano y al mango.", tips: ["Imprescindibles en verano y en pista cubierta sin ventilación."], marcas: ["Bullpadel", "Nox", "adidas", "Head"] },
 ];
 function accesHTML() {
-  return `<div class="hint" style="background:rgba(250,204,21,.08)"><span style="font-size:18px">🎒</span><span style="color:var(--ink)">Lo que de verdad importa además de la pala y las zapatillas, explicado sin rollo.</span></div>
+  return `<div class="hint" style="background:rgba(132,204,22,.08)"><span style="font-size:18px">🎒</span><span style="color:var(--ink)">Lo que de verdad importa además de la pala y las zapatillas, explicado sin rollo.</span></div>
     ${ACCES.map(a => `<button class="card" data-acc="${a.id}" style="display:block;width:100%;text-align:left"><div style="display:flex;gap:12px;align-items:center"><span style="font-size:26px">${a.e}</span><div style="flex:1"><div style="font-weight:700">${a.t}</div><div class="small mute" style="margin-top:2px;line-height:1.4">${a.r}</div></div>${svg("chev", "chev")}</div></button>`).join("")}`;
 }
 function wireAcces(root) { $$("[data-acc]", root).forEach(b => b.onclick = () => { const a = ACCES.find(x => x.id === b.dataset.acc);
@@ -101,7 +101,7 @@ const OUTFITS = [
 let outfitG = "todos";
 function outfitsHTML() {
   const list = OUTFITS.filter(o => outfitG === "todos" || o.g === outfitG || o.g === "todos");
-  return `<div class="hint" style="background:rgba(250,204,21,.08)"><span style="font-size:18px">👕</span><span style="color:var(--ink)">Qué ponerte para jugar cómodo y que te quede bien, según la estación. Sin tecnicismos.</span></div>
+  return `<div class="hint" style="background:rgba(132,204,22,.08)"><span style="font-size:18px">👕</span><span style="color:var(--ink)">Qué ponerte para jugar cómodo y que te quede bien, según la estación. Sin tecnicismos.</span></div>
     <div class="seg">${[["todos", "Todo"], ["mujer", "Mujer"], ["hombre", "Hombre"]].map(([k, n]) => `<button data-og="${k}" class="${outfitG === k ? "on" : ""}">${n}</button>`).join("")}</div>
     ${list.map(o => `<button class="card" data-out="${o.id}" style="display:block;width:100%;text-align:left"><div style="display:flex;gap:12px;align-items:center"><span style="font-size:26px">${o.e}</span><div style="flex:1"><div style="font-weight:700">${o.t}</div><div class="small mute" style="margin-top:2px">${o.piezas.slice(0, 2).join(" · ")}…</div></div>${svg("chev", "chev")}</div></button>`).join("")}`;
 }

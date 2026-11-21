@@ -211,7 +211,7 @@ function zapaSelect(a) {
 let shoeFilter = "todas", shoeBrand = "todas";
 function zapasView() {
   const list = SHOES.filter(s => (shoeFilter === "todas" || s.cat === shoeFilter) && (shoeBrand === "todas" || s.marca === shoeBrand));
-  return `<div class="hero" style="background:radial-gradient(420px 220px at 100% 0%,rgba(212,255,58,.22),transparent 70%),linear-gradient(160deg,#f9fcf7,#fbfcfa 60%)">
+  return `<div class="hero">
       <div class="lbl">Recomendador</div><h2 style="font-size:24px;letter-spacing:-.5px;margin:6px 0 8px">¿Qué zapatilla me va?</h2>
       <p class="small" style="color:var(--mute);line-height:1.5">Dime para qué, a qué ritmo y tu pisada, y te digo las que mejor te van de ${SHOES.length} modelos de ${new Set(SHOES.map(s => s.marca)).size} marcas.</p>
       <button class="btn pri block" id="zRec" style="margin-top:14px">${svg("target")}Encontrar mis zapatillas</button></div>

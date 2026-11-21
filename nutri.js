@@ -23,7 +23,7 @@ function nutriToday(day = todayStr()) {
 let nTab = "partido", nDay = todayStr(), nMom = "antes";
 function vNutricion() {
   const T = nutriTargets();
-  if (!T) return `<div class="hero" style="background:radial-gradient(400px 200px at 100% 0%,rgba(255,106,61,.25),transparent 70%),linear-gradient(160deg,#fcf8f6,#fcfbfa 60%);border-color:rgba(255,106,61,.2)">
+  if (!T) return `<div class="hero">
     <div class="lbl" style="color:var(--mute)">Nutrición para el pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Come para rendir en la pista</h2>
     <p class="small" style="color:var(--mute);line-height:1.55">Con tu edad, altura, peso y actividad calculo tus calorías y macros, y te preparo un <b>plan de comidas para la semana</b> con lista de la compra. Además puedes apuntar lo que comes.</p>
     <button class="btn hot block" id="nStart" style="margin-top:16px">Calcular mi plan</button></div>
