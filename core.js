@@ -52,7 +52,7 @@ function unpackAct(a) { if (typeof a.trk === "string") { try { a.trk = JSON.pars
 function firebaseStore() {
   const app = firebase.initializeApp(window.FIREBASE_CONFIG);
   const auth = firebase.auth(), db = firebase.firestore();
-  try { db.settings({ ignoreUndefinedProperties: true, merge: true }); } catch {}
+  try { db.settings({ ignoreUndefinedProperties: true, merge: true, experimentalAutoDetectLongPolling: true }); } catch {}
   try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch {}
   let unsubs = [];
   return {

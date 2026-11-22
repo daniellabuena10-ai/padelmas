@@ -23,7 +23,12 @@ async function startSocial2() {
       const s = await conTiempo(FS().collection("perfiles").doc(me.uid).get(), 8000); social.me = s.exists ? s.data() : null;
       if (social.me) await conTiempo(loadFollowing(), 8000).catch(e => console.warn(e));
       break;
-    } catch (e) { console.warn("social", e); await new Promise(r => setTimeout(r, 1500)); }
+    } catch (e) {
+      console.warn("social", e); window.__socErr = (e && (e.code || e.message)) || "?";
+      // Sin respuesta del servidor: usamos lo que el móvil tiene guardado para no dejarte esperando
+      try { const c = await conTiempo(FS().collection("perfiles").doc(me.uid).get({ source: "cache" }), 2500); if (c.exists) { social.me = c.data(); loadFollowing().catch(() => {}); break; } } catch {}
+      await new Promise(r => setTimeout(r, 1500));
+    }
   }
   social.loaded = true;
   // Si estabas esperando en Comunidad (o en Inicio con el ranking), repintamos ya
@@ -79,7 +84,7 @@ function vComunidad() {
     window.__comT0 = window.__comT0 || Date.now(); const esp = Date.now() - window.__comT0;
     if (esp > 3000 && !window.__socStarting && typeof me !== "undefined" && me && me.uid) startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); });
     clearTimeout(window.__comTo); window.__comTo = setTimeout(() => { if (view === "comunidad" && !sheetOpen) render(); }, 1500);
-    return esp > 12000 ? `<div class="card empty"><p>La comunidad está tardando en cargar. Comprueba tu conexión.</p><button class="btn" id="comRetry" style="margin-top:12px">Reintentar</button></div>` : `<div class="empty">Cargando…</div>`;
+    return esp > 12000 ? `<div class="card empty"><p>La comunidad está tardando en cargar. Comprueba tu conexión.</p>${window.__socErr ? `<p class="tiny mute" style="margin-top:6px">Código: ${esc(String(window.__socErr))}</p>` : ""}<button class="btn" id="comRetry" style="margin-top:12px">Reintentar</button></div>` : `<div class="empty">Cargando…</div>`;
   }
   window.__comT0 = 0;
   if (!social.me) return `<div class="hero">
@@ -159,13 +164,14 @@ async function loadFeed(force = false) {
   social.busy = true;
   try {
     const ids = [me.uid, ...social.following];
-    const res = await Promise.all(ids.slice(0, 60).map(u => FS().collection("posts").where("uid", "==", u).limit(15).get().catch(() => ({ docs: [] }))));
+    const T = p => Promise.race([p, new Promise(r => setTimeout(() => r({ docs: [] }), 9000))]);
+    const res = await Promise.all(ids.slice(0, 60).map(u => T(FS().collection("posts").where("uid", "==", u).limit(15).get().catch(() => ({ docs: [] })))));
     let all = res.flatMap(s => s.docs.map(d => d.data())).filter(p => p.tipo !== "liga" && p.fecha);
     // Limpieza: publicaciones mías de partidos/entrenos que ya no existen (p. ej. partidos que no llegaron a guardarse)
     const ghost = new Set();
     if (loaded && state.act) all.filter(p => p.uid === me.uid && p.act && !state.act[p.act]).forEach(p => { ghost.add(p.id); FS().collection("posts").doc(p.id).delete().catch(() => {}); });
     social.feed = dedupePosts(all.filter(p => !ghost.has(p.id))).sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 80);
-    const d = await FS().collection("posts").orderBy("fecha", "desc").limit(40).get();
+    const d = await Promise.race([FS().collection("posts").orderBy("fecha", "desc").limit(40).get(), new Promise(r => setTimeout(() => r({ docs: [] }), 9000))]);
     social.disc = dedupePosts(d.docs.map(x => x.data()).filter(p => !ghost.has(p.id)));
     const g = await FS().collection("perfiles").orderBy("creado", "desc").limit(30).get().catch(() => ({ docs: [] }));
     social.gente = g.docs.map(x => x.data()).filter(x => x.uid && x.uid !== me.uid);
