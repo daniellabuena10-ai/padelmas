@@ -31,7 +31,7 @@ setInterval(() => {
 // Cada jugador guarda en su perfil público las ligas a las que pertenece (ligas[]) y sus datos (ligasInfo).
 const PERF = () => FS().collection("perfiles");
 async function cargarMisLigas(force) {
-  if (!socialOn()) { misLigas = []; return; }
+  if (!socialOn()) return;
   if (ligasCargando || (misLigas && !force)) return;
   ligasCargando = true;
   try {
@@ -40,6 +40,7 @@ async function cargarMisLigas(force) {
     const info = p.ligasInfo || {};
     misLigas = await Promise.all((p.ligas || []).map(async id => { let n = 0; try { n = (await PERF().where("ligas", "array-contains", id).limit(300).get()).size; } catch {} return { id, ...(info[id] || { nombre: "Liga " + id }), n }; }));
     misLigas.sort((a, b) => (b.t || 0) - (a.t || 0));
+    try { localStorage.setItem("pm-ligas", JSON.stringify(misLigas)); } catch {}
   } catch (e) { console.warn("ligas", e); misLigas = misLigas || []; }
   ligasCargando = false;
 }
@@ -93,7 +94,7 @@ function openCrearLiga() {
         let id = ligaCod();
         for (let i = 0; i < 3; i++) { const ex = await PERF().where("ligas", "array-contains", id).limit(1).get(); if (ex.empty) break; id = ligaCod(); }
         await entrarLiga(id, { nombre: nombre.slice(0, 40), sede: sede.slice(0, 40), creador: me.uid, t: Date.now() });
-        misLigas = null; rkInicio = null; await cargarMisLigas(true); openLiga(id, true);
+        misLigas = null; rkInicio = null; window.__rkFresh = 0; await cargarMisLigas(true); await rkCargar(); openLiga(id, true);
       } catch (e) { console.warn(e); toast("No se ha podido crear. Inténtalo en un momento."); $("#lgOk", s).disabled = false; }
     };
   });
@@ -114,7 +115,7 @@ async function openUnirmeLiga(code) {
     <button class="btn block" id="lgIn" style="background:var(--ink);color:#fff;border:0;margin-top:12px">Unirme a la liga</button>`, s => {
     $("#lgIn", s).onclick = async () => {
       try { await entrarLiga(L.id, L); } catch (e) { console.warn(e); toast("No se ha podido entrar. Inténtalo de nuevo."); return; }
-      misLigas = null; rkInicio = null; await cargarMisLigas(true); toast("¡Ya estás dentro! 🎾"); openLiga(L.id);
+      misLigas = null; rkInicio = null; window.__rkFresh = 0; await cargarMisLigas(true); await rkCargar(); toast("¡Ya estás dentro! 🎾"); openLiga(L.id);
       if (!(state.perfil.padel || {}).nivel0 && !(social.me && social.me.nivelPadel) && typeof openNivelTest === "function") setTimeout(() => toast("Calcula tu nivel para aparecer en la clasificación"), 1500);
     };
   });
@@ -149,7 +150,7 @@ async function openLiga(id, recienCreada) {
     $("#lgInv", s).onclick = () => { const tx = encodeURIComponent(invTxt); if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) location.href = `whatsapp://send?text=${tx}`; else window.open(`https://web.whatsapp.com/send?text=${tx}`, "_blank"); };
     $("#lgCopy", s).onclick = async () => { try { if (navigator.share) await navigator.share({ text: invTxt }); else { await navigator.clipboard.writeText(invTxt); toast("Enlace copiado"); } } catch {} };
     $("#lgAdd", s).onclick = () => { closeSheet(); if ((state.perfil.padel || {}).nivel0) openPadelMatch(); else openNivelTest(); };
-    const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} misLigas = null; closeSheet(); });
+    const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} misLigas = null; rkInicio = null; window.__rkFresh = 0; try { localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); } catch {} closeSheet(); });
     const muro = $("#lgMuro", s);
     const pinta = async () => {
       try {
@@ -169,7 +170,10 @@ async function openLiga(id, recienCreada) {
 }
 
 // ---------- Ranking en Inicio ----------
-let rkInicio = null; // {L, rows} cacheado
+let rkInicio = null; // {L, rows} cacheado (también en el móvil para pintar al instante, sin saltos)
+try { const c = JSON.parse(localStorage.getItem("pm-rk") || "null"); if (c && c.L && c.rows) { rkInicio = c; rkInicio.rows.forEach(r => { r.yo = r.uid === (localStorage.getItem("pm-rk-uid") || ""); }); } } catch {}
+try { const c = JSON.parse(localStorage.getItem("pm-ligas") || "null"); if (Array.isArray(c)) misLigas = c; } catch {}
+let rkUltimo = "";
 function rkNivelHTML() {
   const P = state.perfil.padel || {}; const r = P.nivel0 && typeof computeNivel === "function" ? computeNivel() : null;
   if (!r) return `<div class="hrkn"><div><div class="lbl">Tu nivel de pádel</div><div class="hrkq">¿Cuál es tu nivel?</div><div class="tiny mute">5 preguntas y lo sabes. Luego sube o baja con cada partido.</div></div></div><button class="btn block" id="hRkTest" style="margin-top:12px;background:var(--ink);color:#fff;border:0">Calcular mi nivel</button>`;
@@ -182,19 +186,31 @@ function rankingInicioHTML() {
   const btns = hasN ? `<button class="btn" id="hRkAdd" style="background:var(--ink);color:#fff;border:0">${svg("plus")}Apuntar partido</button>` : "";
   const cta = (tit, sub) => `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${tit}</b><span>${sub}</span><div class="hrkb">${btns}<button class="btn" id="hRkNew">Crear liga</button><button class="btn" id="hRkJoin">Tengo código</button></div></div></div>`;
   if (!(typeof socialOn === "function" && socialOn())) {
-    if (typeof me !== "undefined" && me && me.uid && !window.__rkWait) { window.__rkWait = 1; let k = 0; const iv = setInterval(() => { if (socialOn() || ++k > 20) { clearInterval(iv); window.__rkWait = 0; if (socialOn()) rkPintar(); } }, 700); }
-    return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
+    if (typeof me !== "undefined" && me && me.uid && !window.__rkNoSocial) {
+      if (!window.__rkWait) { window.__rkWait = 1; let k = 0; const iv = setInterval(() => { if (socialOn() || ++k > 14) { clearInterval(iv); window.__rkWait = 0; if (!socialOn()) window.__rkNoSocial = 1; rkPintar(); } }, 500); }
+      if (rkInicio && misLigas && misLigas.length) { /* hay datos guardados: se pintan abajo */ }
+      else return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 Tu liga</b><span>Cargando…</span></div></div>`;
+    }
+    if (!(rkInicio && misLigas && misLigas.length) || window.__rkNoSocial) return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
   }
-  if (!misLigas) { cargarMisLigas().then(async () => { await rkCargar(); rkPintar(); }); return `<div class="hrk">${nv}</div>`; }
-  if (!misLigas.length) return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
-  if (!rkInicio) { rkCargar().then(rkPintar); return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${esc(misLigas[0].nombre)}</b><span>Cargando clasificación…</span></div></div>`; }
-  const { L, rows } = rkInicio; const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
+  try { const cu = localStorage.getItem("pm-rk-uid"); if (cu && cu !== me.uid) { rkInicio = null; misLigas = null; localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); localStorage.setItem("pm-rk-uid", me.uid); } } catch {}
+  if (!window.__rkFresh && socialOn()) { window.__rkFresh = 1; cargarMisLigas(true).then(rkCargar).then(rkPintar); }
+  if (!misLigas || (misLigas.length && !rkInicio)) return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 Tu liga</b><span>Cargando clasificación…</span></div></div>`;
+  if (!misLigas.length || !rkInicio) return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
+  const yoR = yoRank(); const rows = rkInicio.rows.map(r => r.uid === me.uid ? { ...r, ...yoR } : r).sort((a, b) => (b.nivelPadel || 0) - (a.nivelPadel || 0)); const L = rkInicio.L;
+  const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
   const sub = !yo || !yo.nivelPadel ? "Apunta un partido para entrar en la clasificación." : pos === 1 ? "Vas primero 👑 Que no te adelanten." : `Vas ${pos}º de ${rows.length}. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
   return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${esc(L.nombre)}</b><span>${sub}</span>${rows.length > 1 ? podioHTML(rows) : ""}
     <div class="hrkb">${btns}<button class="btn" id="hRkOpen">Ver la liga</button></div></div></div>`;
 }
-async function rkCargar() { try { if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (L) rkInicio = { L, rows: await clasificacion(L) }; } } catch (e) { console.warn(e); } }
-function rkPintar() { const h = document.getElementById("hRank"); if (h && view === "inicio") { h.innerHTML = rankingInicioHTML(); wireRankingInicio(); } }
+async function rkCargar() {
+  try {
+    if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (L) { const rows = await clasificacion(L); rkInicio = { L: { id: L.id, nombre: L.nombre }, rows: rows.map(r => ({ uid: r.uid, nombre: r.nombre, color: r.color, foto: r.foto, nivelPadel: r.nivelPadel, yo: !!r.yo })) }; } }
+    else rkInicio = null;
+    try { localStorage.setItem("pm-rk", JSON.stringify(rkInicio)); localStorage.setItem("pm-rk-uid", me.uid); } catch {}
+  } catch (e) { console.warn(e); }
+}
+function rkPintar() { const h = document.getElementById("hRank"); if (!h || view !== "inicio") return; const html = rankingInicioHTML(); if (html === h.innerHTML || html === rkUltimo) return; rkUltimo = html; h.innerHTML = html; wireRankingInicio(); }
 function wireRankingInicio() {
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
   on("hRkNew", () => socialOn() ? openCrearLiga() : (padelTab = "ligas", setView("padel")));

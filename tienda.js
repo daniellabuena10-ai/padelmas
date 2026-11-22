@@ -109,7 +109,7 @@ function inicioHomeHTML() {
   const maxd = of.reduce((m, p) => Math.max(m, dto(p)), 0);
   const ofTit = (() => { const d = new Date(), m = d.getMonth(), n = d.getDate(); return m === 10 && n >= 24 && n <= 30 ? "Ofertas Black Friday" : m === 11 && n >= 10 && n <= 24 ? "Ofertas para regalar" : "Ofertas de la semana"; })();
   return `${hero}
-    <div id="hRank">${typeof rankingInicioHTML === "function" ? rankingInicioHTML() : ""}</div>
+    <div id="hRank">${typeof rankingInicioHTML === "function" ? (rkUltimo = rankingInicioHTML()) : ""}</div>
     <div class="sec">Equípate</div>
     <div class="hgrid">${[["palas", "pala", "Palas", "Por nivel y juego", palaSvg], ["zpadel", "zapa", "Zapatillas", "Suela, horma y peso", "👟"], ["outfits", "ropa", "Ropa", "Mujer y hombre", "👕"], ["acces", "acces", "Accesorios", "Paleteros, grips…", "🎒"]].map(([seg, cat, tit, sub, ic]) => { const f = escaparate(cat, 1, cat === "pala" ? 3 : 0)[0]; return `<button data-hg="${seg}"><span class="hgimg">${f ? fotoReal(f, 96) : `<span class="pe">${ic}</span>`}</span><b>${tit}</b><small>${sub}</small></button>`; }).join("")}</div>
     ${CAT ? `<div class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>🔥 ${ofTit}${maxd ? ` · hasta -${maxd}%` : ""}</span><button class="link tiny" id="hOfAll" style="font-size:13px">Ver todas</button></div>
