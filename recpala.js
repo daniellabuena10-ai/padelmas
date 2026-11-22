@@ -200,3 +200,16 @@ function rpResultados() {
     const u = $("#rUp", s); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); };
   });
 }
+
+// Enlace directo al recomendador (p. ej. desde la guía): padelmas.club/?pala=1
+(function () {
+  let want = false; try { want = /[?&#]pala=1/.test(location.search + location.hash); if (want) history.replaceState(null, "", location.pathname); } catch {}
+  if (!want) return;
+  let n = 0; const iv = setInterval(() => {
+    if (++n > 40) return clearInterval(iv);
+    if (typeof sheetOpen !== "undefined" && sheetOpen) return;
+    if (typeof me !== "undefined" && me && me.uid && window.__shown) { clearInterval(iv); openRecPala(); return; }
+    const a = document.getElementById("auth"), g = document.getElementById("goPala");
+    if (a && !a.hidden && g) { clearInterval(iv); g.click(); }
+  }, 300);
+})();

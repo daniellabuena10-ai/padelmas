@@ -44,6 +44,11 @@ h2{font-size:clamp(24px,4.5vw,32px);letter-spacing:-1px;line-height:1.1;font-wei
 .meter .lab{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--mute);margin-top:8px}
 .big{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1;align-self:center}
 .big small{font-size:15px;color:var(--mute);font-weight:700}
+.key h3{font-size:18px;margin:0}.kin{font-size:13.5px;color:var(--mute);margin:2px 0 10px}
+.kl{list-style:none;margin:0;padding:0}.kl li{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}.kl li:first-child{border-top:0}
+.kl .ki{width:40px;flex:none;display:flex;justify-content:center}.kl b{display:block;font-size:15px}.kl small{display:block;font-size:13.5px;color:var(--mute);line-height:1.35}
+.lvb{display:flex;gap:3px}.lvb i{width:9px;height:18px;border-radius:3px;background:#e2e8f0}.lvb i.on{background:var(--ink)}
+.kg{font-weight:900;font-size:15px}
 .tabs{display:flex;gap:8px;margin:20px 0 16px;overflow-x:auto;scrollbar-width:none}
 .tabs button{font:inherit;font-weight:700;font-size:15px;padding:10px 16px;border-radius:99px;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap;color:var(--ink)}
 .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -91,37 +96,17 @@ footer a{color:var(--mute)}
     <span class="tag">Guía 2026</span>
     <h1>¿Qué pala de pádel me compro?</h1>
     <p class="lead">Lo que de verdad importa al elegir pala y zapatillas, y las mejores de esta temporada con su precio de hoy.</p>
-    <div class="row"><a class="btn dark" href="./">Encuentra tu pala en 1 minuto</a><a class="ghost" href="#palas">Ver las mejores palas</a></div>
+    <div class="row"><a class="btn dark" href="./?pala=1">Encuentra tu pala en 1 minuto</a><a class="ghost" href="#palas">Ver las mejores palas</a></div>
   </div>
 
   <section id="elegir">
     <h2>Lo que tienes que mirar</h2>
     <p class="sub">Cuatro cosas. Con esto ya sabes leer cualquier pala.</p>
     <div class="keys">
-      <div class="key">
-        <div class="viz">
-          <div><svg width="44" height="56" viewBox="0 0 44 56"><circle cx="22" cy="22" r="19" fill="none" stroke="#0f172a" stroke-width="3"/><rect x="19" y="40" width="6" height="15" rx="3" fill="#0f172a"/></svg><span>Redonda</span></div>
-          <div><svg width="44" height="56" viewBox="0 0 44 56"><path d="M22 3c11 0 19 8 19 19 0 9-7 15-13 19h-12C10 37 3 31 3 22 3 11 11 3 22 3z" fill="none" stroke="#0f172a" stroke-width="3"/><rect x="19" y="40" width="6" height="15" rx="3" fill="#0f172a"/></svg><span>Lágrima</span></div>
-          <div><svg width="44" height="56" viewBox="0 0 44 56"><path d="M22 3l17 14-6 24H11L5 17z" fill="none" stroke="#0f172a" stroke-width="3" stroke-linejoin="round"/><rect x="19" y="40" width="6" height="15" rx="3" fill="#0f172a"/></svg><span>Diamante</span></div>
-        </div>
-        <h3>Forma</h3>
-        <p><b>Redonda</b>: control y fácil de usar. <b>Lágrima</b>: equilibrio. <b>Diamante</b>: potencia, pero más exigente.</p>
-      </div>
-      <div class="key">
-        <div class="viz"><div class="meter"><div class="bar"></div><div class="lab"><span>Bajo</span><span>Alto</span></div></div></div>
-        <h3>Balance</h3>
-        <p><b>Bajo</b>: manejable, ideal para defender. <b>Alto</b>: más pegada en el remate, pide más brazo.</p>
-      </div>
-      <div class="key">
-        <div class="viz"><div class="meter"><div class="bar"></div><div class="lab"><span>Blando</span><span>Duro</span></div></div></div>
-        <h3>Tacto</h3>
-        <p><b>Blando</b>: la bola sale sola y cuida el codo. <b>Duro</b>: más control y potencia si pegas fuerte.</p>
-      </div>
-      <div class="key">
-        <div class="viz"><div class="big">355<small style="margin:0 6px">a</small>375<small> g</small></div></div>
-        <h3>Peso</h3>
-        <p><b>355–360 g</b> si quieres manejabilidad o tienes molestias. <b>365–375 g</b> para más estabilidad.</p>
-      </div>
+      <div class="key"><h3>Forma</h3><p class="kin">Dónde está el punto dulce de la pala.</p><ul class="kl"><li><span class="ki"><svg width="30" height="38" viewBox="0 0 44 56"><circle cx="22" cy="22" r="19" fill="none" stroke="#0f172a" stroke-width="3.5"/><rect x="19" y="40" width="6" height="15" rx="3" fill="#0f172a"/></svg></span><span><b>Redonda</b><small>Control y muy fácil de usar. Ideal para empezar.</small></span></li><li><span class="ki"><svg width="30" height="38" viewBox="0 0 44 56"><path d="M22 3c11 0 19 8 19 19 0 9-7 15-13 19h-12C10 37 3 31 3 22 3 11 11 3 22 3z" fill="none" stroke="#0f172a" stroke-width="3.5"/><rect x="19" y="40" width="6" height="15" rx="3" fill="#0f172a"/></svg></span><span><b>Lágrima</b><small>Equilibrio entre control y potencia.</small></span></li><li><span class="ki"><svg width="30" height="38" viewBox="0 0 44 56"><path d="M22 3l17 14-6 24H11L5 17z" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/><rect x="19" y="40" width="6" height="15" rx="3" fill="#0f172a"/></svg></span><span><b>Diamante</b><small>Máxima potencia, pero más exigente.</small></span></li></ul></div>
+      <div class="key"><h3>Balance</h3><p class="kin">Dónde se concentra el peso.</p><ul class="kl"><li><span class="ki"><span class="lvb"><i class="on"></i><i class=""></i><i class=""></i></span></span><span><b>Bajo</b><small>Manejable, ideal para defender.</small></span></li><li><span class="ki"><span class="lvb"><i class="on"></i><i class="on"></i><i class=""></i></span></span><span><b>Medio</b><small>Polivalente: defiende y ataca.</small></span></li><li><span class="ki"><span class="lvb"><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span><b>Alto</b><small>Más pegada en el remate. Pide más brazo.</small></span></li></ul></div>
+      <div class="key"><h3>Tacto</h3><p class="kin">Lo duro o blando que es el núcleo.</p><ul class="kl"><li><span class="ki"><span class="lvb"><i class="on"></i><i class=""></i><i class=""></i></span></span><span><b>Blando</b><small>La bola sale sola y cuida el codo.</small></span></li><li><span class="ki"><span class="lvb"><i class="on"></i><i class="on"></i><i class=""></i></span></span><span><b>Medio</b><small>Buen equilibrio para la mayoría.</small></span></li><li><span class="ki"><span class="lvb"><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span><b>Duro</b><small>Más control y potencia si pegas fuerte.</small></span></li></ul></div>
+      <div class="key"><h3>Peso</h3><p class="kin">Lo normal está entre 355 y 375 g.</p><ul class="kl"><li><span class="ki"><span class="kg">355</span></span><span><b>355–360 g</b><small>Más manejable. Si tienes molestias o empiezas.</small></span></li><li><span class="ki"><span class="kg">365</span></span><span><b>365–375 g</b><small>Más estable y con más pegada.</small></span></li></ul></div>
     </div>
   </section>
 
@@ -159,7 +144,7 @@ footer a{color:var(--mute)}
     <div class="acc" id="acc-list"></div>
   </section>
 
-  <div class="band"><h2>¿No sabes cuál es la tuya?</h2><p>Contesta 3 preguntas en la app y te decimos la pala y las zapatillas ideales para tu juego.</p><a class="btn" href="./">Encontrar mi pala</a></div>
+  <div class="band"><h2>¿No sabes cuál es la tuya?</h2><p>Contesta 3 preguntas en la app y te decimos la pala y las zapatillas ideales para tu juego.</p><a class="btn" href="./?pala=1">Encontrar mi pala</a></div>
 
   <footer>Pádel+ · Precios orientativos, se actualizan cada día. Enlaces de afiliado: podemos recibir una comisión, sin coste para ti (<a href="privacidad.html#afiliacion">más info</a>). · <a href="privacidad.html">Privacidad</a> · <a href="mailto:holapadelmas@gmail.com">holapadelmas@gmail.com</a></footer>
 </div>
