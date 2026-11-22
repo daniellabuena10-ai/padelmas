@@ -90,6 +90,8 @@ let prods = raw.map(r => {
     const s = norm(`${p.n} ${p.txt}`);
     const es = /\bclay\b|espiga|herringbone|tierra batida|arena/.test(s), om = /\bomni\b|omnicourt|tacos|cesped artificial con mucha arena/.test(s), hi = /hibrid|mixta|all ?court|multicourt|multi court|multisuperficie|todas las superficies|cualquier superficie|all surface/.test(s);
     p.suela = hi || (es && om) ? "h" : om ? "o" : es ? "e" : "";
+    p.horma = /horma ancha|pie ancho|\bwide\b|ancho de horma|mas ancha/.test(s) ? "a" : /horma estrecha|pie estrecho|\bnarrow\b|ajuste ceñido|mas estrecha/.test(s) ? "e" : "";
+    p.rasgos = [/ligera|ligereza|lightweight|peso pluma|muy ligera|ultraligera/.test(s) ? "l" : "", /estabilidad|sujecion|soporte lateral|estable/.test(s) ? "t" : "", /durabilidad|resistente|vibram|mas duradera|alta resistencia/.test(s) ? "d" : ""].join("");
     p.amort = /(maxima|alta|extra|gran|excelente|superior) amortiguacion|amortiguacion (maxima|extra|superior|excepcional)|\bgel\b|\bboost\b|dna loft|flytefoam|zoom air|cloudfoam|lightstrike pro|amortiguacion reactiva/.test(s) ? 1 : 0;
   }
   if (!p.url && p.land) p.url = `https://www.awin1.com/cread.php?awinmid=${MID}&awinaffid=${AFFID}&clickref=padelmas&ued=${encodeURIComponent(p.land)}`;
@@ -132,7 +134,7 @@ const keep = new Set(Object.values(match)); const by = { pala: [], zapa: [], rop
 for (const p of prods) if (p.stock || keep.has(p.id)) by[p.cat].push(p);
 const lim = { pala: 1500, zapa: 800, ropa: 600, acces: 600 };
 const out = Object.entries(by).flatMap(([c, L]) => L.sort((a, b) => (keep.has(b.id) - keep.has(a.id)) || ((b.pvp ? 1 : 0) - (a.pvp ? 1 : 0)) || a.precio - b.precio).slice(0, lim[c]))
-  .map(p => { const o = { i: p.id, n: p.n, m: p.marca, c: p.cat, p: p.precio, u: p.url, f: p.img }; if (p.pvp) o.o = p.pvp; if (p.gen) o.g = p.gen; if (!p.stock) o.x = 1; if (p.suela) o.s = p.suela; if (p.amort) o.a = 1; return o; });
+  .map(p => { const o = { i: p.id, n: p.n, m: p.marca, c: p.cat, p: p.precio, u: p.url, f: p.img }; if (p.pvp) o.o = p.pvp; if (p.gen) o.g = p.gen; if (!p.stock) o.x = 1; if (p.suela) o.s = p.suela; if (p.amort) o.a = 1; if (p.horma) o.h = p.horma; if (p.rasgos) o.r = p.rasgos; return o; });
 
 fs.mkdirSync(new URL("../data/", import.meta.url), { recursive: true });
 fs.writeFileSync(new URL("../data/catalogo.json", import.meta.url), JSON.stringify({ t: new Date().toISOString(), tienda: "Padel Market", match, p: out }));
