@@ -92,7 +92,29 @@ function inicioTiendaHTML(palas) {
     <div class="hscroll">${ofertas.map(p => `<a class="tdcard" href="${esc(p.u)}" target="_blank" rel="noopener sponsored" style="flex:0 0 150px"><div class="tdimg" style="height:120px">${fotoReal(p, 110)}<span class="dtob" style="position:absolute;top:6px;left:6px">-${dto(p)}%</span></div>
       <div class="tdname" style="margin-top:8px;font-size:13px">${esc(limpiaNombre(p.n, ""))}</div><div><span class="num" style="color:var(--ink)">${eur(p.p)}</span> <s class="tiny mute">${eur(p.o)}</s></div></a>`).join("")}</div>` : ""}`;
 }
+// ===== Inicio elegante (opción A): cartel del recomendador + 4 accesos + ofertas/guía/liga =====
+function inicioHomeHTML() {
+  const sv = typeof rpSaved === "function" ? rpSaved() : null;
+  let top = null; if (sv && typeof rpScore === "function") { try { top = rpScore({ ...sv, extras: new Set(sv.extras || []) }).list[0]; } catch {} }
+  const palaSvg = (document.querySelector("#goPala svg") || {}).outerHTML || "🎾";
+  const hero = top ? `<div class="hhero"><small>TU PALA IDEAL</small>
+      <div class="hhrow"><div class="hhimg">${top.r ? fotoReal(top.r, 84) : palaArt(top.s, 70)}</div><div style="flex:1;min-width:0"><div class="hhm">${esc(top.s.marca)}</div><div class="hhn">${esc(top.s.modelo)}</div><div class="hhp"><b>${top.pct}% para ti</b>${top.r ? ` · ${eur(top.r.p)}` : ""}</div></div></div>
+      <div class="hhbt"><button class="b1" id="hMis">Ver mis palas</button><button class="b2" id="hRe">Cambiar mis respuestas</button></div></div>`
+    : `<div class="hhero"><small>TU PALA IDEAL</small><h2>¿Qué pala es la tuya?</h2><p>6 preguntas, 1 minuto. Te la enseñamos con el precio de hoy.</p><div class="hhbt"><button class="b1" id="hRe">Descubrir mi pala</button></div></div>`;
+  const of = CAT ? CAT.p.filter(p => p.c === "pala" && !p.x && dto(p) >= 15) : [];
+  const maxd = of.reduce((m, p) => Math.max(m, dto(p)), 0);
+  const ofTit = (() => { const d = new Date(), m = d.getMonth(), n = d.getDate(); return m === 10 && n >= 24 && n <= 30 ? "Ofertas Black Friday" : m === 11 && n >= 10 && n <= 24 ? "Ofertas para regalar" : "Ofertas de la semana"; })();
+  return `${hero}
+    <div class="sec">Equípate</div>
+    <div class="hgrid"><button data-hg="palas"><span class="pe">${palaSvg}</span><b>Palas</b><small>Por nivel y juego</small></button><button data-hg="zpadel"><span class="pe">👟</span><b>Zapatillas</b><small>Suela, horma y peso</small></button><button data-hg="outfits"><span class="pe">👕</span><b>Ropa</b><small>Mujer y hombre</small></button><button data-hg="acces"><span class="pe">🎒</span><b>Accesorios</b><small>Paleteros, grips…</small></button></div>
+    ${maxd ? `<button class="hof" id="hOfAll"><span><b>${ofTit}</b><small>Palas hasta -${maxd}%, actualizado cada día</small></span><span class="ar">→</span></button>` : ""}
+    <a class="gbanner" href="guia.html"><span class="gi">🎾</span><span><small>Guía 2026</small><b>¿Qué pala de pádel me compro?</b><span class="s">Las mejores por nivel, con fotos y precio de hoy</span></span><span class="ar">→</span></a>
+    <button class="lgbanner" id="hLiga"><span class="gi">🏆</span><span><b>Crea tu liga con amigos</b><span class="s">Ranking propio, muro y pique semanal</span></span><span class="ar">→</span></button>`;
+}
 function wireInicioTienda() {
+  $$("[data-hg]").forEach(b => b.onclick = () => { gearSeg = b.dataset.hg; setView("material"); window.scrollTo(0, 0); });
+  { const e = $("#hMis"); if (e) e.onclick = () => { const s = rpSaved(); rpQ = { ...s, extras: new Set(s.extras || []) }; rpResultados(); }; }
+  { const e = $("#hRe"); if (e) e.onclick = () => openRecPala(); }
   const v = $("#view"); if (typeof wireGearRows === "function") wireGearRows(v);
   const on = (id, f) => { const e = $(id); if (e) e.onclick = f; };
   on("#hLiga", () => { padelTab = "ligas"; setView("padel"); }); on("#hRec", () => { gearSeg = "palas"; openRecPala(); }); on("#hShop", () => { gearSeg = "tienda"; tdCat = "pala"; setView("material"); });

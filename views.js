@@ -37,7 +37,7 @@ function vInicio() {
   const band = myPadelBand(); const pala = typeof rpScore === "function" ? rpScore(rpInicioQ()).list : recPala({ nivel: band, estilo: 2, lado: P.lado || null, brazo: false, ligera: false, precio: 0 });
   const w = weekStats(monday(new Date())); const n = nutriToday();
   let html = `<p class="mute" style="margin:-6px 2px 14px">${saludo}${nombre ? ", " + esc(nombre) : ""} 👋</p>`;
-  html += inicioTiendaHTML(pala);
+  html += typeof inicioHomeHTML === "function" ? inicioHomeHTML() : inicioTiendaHTML(pala);
   html += r ? `<div class="hero">
       <div style="display:flex;align-items:flex-start;gap:12px"><div><div class="lbl" style="color:var(--mute)">Tu nivel de pádel</div><div class="big num" style="color:var(--vt)">${fmtNivel(r.nivel)}</div><div class="small" style="color:var(--mute)">${nivelTxt(r.nivel)}${r.n ? ` · fiabilidad ${r.fiab}%` : ""}</div></div>
         <div style="margin-left:auto;text-align:right;line-height:1.7" class="small"><div><b class="num" style="font-size:20px">${st.n}</b> <span class="mute">partidos</span></div><div><b class="num" style="font-size:20px;color:var(--vt)">${st.w + st.l ? Math.round(st.w / (st.w + st.l) * 100) : 0}%</b> <span class="mute">victorias</span></div>${st.racha > 1 ? `<div style="color:var(--vt)">🔥 ${st.racha} seguidas</div>` : ""}</div></div>
