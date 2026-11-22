@@ -34,7 +34,7 @@ function vInicio() {
   const nombre = (me.name || state.perfil.nombre || "").split(" ")[0];
   const P = state.perfil.padel || {}; const r = P.nivel0 ? computeNivel() : null; const st = r ? padelStats() : null;
   const last = padelActs().slice(-1)[0]; const nx = nextLesson();
-  const band = myPadelBand(); const pala = recPala({ nivel: band, estilo: 2, lado: P.lado || null, brazo: false, ligera: false, precio: 0 });
+  const band = myPadelBand(); const pala = typeof rpScore === "function" ? rpScore(rpInicioQ()).list : recPala({ nivel: band, estilo: 2, lado: P.lado || null, brazo: false, ligera: false, precio: 0 });
   const w = weekStats(monday(new Date())); const n = nutriToday();
   let html = `<p class="mute" style="margin:-6px 2px 14px">${saludo}${nombre ? ", " + esc(nombre) : ""} 👋</p>`;
   html += inicioTiendaHTML(pala);

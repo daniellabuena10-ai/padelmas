@@ -302,6 +302,23 @@ a.btn,a.item{text-decoration:none;color:inherit}
 #auth.wide .lcol>p:last-child{font-size:24px!important}
 #auth.wide .pick button{padding:20px 18px}
 }
+.rwprog{display:flex;gap:5px;margin:-4px 0 16px}.rwprog i{flex:1;height:5px;border-radius:9px;background:var(--line2)}.rwprog i.on{background:var(--ink)}
+.rwq{font-size:24px;letter-spacing:-.6px;line-height:1.15;font-weight:900}
+.rwopts{display:flex;flex-direction:column;gap:10px}
+.rwopt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px;border-radius:18px;background:var(--card);border:2px solid var(--line);box-shadow:0 1px 3px rgba(15,23,42,.05);transition:transform .12s,border-color .12s}
+.rwopt:active{transform:scale(.98)}.rwopt.on{border-color:var(--ink);background:rgba(190,242,100,.18)}
+.rwic{width:64px;height:56px;flex:none;border-radius:14px;background:var(--card2);display:grid;place-items:center;font-size:28px}
+.rwtx{flex:1;min-width:0}.rwtx b{display:block;font-size:16.5px}.rwtx small{display:block;color:var(--mute);font-size:13.5px;margin-top:2px;line-height:1.35}
+.rwck{width:26px;height:26px;border-radius:8px;border:2px solid var(--line2);display:grid;place-items:center;font-weight:900;flex:none}.rwopt.on .rwck{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rwopts.multi .rwic{width:46px;height:46px;font-size:22px}
+.rwfoot{display:flex;justify-content:space-between;gap:10px;margin-top:18px}.rwfoot .btn{flex:1}
+.rwhero{position:relative;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 8px 28px rgba(15,23,42,.08);margin-top:6px}
+.rwbadge{display:inline-block;background:#0f172a;color:#d4ff3a;font-weight:800;font-size:13px;padding:5px 11px;border-radius:99px;margin-bottom:10px}
+.rwimg{position:relative;display:grid;place-items:center;background:#fff;border-radius:18px;min-height:200px;margin-bottom:10px}
+.rwmatch{display:flex;align-items:center;gap:10px;margin:10px 0 6px}.rwmatch div{flex:1;height:9px;border-radius:9px;background:var(--card2);overflow:hidden}.rwmatch i{display:block;height:100%;background:linear-gradient(90deg,#a3e635,#65a30d);border-radius:9px}.rwmatch b{font-size:14px;color:var(--vt);white-space:nowrap}
+.rwwhy{list-style:none;margin:8px 0 0;padding:0}.rwwhy li{position:relative;padding-left:24px;margin:6px 0;font-size:14.5px;line-height:1.35}.rwwhy li::before{content:"✓";position:absolute;left:0;top:0;width:18px;height:18px;border-radius:6px;background:rgba(132,204,22,.2);color:var(--vt);font-weight:900;font-size:12px;display:grid;place-items:center}
+.rwalt{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;margin-bottom:8px}
+.rwaltimg{width:86px;height:86px;flex:none;border-radius:14px;background:#fff;display:grid;place-items:center;overflow:hidden;border:0;padding:0}
 .gbanner{display:flex;align-items:center;gap:14px;padding:16px;border-radius:20px;background:#0f172a;color:#fff;text-decoration:none;margin:0 0 14px;box-shadow:0 8px 24px rgba(15,23,42,.18)}.gbanner .gi{width:52px;height:52px;flex:none;border-radius:14px;background:#d4ff3a;display:grid;place-items:center;font-size:26px}.gbanner small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.5px;color:#d4ff3a;text-transform:uppercase}.gbanner b{display:block;font-size:17px;line-height:1.2;margin-top:2px}.gbanner span.s{display:block;font-size:13px;color:#cbd5e1;margin-top:3px}.gbanner .ar{margin-left:auto;font-size:22px;color:#d4ff3a}
 .affnote{display:flex;gap:10px;align-items:flex-start;margin:0 0 20px;padding:12px 14px;border-radius:14px;background:rgba(15,23,42,.05);border:1px solid var(--line2);font-size:13px;line-height:1.45;color:var(--mute)}.affnote a{color:var(--vt)}
 a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:800;padding:16px;margin:12px 0 6px;text-decoration:none}
@@ -398,7 +415,8 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 <script src="shoes.js"></script>
 <script src="padel.js"></script>
 <script src="gear.js"></script>
-<script src="learn.js"></script><script src="share.js"></script><script src="pistas.js"></script><script src="opinar.js"></script><script src="tablon.js"></script><script src="tienda.js"></script><script src="subir.js"></script>
+<script src="learn.js"></script><script src="share.js"></script><script src="pistas.js"></script><script src="opinar.js"></script><script src="tablon.js"></script><script src="tienda.js"></script>
+<script src="recpala.js"></script><script src="subir.js"></script>
 <script>boot();</script>
 <script>["gesturestart","gesturechange"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");</script>
