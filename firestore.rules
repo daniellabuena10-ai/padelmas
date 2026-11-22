@@ -100,6 +100,29 @@ service cloud.firestore {
                  .union(resource.data.uids.toSet().difference(request.resource.data.uids.toSet()))
                  .hasOnly([request.auth.uid])));
     }
+    // Ligas: grupos con ranking propio. Cualquiera con sesión las ve; cada uno solo puede meterse o sacarse a sí mismo
+    match /ligas/{lid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.creador == request.auth.uid
+                    && request.resource.data.miembros == [request.auth.uid]
+                    && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 50;
+      allow update: if signedIn() && (
+        (resource.data.creador == request.auth.uid && request.resource.data.creador == request.auth.uid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['miembros'])
+            && request.resource.data.miembros.size() <= 300
+            && request.resource.data.miembros.toSet().difference(resource.data.miembros.toSet())
+                 .union(resource.data.miembros.toSet().difference(request.resource.data.miembros.toSet()))
+                 .hasOnly([request.auth.uid])));
+      allow delete: if signedIn() && resource.data.creador == request.auth.uid;
+      match /msgs/{mid} {
+        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/ligas/$(lid)).data.miembros;
+        allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+                      && request.auth.uid in get(/databases/$(database)/documents/ligas/$(lid)).data.miembros
+                      && request.resource.data.texto is string && request.resource.data.texto.size() <= 500;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid
+                      || get(/databases/$(database)/documents/ligas/$(lid)).data.creador == request.auth.uid);
+      }
+    }
     // Mensajes privados entre dos personas
     match /chats/{cid} {
       allow read: if signedIn() && request.auth.uid in resource.data.miembros;

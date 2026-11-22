@@ -31,7 +31,12 @@ function computeNivel() {
 function syncNivel() {
   const r = computeNivel(); if (!r) return; const P = state.perfil.padel || {};
   if (Math.abs((P.nivel || 0) - r.nivel) > .001 || P.n !== r.n) savePerfil({ padel: { ...P, nivel: r.nivel, n: r.n } });
-  if (socialOn() && (Math.abs((social.me.nivelPadel || 0) - r.nivel) > .001)) { social.me.nivelPadel = r.nivel; FS().collection("perfiles").doc(me.uid).update({ nivelPadel: Math.round(r.nivel * 100) / 100 }).catch(() => {}); }
+  if (socialOn()) {
+    const st = padelStats(), lim = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+    const h7 = r.hist.filter(h => !h.f || h.f <= lim).pop() || r.hist[0];
+    const pub = { nivelPadel: Math.round(r.nivel * 100) / 100, nPadel: st.n, wPadel: st.w, nivel7: Math.round(h7.n * 100) / 100 };
+    if (Object.keys(pub).some(k => social.me[k] !== pub[k])) { Object.assign(social.me, pub); FS().collection("perfiles").doc(me.uid).update(pub).catch(() => {}); }
+  }
 }
 async function fetchLevels(uids) {
   const need = [...new Set(uids)].filter(u => u && padelLv[u] === undefined); if (!need.length || !socialOn()) return;
@@ -85,15 +90,16 @@ function padelStats() {
 let padelTab = "resumen", partidosPend = [], quedadas = [], padelLoaded = 0;
 function vPadel() {
   const P = state.perfil.padel || {};
-  if (padelTab === "pistas") return (P.nivel0 ? `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`
+  if (padelTab === "pistas") return (P.nivel0 ? `<div class="tabs">${[["resumen", "Resumen"], ["ligas", "Ligas"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`
     : `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sm" id="piBack" style="flex:0 0 auto">${svg("back")}Pádel</button><h3 style="margin:0 0 0 6px">Pistas y clubes</h3></div>`) + pistasHTML();
   if (!P.nivel0) return `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Pádel</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Tu pádel, al siguiente nivel</h2>
       <p class="small" style="color:var(--mute);line-height:1.55">Apunta tus partidos, etiqueta a tus amigos y la app calcula <b>tu nivel del 1 al 7</b> (la escala de los clubes), que sube o baja según contra quién ganas. Descubre con quién juegas mejor, quién es tu <b>bestia negra</b> y cuál es tu pala ideal.</p>
       <button class="btn block" id="pdTest" style="margin-top:16px;background:var(--ink);color:#fff;border:0">Calcular mi nivel</button></div>
+      <button class="item" id="pdLig"><span style="font-size:22px;width:28px;text-align:center">🏆</span><div style="flex:1"><div style="font-weight:700">Ligas con tu grupo</div><div class="tiny mute">Crea una liga o únete con un código</div></div>${svg("chev")}</button>
       <button class="item pdPis"><span style="font-size:22px;width:28px;text-align:center">📍</span><div style="flex:1"><div style="font-weight:700">Buscar pistas</div><div class="tiny mute">Clubes y pistas de pádel en tu ciudad</div></div>${svg("chev", "chev")}</button>`;
   const r = computeNivel(), st = padelStats(); const lv = r.nivel; const prev = r.hist.length > 1 ? r.hist[Math.max(0, r.hist.length - 6)].n : lv; const tr = lv - prev;
-  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
+  const tabs = `<div class="tabs">${[["resumen", "Resumen"], ["ligas", "Ligas"], ["partidos", "Partidos"], ["pistas", "Pistas"], ["aprende", "Aprende"]].map(([k, n]) => `<button data-pt="${k}" class="${padelTab === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   const pend = partidosPend.length ? `<div class="card" style="border-color:rgba(132,204,22,.35)"><h3>${svg("bell")}Te han apuntado en ${partidosPend.length} partido${partidosPend.length > 1 ? "s" : ""}</h3>${partidosPend.map(pendRow).join("")}</div>` : "";
   let body = "";
   if (padelTab === "resumen") {
@@ -121,6 +127,7 @@ function vPadel() {
     const A = padelActs().reverse();
     body = pend + `<button class="btn pri block" id="pdAdd" style="margin-bottom:14px">${svg("plus")}Apuntar partido</button>` + (A.length ? A.map(matchCard).join("") : `<div class="card empty">${svg("padel")}<p>Todavía no hay partidos.</p></div>`);
   } else if (padelTab === "aprende") body = aprendeHTML();
+  else if (padelTab === "ligas") body = typeof ligasHTML === "function" ? ligasHTML() : "";
   else body = `<button class="btn sm" id="bqBack" style="margin-bottom:12px">${svg("back")}Volver</button>` + buscarHTML();
   return tabs + body;
 }
@@ -141,6 +148,7 @@ WIRE.padel = () => {
   $$(".pdPis").forEach(b => b.onclick = () => { padelTab = "pistas"; render(); window.scrollTo(0, 0); });
   if (padelTab === "pistas") { const pb = $("#piBack"); if (pb) pb.onclick = () => { padelTab = "resumen"; render(); }; $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); }); wirePistas($("#view")); return; }
   const hw = $("#pdHow"); if (hw) hw.onclick = openNivelInfo;
+  const lg = $("#pdLig"); if (lg) lg.onclick = () => typeof openMisLigasSheet === "function" && openMisLigasSheet();
   const t = $("#pdTest"); if (t) { t.onclick = openNivelTest; return; }
   $$("[data-pt]").forEach(b => b.onclick = () => { padelTab = b.dataset.pt; render(); });
   $$("#pdAdd").forEach(b => b.onclick = () => openPadelMatch()); const f = $("#pdFind"); if (f) f.onclick = () => { padelTab = "buscar"; render(); };
@@ -150,6 +158,7 @@ WIRE.padel = () => {
   $$("[data-pok]").forEach(b => b.onclick = () => confirmPartido(b.dataset.pok, true)); $$("[data-pno]").forEach(b => b.onclick = () => confirmPartido(b.dataset.pno, false));
   if (padelTab === "buscar") { wireBuscar(); const bb = $("#bqBack"); if (bb) bb.onclick = () => { padelTab = "resumen"; render(); }; }
   if (padelTab === "aprende") wireAprende($("#view"));
+  if (padelTab === "ligas" && typeof wireLigas === "function") wireLigas($("#view"));
   loadPadelSocial();
 };
 async function loadPadelSocial(force = false) {
