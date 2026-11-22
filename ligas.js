@@ -170,18 +170,28 @@ async function openLiga(id, recienCreada) {
 
 // ---------- Ranking en Inicio ----------
 let rkInicio = null; // {L, rows} cacheado
+function rkNivelHTML() {
+  const P = state.perfil.padel || {}; const r = P.nivel0 && typeof computeNivel === "function" ? computeNivel() : null;
+  if (!r) return `<div class="hrkn"><div><div class="lbl">Tu nivel de pádel</div><div class="hrkq">¿Cuál es tu nivel?</div><div class="tiny mute">5 preguntas y lo sabes. Luego sube o baja con cada partido.</div></div></div><button class="btn block" id="hRkTest" style="margin-top:12px;background:var(--ink);color:#fff;border:0">Calcular mi nivel</button>`;
+  const st = padelStats(); const d7 = social && social.me && social.me.nivel7 ? r.nivel - social.me.nivel7 : 0;
+  return `<div class="hrkn"><div><div class="lbl">Tu nivel de pádel</div><div class="num hrkv">${fmtNivel(r.nivel)}</div><div class="tiny mute">${nivelTxt(r.nivel)}${Math.abs(d7) >= .01 ? ` · <span style="color:${d7 > 0 ? "#15803d" : "#b91c1c"};font-weight:800">${d7 > 0 ? "▲" : "▼"}${nf(Math.abs(d7), 2)} esta semana</span>` : ""}</div></div>
+    <div class="hrks"><div><b class="num">${st.n}</b> partidos</div><div><b class="num" style="color:var(--vt)">${st.n ? Math.round(st.w / st.n * 100) : 0}%</b> victorias</div></div></div>`;
+}
 function rankingInicioHTML() {
-  const cta = (tit, sub) => `<div class="hrk"><h3>🏆 ${tit}</h3><p class="sub">${sub}</p><div class="hrkb"><button class="btn" id="hRkNew" style="background:var(--ink);color:#fff;border:0">Crear liga</button><button class="btn" id="hRkJoin">Tengo un código</button></div></div>`;
+  const nv = rkNivelHTML(), hasN = !!(state.perfil.padel || {}).nivel0;
+  const btns = hasN ? `<button class="btn" id="hRkAdd" style="background:var(--ink);color:#fff;border:0">${svg("plus")}Apuntar partido</button>` : "";
+  const cta = (tit, sub) => `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${tit}</b><span>${sub}</span><div class="hrkb">${btns}<button class="btn" id="hRkNew">Crear liga</button><button class="btn" id="hRkJoin">Tengo código</button></div></div></div>`;
   if (!(typeof socialOn === "function" && socialOn())) {
     if (typeof me !== "undefined" && me && me.uid && !window.__rkWait) { window.__rkWait = 1; let k = 0; const iv = setInterval(() => { if (socialOn() || ++k > 20) { clearInterval(iv); window.__rkWait = 0; if (socialOn()) rkPintar(); } }, 700); }
-    return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero cada semana."); }
-  if (!misLigas) { cargarMisLigas().then(async () => { await rkCargar(); rkPintar(); }); return `<div class="hrk"><h3>🏆 Tu ranking</h3><p class="sub">Cargando…</p></div>`; }
-  if (!misLigas.length) { const fr = typeof rankAmigosHTML === "function" ? rankAmigosHTML() : ""; return fr ? fr + cta("Crea tu liga", "Ranking propio con tu grupo, muro y pique semanal.") : cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero cada semana."); }
-  if (!rkInicio) { rkCargar().then(rkPintar); return `<div class="hrk"><h3>🏆 ${esc(misLigas[0].nombre)}</h3><p class="sub">Cargando clasificación…</p></div>`; }
+    return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
+  }
+  if (!misLigas) { cargarMisLigas().then(async () => { await rkCargar(); rkPintar(); }); return `<div class="hrk">${nv}</div>`; }
+  if (!misLigas.length) return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
+  if (!rkInicio) { rkCargar().then(rkPintar); return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${esc(misLigas[0].nombre)}</b><span>Cargando clasificación…</span></div></div>`; }
   const { L, rows } = rkInicio; const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
   const sub = !yo || !yo.nivelPadel ? "Apunta un partido para entrar en la clasificación." : pos === 1 ? "Vas primero 👑 Que no te adelanten." : `Vas ${pos}º de ${rows.length}. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
-  return `<div class="hrk"><h3>🏆 ${esc(L.nombre)}</h3><p class="sub">${sub}</p>${rows.length > 1 ? podioHTML(rows) : ""}
-    <div class="hrkb"><button class="btn" id="hRkOpen" style="background:var(--ink);color:#fff;border:0">Ver la liga</button><button class="btn" id="hRkAdd">${svg("plus")}Apuntar partido</button></div></div>`;
+  return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${esc(L.nombre)}</b><span>${sub}</span>${rows.length > 1 ? podioHTML(rows) : ""}
+    <div class="hrkb">${btns}<button class="btn" id="hRkOpen">Ver la liga</button></div></div></div>`;
 }
 async function rkCargar() { try { if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (L) rkInicio = { L, rows: await clasificacion(L) }; } } catch (e) { console.warn(e); } }
 function rkPintar() { const h = document.getElementById("hRank"); if (h && view === "inicio") { h.innerHTML = rankingInicioHTML(); wireRankingInicio(); } }
@@ -190,6 +200,6 @@ function wireRankingInicio() {
   on("hRkNew", () => socialOn() ? openCrearLiga() : (padelTab = "ligas", setView("padel")));
   on("hRkJoin", () => socialOn() ? openUnirmeLiga("") : (padelTab = "ligas", setView("padel")));
   on("hRkOpen", () => rkInicio && openLiga(rkInicio.L.id));
-  on("hRkAdd", () => (state.perfil.padel || {}).nivel0 ? openPadelMatch() : openNivelTest());
+  on("hRkAdd", () => openPadelMatch()); on("hRkTest", () => openNivelTest());
   $$("#hRank [data-user]").forEach(b => b.onclick = () => openUser(b.dataset.user));
 }
