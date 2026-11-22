@@ -13,11 +13,17 @@ let socialUnsubs = [];
 async function startSocial() {
   if (store.kind !== "firebase") return;
   socialUnsubs.forEach(f => f()); socialUnsubs = [];
-  try {
-    const s = await FS().collection("perfiles").doc(me.uid).get(); social.me = s.exists ? s.data() : null;
-    if (social.me) await loadFollowing();
-  } catch (e) { console.warn(e); }
+  const conTiempo = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+  for (let intento = 0; intento < 3; intento++) {
+    try {
+      const s = await conTiempo(FS().collection("perfiles").doc(me.uid).get(), 8000); social.me = s.exists ? s.data() : null;
+      if (social.me) await conTiempo(loadFollowing(), 8000).catch(e => console.warn(e));
+      break;
+    } catch (e) { console.warn("social", e); await new Promise(r => setTimeout(r, 1500)); }
+  }
   social.loaded = true;
+  // Si estabas esperando en Comunidad (o en Inicio con el ranking), repintamos ya
+  if (typeof view !== "undefined" && (view === "comunidad" || view === "inicio") && !sheetOpen) render();
   // Chats y avisos en tiempo real (para los contadores de la cabecera)
   socialUnsubs.push(FS().collection("chats").where("miembros", "array-contains", me.uid).onSnapshot(s => { social.chats = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.t || 0) - (a.t || 0)); updateBadges(); if (chatOpenId === "__list") drawChatList(); }, () => {}));
   socialUnsubs.push(store.base.collection("avisos").orderBy("t", "desc").limit(40).onSnapshot(s => { social.avisos = s.docs.map(d => ({ id: d.id, ...d.data() })); updateBadges(); }, () => {}));
@@ -65,7 +71,7 @@ async function unpublishAct(a) { if (socialOn() && a.postId) { try { await FS().
 // ---------- Vista Comunidad ----------
 function vComunidad() {
   if (store.kind !== "firebase") return `<div class="card empty">${svg("users")}<p>La comunidad necesita conexión.</p></div>`;
-  if (!social.loaded) return `<div class="empty">Cargando…</div>`;
+  if (!social.loaded) { clearTimeout(window.__comTo); window.__comTo = setTimeout(() => { if (view === "comunidad" && !sheetOpen) render(); }, 1500); return `<div class="empty">Cargando…</div>`; }
   if (!social.me) return `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Juega con tu gente</h2>
       <p class="small" style="color:var(--mute);line-height:1.55">Sigue a tus amigos, mira sus partidos, dales <b>kudos</b>, comenta y habla por mensaje. Pregunta por palas y zapatillas a gente que juega como tú.</p>
