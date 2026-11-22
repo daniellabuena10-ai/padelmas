@@ -262,8 +262,8 @@ function materialView() {
   const seg = `<div class="seg" style="margin-bottom:14px">${segs.map(([k, n]) => `<button data-gs="${k}" class="${gearSeg === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   if (gearSeg === "running") gearSeg = "palas";
   if (gearSeg === "tienda") return seg + tiendaHTML();
-  if (gearSeg === "outfits") return seg + outfitsHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
-  if (gearSeg === "acces") return seg + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
+  if (gearSeg === "outfits") return seg + (typeof tiendaHTML === "function" ? tiendaHTML("ropa") + `<div class="sec">Qué ponerte según la estación</div>` : "") + outfitsHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
+  if (gearSeg === "acces") return seg + (typeof tiendaHTML === "function" ? tiendaHTML("acces") + `<div class="sec">Qué accesorios necesitas</div>` : "") + accesHTML() + (socialOn() ? `<div class="sec">Preguntas sobre ropa y accesorios <button id="qAsk">Preguntar</button></div><div id="qList"></div>` : "");
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
   const cats = isP ? [["todas", "Todas"], ["1", "Control"], ["2", "Polivalente"], ["3", "Potencia"]] : [["todas", "Todas"], ["espiga", "Espiga"], ["omni", "Omni"], ["híbrida", "Híbrida"]];
   const list0 = all.filter(g => (gearFilter === "todas" || (isP ? String(Math.round(g.perfil)) === gearFilter : g.suela === gearFilter)) && (gearBrand === "todas" || g.marca === gearBrand));
@@ -284,8 +284,8 @@ function wireMaterial(root) {
   $$("[data-gs]", root).forEach(b => b.onclick = () => { gearSeg = b.dataset.gs; gearFilter = "todas"; gearBrand = "todas"; render(); });
   if (gearSeg === "running") { wireZapasView(root); return; }
   if (gearSeg === "tienda") { wireTienda(root); return; }
-  if (gearSeg === "outfits") { wireOutfits(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
-  if (gearSeg === "acces") { wireAcces(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
+  if (gearSeg === "outfits") { if (typeof wireTienda === "function") wireTienda(root); wireOutfits(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
+  if (gearSeg === "acces") { if (typeof wireTienda === "function") wireTienda(root); wireAcces(root); const q = $("#qAsk", root); if (q) { q.onclick = () => openAsk("acces"); loadQuestions("acces"); } return; }
   $("#gRec", root).onclick = gearSeg === "palas" ? openRecPala : openRecZP; wireGearRows(root);
   $$("[data-gf]", root).forEach(b => b.onclick = () => { gearFilter = b.dataset.gf; render(); });
   $$("[data-gb]", root).forEach(b => b.onclick = () => { gearBrand = b.dataset.gb; render(); });

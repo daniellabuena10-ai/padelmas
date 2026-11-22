@@ -110,11 +110,10 @@ function wireOutfits(root) {
   $$("[data-out]", root).forEach(b => b.onclick = () => { const o = OUTFITS.find(x => x.id === b.dataset.out);
     openSheet(`${o.e} ${o.t}`, `<div class="sec" style="margin-top:0">Qué llevar</div><div class="card">${o.piezas.map(p => `<p style="line-height:1.5;margin-bottom:8px">👉 ${p}</p>`).join("")}</div>
       <div class="sec">Consejos</div><div class="card">${o.tips.map(t => `<p style="line-height:1.5;margin-bottom:8px">✓ ${t}</p>`).join("")}</div>
-      <div class="sec">Marcas habituales</div><div class="chips">${["adidas", "Bullpadel", "Nox", "Siux", "Joma", "Kuikma", "Head", "Babolat"].map(m => `<span class="chip">${m}</span>`).join("")}</div>
-      <a class="btn block" style="margin-top:16px;text-decoration:none;color:inherit" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=shop&q=${encodeURIComponent("ropa padel " + (o.g === "todos" ? "" : o.g))}">${svg("cart")}Ver ropa de pádel</a>`); }); }
+      ${typeof ropaTopHTML === "function" && ropaTopHTML(o.g) ? `<div class="sec">Ropa recomendada con descuento</div>${ropaTopHTML(o.g, 4)}${window.guest && !(me && me.uid) ? "" : `<button class="btn block" id="ropaAll" style="margin-top:12px">Ver toda la ropa</button>`}` : ""}`, s => { const a = $("#ropaAll", s); if (a) a.onclick = () => { closeSheet(); gearSeg = "outfits"; tdQ = ""; tdGen = o.g === "mujer" ? "m" : o.g === "hombre" ? "h" : ""; setView("material"); }; }); }); }
 
 function openRopaGuest() {
-  openSheet("Ropa de pádel", outfitsHTML() + (window.guest && !(me && me.uid) ? `<button class="btn pri block" id="ogUp" style="margin-top:6px">Crear cuenta gratis</button>` : ""), s => {
+  openSheet("Ropa de pádel", (typeof ropaTopHTML === "function" && ropaTopHTML(outfitG) ? `<div class="sec" style="margin-top:0">Ropa de pádel con descuento</div>${ropaTopHTML(outfitG, 6)}<div class="sec">Qué ponerte según la estación</div>` : "") + outfitsHTML() + (window.guest && !(me && me.uid) ? `<button class="btn pri block" id="ogUp" style="margin-top:6px">Crear cuenta gratis</button>` : ""), s => {
     wireOutfits(s); $$("[data-og]", s).forEach(b => b.onclick = () => { outfitG = b.dataset.og; openRopaGuest(); });
     const u = $("#ogUp", s); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); };
   });
