@@ -22,6 +22,8 @@ jobs:
         run: |
           git config user.name "padelmas-bot"
           git config user.email "holapadelmas@gmail.com"
-          git pull --rebase -q
           git add data/catalogo.json
-          git diff --cached --quiet && echo "Sin cambios" || (git commit -m "Catálogo actualizado" && git push)
+          if git diff --cached --quiet; then echo "Sin cambios"; else
+            git commit -q -m "Catálogo actualizado"
+            for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+          fi
