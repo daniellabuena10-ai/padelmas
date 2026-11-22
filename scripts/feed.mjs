@@ -82,9 +82,16 @@ let prods = raw.map(r => {
     land: pick(r, "merchant_deep_link", "product_url", "link"),
     stock: !/^(0|no|false|out)/i.test(pick(r, "in_stock", "stock_status") || "1") && pick(r, "stock_quantity") !== "0",
     talla: pick(r, "custom_2", "size", "fashion_size", "Fashion:size"),
-    color: pick(r, "colour", "color", "fashion:suitable_for")
+    color: pick(r, "colour", "color", "fashion:suitable_for"),
+    txt: [pick(r, "description"), pick(r, "product_short_description"), pick(r, "specifications"), pick(r, "keywords"), pick(r, "product_model")].join(" ")
   };
   p.cat = categoria(p); p.gen = genero(p);
+  if (p.cat === "zapa") { // tipo de suela y amortiguación, sacado del nombre y la descripción
+    const s = norm(`${p.n} ${p.txt}`);
+    const es = /\bclay\b|espiga|herringbone|tierra batida|arena/.test(s), om = /\bomni\b|omnicourt|tacos|cesped artificial con mucha arena/.test(s), hi = /hibrid|mixta|all ?court|multicourt|multi court|multisuperficie|todas las superficies|cualquier superficie|all surface/.test(s);
+    p.suela = hi || (es && om) ? "h" : om ? "o" : es ? "e" : "";
+    p.amort = /amortigu|cushion|boost|\bgel\b|confort|comodidad|lightstrike|bounce|dna loft|eva/.test(s) ? 1 : 0;
+  }
   if (!p.url && p.land) p.url = `https://www.awin1.com/cread.php?awinmid=${MID}&awinaffid=${AFFID}&clickref=padelmas&ued=${encodeURIComponent(p.land)}`;
   if (p.url && !/clickref=/.test(p.url)) p.url += (p.url.includes("?") ? "&" : "?") + "clickref=padelmas";
   if (p.pvp && p.precio && p.pvp <= p.precio) p.pvp = null;
@@ -125,7 +132,7 @@ const keep = new Set(Object.values(match)); const by = { pala: [], zapa: [], rop
 for (const p of prods) if (p.stock || keep.has(p.id)) by[p.cat].push(p);
 const lim = { pala: 1500, zapa: 800, ropa: 600, acces: 600 };
 const out = Object.entries(by).flatMap(([c, L]) => L.sort((a, b) => (keep.has(b.id) - keep.has(a.id)) || ((b.pvp ? 1 : 0) - (a.pvp ? 1 : 0)) || a.precio - b.precio).slice(0, lim[c]))
-  .map(p => { const o = { i: p.id, n: p.n, m: p.marca, c: p.cat, p: p.precio, u: p.url, f: p.img }; if (p.pvp) o.o = p.pvp; if (p.gen) o.g = p.gen; if (!p.stock) o.x = 1; return o; });
+  .map(p => { const o = { i: p.id, n: p.n, m: p.marca, c: p.cat, p: p.precio, u: p.url, f: p.img }; if (p.pvp) o.o = p.pvp; if (p.gen) o.g = p.gen; if (!p.stock) o.x = 1; if (p.suela) o.s = p.suela; if (p.amort) o.a = 1; return o; });
 
 fs.mkdirSync(new URL("../data/", import.meta.url), { recursive: true });
 fs.writeFileSync(new URL("../data/catalogo.json", import.meta.url), JSON.stringify({ t: new Date().toISOString(), tienda: "Padel Market", match, p: out }));
