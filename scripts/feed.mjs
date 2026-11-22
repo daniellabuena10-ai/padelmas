@@ -90,7 +90,7 @@ let prods = raw.map(r => {
     const s = norm(`${p.n} ${p.txt}`);
     const es = /\bclay\b|espiga|herringbone|tierra batida|arena/.test(s), om = /\bomni\b|omnicourt|tacos|cesped artificial con mucha arena/.test(s), hi = /hibrid|mixta|all ?court|multicourt|multi court|multisuperficie|todas las superficies|cualquier superficie|all surface/.test(s);
     p.suela = hi || (es && om) ? "h" : om ? "o" : es ? "e" : "";
-    p.amort = /amortigu|cushion|boost|\bgel\b|confort|comodidad|lightstrike|bounce|dna loft|eva/.test(s) ? 1 : 0;
+    p.amort = /(maxima|alta|extra|gran|excelente|superior) amortiguacion|amortiguacion (maxima|extra|superior|excepcional)|\bgel\b|\bboost\b|dna loft|flytefoam|zoom air|cloudfoam|lightstrike pro|amortiguacion reactiva/.test(s) ? 1 : 0;
   }
   if (!p.url && p.land) p.url = `https://www.awin1.com/cread.php?awinmid=${MID}&awinaffid=${AFFID}&clickref=padelmas&ued=${encodeURIComponent(p.land)}`;
   if (p.url && !/clickref=/.test(p.url)) p.url += (p.url.includes("?") ? "&" : "?") + "clickref=padelmas";
