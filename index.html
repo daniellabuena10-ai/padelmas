@@ -352,6 +352,12 @@ a.btn,a.item{text-decoration:none;color:inherit}
 .hsd{position:absolute;top:8px;left:8px;background:#e11d48;color:#fff;font-weight:800;font-size:12px;padding:2px 8px;border-radius:99px}
 .hsm{font-size:11.5px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.3px;margin-top:8px}.hsn{font-size:14px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hsp{font-size:13px;margin-top:3px}.hsp b{font-size:15.5px}.hsp s{color:var(--mute);font-size:12px}
+.zsquiz{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-radius:20px;background:#0f172a;color:#fff;margin-bottom:12px}.zsquiz .zqi{width:44px;height:44px;border-radius:13px;background:#d4ff3a;display:grid;place-items:center;font-size:22px;flex:none}.zsquiz b{display:block;font-size:16px}.zsquiz small{display:block;color:#cbd5e1;font-size:13px;margin-top:2px}.zsquiz .ar{color:#d4ff3a;font-size:20px;margin-left:auto}
+.zsgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.zsgrid button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:12px;border-radius:18px;background:var(--card);border:2px solid var(--line);box-shadow:0 1px 4px rgba(15,23,42,.04)}.zsgrid button svg{border:1px solid var(--line);border-radius:12px}
+.zsgrid b{font-size:15.5px;margin-top:8px}.zsgrid small{font-size:12.5px;color:var(--vt);font-weight:700}.zsgrid .zsd{font-size:12px;color:var(--mute);line-height:1.3;margin-top:3px}.zsgrid button.on{border-color:var(--ink);background:rgba(190,242,100,.18)}
+.rpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.rpgrid button{display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 6px 10px;border-radius:16px;background:var(--card);border:2px solid var(--line)}.rpgrid .rpimg{width:100%;aspect-ratio:1;border-radius:12px;background:#fff;display:grid;place-items:center;overflow:hidden}
+.rpgrid b{font-size:12.5px;line-height:1.2;margin-top:6px}.rpgrid small{font-size:11px;color:var(--mute)}.rpgrid button.on{border-color:var(--ink);background:rgba(190,242,100,.18)}
+@media(min-width:900px){.rpgrid{grid-template-columns:repeat(6,1fr)}.zsgrid{grid-template-columns:repeat(4,1fr)}}
 .tdsu{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 8px;padding:0 16px 4px;scrollbar-width:none}.tdsu::-webkit-scrollbar{display:none}.tdsu button{flex:none;display:flex;align-items:center;gap:6px;padding:10px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line2);font-weight:700;font-size:14px;white-space:nowrap}.tdsu button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .hhguide{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);color:#e2e8f0;text-decoration:none;font-size:14px}.hhguide b{color:#d4ff3a}.hhguide .ar{margin-left:auto;color:#d4ff3a;font-size:18px}
 .hrkn{display:flex;align-items:flex-start;gap:12px}.hrkn .lbl{font-size:12px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.4px}.hrkv{font-size:46px;line-height:1;color:var(--vt);font-weight:900;margin:4px 0}.hrkq{font-size:22px;font-weight:900;letter-spacing:-.5px;margin:4px 0}
@@ -459,7 +465,8 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 <script src="gear.js"></script>
 <script src="learn.js"></script><script src="share.js"></script><script src="pistas.js"></script><script src="opinar.js"></script><script src="tablon.js"></script><script src="tienda.js"></script>
 <script src="recpala.js"></script>
-<script src="ligas.js"></script><script src="subir.js"></script>
+<script src="ligas.js"></script>
+<script src="reczapa.js"></script><script src="subir.js"></script>
 <script>boot();</script>
 <script>["gesturestart","gesturechange"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");</script>

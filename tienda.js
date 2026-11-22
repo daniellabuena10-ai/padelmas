@@ -27,7 +27,16 @@ function fotosListas(root, max) { const imgs = [...(root || document).querySelec
 
 // ---------- Tienda (en Material) ----------
 let tdCat = "pala", tdQ = "", tdOrden = "top", tdN = 30, tdGen = "", tdSuela = "";
-// Tipos de zapatilla de pádel según lo que busca el jugador
+// Carpetas de ropa: cada prenda va a su tipo por el nombre
+const ROPA_TIPOS = [["cami", "Camisetas", /camiseta|t ?shirt|\btee\b|tirantes|tank|\btop\b/], ["polo", "Polos", /\bpolo\b/], ["sudad", "Sudaderas y chaquetas", /sudadera|hoodie|chaqueta|jacket|cortavientos|jersey|sweat|forro|anorak|plumas|chaleco/], ["pant", "Pantalones y shorts", /short|pantal|bermuda|\bpants?\b/], ["falda", "Faldas y vestidos", /falda|skirt|skort|vestido|dress/], ["mallas", "Mallas y leggings", /malla|legging|tight/], ["chandal", "Chándal", /chandal|tracksuit|conjunto/], ["inter", "Ropa interior y sujetadores", /sujetador|bra\b|boxer|slip|interior/]];
+let tdTipo = "";
+const ropaTipo = p => { const s = norm2(p.n); const r = ROPA_TIPOS.find(x => x[2].test(s)); return r ? r[0] : ""; };
+function ropaCarpetasHTML() {
+  if (!CAT) return "";
+  const base = CAT.p.filter(p => p.c === "ropa" && !p.x && p.f && (!tdGen || p.g === tdGen) && !/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n)));
+  const grupos = ROPA_TIPOS.map(([k, n]) => { const L = base.filter(p => ropaTipo(p) === k); const f = L.sort((a, b) => dto(b) - dto(a))[0]; return { k, n, c: L.length, f }; }).filter(g => g.c >= 3 || g.k === tdTipo);
+  return `<div class="sec" style="margin:4px 2px 8px">¿Qué buscas?</div><div class="rpgrid">${grupos.map(g => `<button data-r="${g.k}" class="${tdTipo === g.k ? "on" : ""}"><span class="rpimg">${g.f ? fotoReal(g.f, 90) : ""}</span><b>${g.n}</b><small>${g.c} prendas</small></button>`).join("")}</div>${tdTipo ? `<button class="link tiny" data-r="" style="margin:0 2px 10px;font-size:13px">✕ Ver toda la ropa</button>` : ""}`;
+}
 const TD_SUELAS = [["", "Todas", "", ""], ["e", "Espiga", "〰️", "Agarre y deslizamiento controlado. La más usada: pistas de césped con arena."], ["o", "Omni", "⚫", "Máximo agarre. Para pistas con mucha arena o muy resbaladizas."], ["h", "Híbrida", "🔀", "Espiga + omni. Si juegas en clubes distintos o no sabes cómo es tu pista."], ["a", "Amortiguadas", "☁️", "Más comodidad y menos impacto en rodillas y tobillos. Para jugar muchas horas."]];
 const TD_CATS = [["pala", "Palas"], ["zapa", "Zapatillas"], ["ropa", "Ropa"], ["acces", "Accesorios"]];
 function tiendaHTML(fija) {
@@ -35,7 +44,7 @@ function tiendaHTML(fija) {
   if (!CAT) { loadCatalogo(); return `<div class="card empty"><p>${catLoading ? "Cargando el catálogo de Padel Market…" : "El catálogo se está preparando. Vuelve en un rato."}</p></div>`; }
   const qs = norm2(tdQ).split(/\s+/).filter(Boolean);
   const kidQ = /\bjr\b|junior|nin|kid/.test(norm2(tdQ));
-  let L = CAT.p.filter(p => p.c === tdCat && !p.x && (!tdGen || p.g === tdGen) && (tdCat !== "zapa" || !tdSuela || (tdSuela === "a" ? p.a : p.s === tdSuela || (tdSuela !== "h" && p.s === "h"))) && (kidQ || tdCat === "pala" || !/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n))) && (!qs.length || (s => qs.every(w => s.includes(w)))(norm2(`${p.m} ${p.n}`))));
+  let L = CAT.p.filter(p => p.c === tdCat && !p.x && (!tdGen || p.g === tdGen) && (tdCat !== "ropa" || !tdTipo || ropaTipo(p) === tdTipo) && (tdCat !== "zapa" || !tdSuela || (tdSuela === "a" ? p.a : p.s === tdSuela || (tdSuela !== "h" && p.s === "h"))) && (kidQ || tdCat === "pala" || !/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n))) && (!qs.length || (s => qs.every(w => s.includes(w)))(norm2(`${p.m} ${p.n}`))));
   const TOPM = ["nox", "bullpadel", "adidas", "head", "babolat", "siux", "starvie", "star vie", "wilson", "black crown", "kombat", "drop shot", "asics"];
   const rec = new Set(Object.values(CAT.match || {}));
   const score = p => (rec.has(p.i) ? 100 : 0) + (dto(p) * 2) + (TOPM.some(m => norm2(p.m || p.n).startsWith(m)) ? 20 : 0) + (/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n)) ? -40 : 0) + Math.min(10, p.p / 30);
@@ -45,7 +54,8 @@ function tiendaHTML(fija) {
     <div class="seg" id="tdC" style="margin:4px 0 10px">${TD_CATS.map(([k, n]) => `<button data-c="${k}" class="${tdCat === k ? "on" : ""}">${n}</button>`).join("")}</div>`}
     <div class="row" style="gap:8px;margin-bottom:10px"><label class="field" style="margin:0;flex:1"><input id="tdQ" value="${esc(tdQ)}" placeholder="Busca marca o modelo (ej. Bullpadel)" style="margin:0" enterkeyhint="search"></label>
       <select id="tdO" style="flex:0 0 auto;width:auto;margin:0;padding:0 10px;border-radius:14px;background:var(--card2);color:var(--ink);border:1px solid var(--line2)"><option value="top" ${tdOrden === "top" ? "selected" : ""}>Destacadas</option>${CAT.p.some(p => p.o) ? `<option value="oferta" ${tdOrden === "oferta" ? "selected" : ""}>Ofertas</option>` : ""}<option value="barato" ${tdOrden === "barato" ? "selected" : ""}>Más barato</option><option value="caro" ${tdOrden === "caro" ? "selected" : ""}>Más caro</option></select></div>
-    ${tdCat === "zapa" && CAT.p.some(p => p.c === "zapa" && (p.s || p.a)) ? `<div class="sec" style="margin:4px 2px 8px">¿Qué zapatilla buscas?</div><div class="tdsu" id="tdS">${TD_SUELAS.map(([k, n, ic]) => `<button data-s="${k}" class="${tdSuela === k ? "on" : ""}">${ic ? `<span>${ic}</span>` : ""}${n}</button>`).join("")}</div>${tdSuela ? `<p class="small mute" style="margin:2px 2px 10px;line-height:1.4">${TD_SUELAS.find(x => x[0] === tdSuela)[3]}</p>` : ""}` : ""}
+    ${tdCat === "zapa" && typeof zsTiposHTML === "function" ? `<div id="tdS">${zsTiposHTML(tdSuela)}</div>` : ""}
+    ${tdCat === "ropa" ? `<div id="tdR">${ropaCarpetasHTML()}</div>` : ""}
     ${tdCat === "ropa" || tdCat === "zapa" ? `<div class="seg" id="tdG" style="margin-bottom:10px">${[["", "Todo"], ["m", "Mujer"], ["h", "Hombre"]].map(([k, n]) => `<button data-g="${k}" class="${tdGen === k ? "on" : ""}">${n}</button>`).join("")}</div>` : ""}
     <p class="tiny mute" style="margin:0 2px 8px">${tot.toLocaleString("es-ES")} resultados</p>
     <div class="tdgrid">${L.map(p => `<a class="tdcard" href="${esc(p.u)}" target="_blank" rel="noopener sponsored" data-out="${esc(p.i)}">
@@ -64,9 +74,11 @@ function ropaTopHTML(g, n) {
   return L.length ? `<div class="tdgrid">${L.map(p => `<a class="tdcard" href="${esc(p.u)}" target="_blank" rel="noopener sponsored"><div class="tdimg">${fotoReal(p, 120)}${dto(p) >= 5 ? `<span class="dtob" style="position:absolute;top:8px;left:8px">-${dto(p)}%</span>` : ""}</div><div class="tiny mute" style="margin-top:8px">${esc(p.m || "")}</div><div class="tdname">${esc(limpiaNombre(p.n, p.m))}</div><div style="margin-top:4px"><span class="num" style="color:var(--ink);font-size:17px">${eur(p.p)}</span>${p.o ? ` <s class="tiny mute">${eur(p.o)}</s>` : ""}</div><span class="buyrow" style="margin-top:8px;justify-content:center">${svg("cart")}Comprar</span></a>`).join("")}</div>` : "";
 }
 function wireTienda(root) {
-  $$("#tdC [data-c]", root).forEach(b => b.onclick = () => { tdCat = b.dataset.c; tdN = 30; tdGen = ""; tdSuela = ""; render(); });
+  $$("#tdC [data-c]", root).forEach(b => b.onclick = () => { tdCat = b.dataset.c; tdN = 30; tdGen = ""; tdSuela = ""; tdTipo = ""; render(); });
   $$("#tdG [data-g]", root).forEach(b => b.onclick = () => { tdGen = b.dataset.g; tdN = 30; render(); });
-  $$("#tdS [data-s]", root).forEach(b => b.onclick = () => { tdSuela = b.dataset.s; tdN = 30; render(); });
+  $$("#tdS [data-s]", root).forEach(b => b.onclick = () => { tdSuela = tdSuela === b.dataset.s ? "" : b.dataset.s; tdN = 30; render(); });
+  { const zq = $("#zsQuiz", root); if (zq) zq.onclick = () => openRecZapa(); }
+  $$("#tdR [data-r]", root).forEach(b => b.onclick = () => { tdTipo = tdTipo === b.dataset.r ? "" : b.dataset.r; tdN = 30; render(); });
   const q = $("#tdQ", root); if (q) { let t; q.oninput = () => { clearTimeout(t); t = setTimeout(() => { tdQ = q.value; tdN = 30; render(); setTimeout(() => { const n = $("#tdQ"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 0); }, 350); }; }
   const o = $("#tdO", root); if (o) o.onchange = () => { tdOrden = o.value; render(); };
   const m = $("#tdMas", root); if (m) m.onclick = () => { tdN += 30; render(); };
