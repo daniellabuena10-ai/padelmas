@@ -150,6 +150,10 @@ function fixViewport() { requestAnimationFrame(() => window.scrollTo(window.scro
 document.addEventListener("focusout", e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) setTimeout(fixViewport, 80); });
 if (window.visualViewport) { let vh = visualViewport.height; visualViewport.addEventListener("resize", () => { if (visualViewport.height > vh + 80) fixViewport(); vh = visualViewport.height; }); }
 window.addEventListener("orientationchange", () => setTimeout(fixViewport, 300));
+// iPhone: a veces la barra de abajo se queda "clavada" a media pantalla al hacer scroll; al parar, la recolocamos
+(() => { let tm = 0; const fixBar = () => { const b = document.getElementById("tabbar"); if (!b || b.hidden) return; b.style.bottom = "calc(12.01px + var(--safe-b))"; requestAnimationFrame(() => { b.style.bottom = ""; }); };
+  window.addEventListener("scroll", () => { clearTimeout(tm); tm = setTimeout(fixBar, 120); }, { passive: true });
+  window.addEventListener("touchend", () => setTimeout(fixBar, 400), { passive: true }); })();
 
 // ---------- Botón atrás (Android y gesto de volver) ----------
 let lastBack = 0;

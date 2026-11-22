@@ -137,7 +137,7 @@ async function openLiga(id, recienCreada) {
   openSheet(esc(L.nombre), `
     ${recienCreada ? `<div class="hint" style="margin-bottom:10px">🎉<span>¡Liga creada! Ahora invita a tu gente: cuantos más seáis, más pique.</span></div>` : ""}
     <div class="lgcab"><div><div class="tiny mute">${(L.miembros || []).length} jugador${(L.miembros || []).length === 1 ? "" : "es"}${L.sede ? " · " + esc(L.sede) : ""}</div><div class="small" style="margin-top:4px">${msgPos}</div></div></div>
-    <div class="row" style="gap:8px;margin:12px 0"><button class="btn" id="lgInv" style="flex:1;background:var(--ink);color:#fff;border:0">Invitar por WhatsApp</button><button class="btn" id="lgCopy" style="flex:0 0 auto">Copiar enlace</button></div>
+    <div class="row" style="gap:8px;margin:12px 0"><button class="btn" id="lgInv" style="flex:1;background:var(--ink);color:#fff;border:0">Invitar por WhatsApp</button><button class="btn" id="lgCopy" style="flex:0 0 auto">Compartir</button></div>
     ${podioHTML(rows)}
     <div class="sec">Clasificación</div><div class="card" style="padding:4px 8px">${rows.map(fila).join("")}</div>
     <button class="btn block" id="lgAdd" style="margin-top:10px">${svg("plus")}Apuntar un partido</button>
@@ -146,7 +146,7 @@ async function openLiga(id, recienCreada) {
     <div id="lgMuro"><p class="small mute" style="text-align:center;margin:12px 0">Cargando…</p></div>
     <p class="tiny mute" style="text-align:center;margin-top:14px">Código de la liga: <b style="letter-spacing:2px">${L.id}</b>${L.creador !== me.uid ? ` · <button class="link" id="lgOut" style="font-size:inherit">Salir de la liga</button>` : ""}</p>`, s => {
     $$("[data-user]", s).forEach(b => b.onclick = () => openUser(b.dataset.user));
-    $("#lgInv", s).onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(invTxt)}`, "_blank");
+    $("#lgInv", s).onclick = () => { const tx = encodeURIComponent(invTxt); if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) location.href = `whatsapp://send?text=${tx}`; else window.open(`https://web.whatsapp.com/send?text=${tx}`, "_blank"); };
     $("#lgCopy", s).onclick = async () => { try { if (navigator.share) await navigator.share({ text: invTxt }); else { await navigator.clipboard.writeText(invTxt); toast("Enlace copiado"); } } catch {} };
     $("#lgAdd", s).onclick = () => { closeSheet(); if ((state.perfil.padel || {}).nivel0) openPadelMatch(); else openNivelTest(); };
     const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} misLigas = null; closeSheet(); });
