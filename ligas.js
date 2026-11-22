@@ -93,7 +93,7 @@ function openCrearLiga() {
         let id = ligaCod();
         for (let i = 0; i < 3; i++) { const ex = await PERF().where("ligas", "array-contains", id).limit(1).get(); if (ex.empty) break; id = ligaCod(); }
         await entrarLiga(id, { nombre: nombre.slice(0, 40), sede: sede.slice(0, 40), creador: me.uid, t: Date.now() });
-        misLigas = null; await cargarMisLigas(true); openLiga(id, true);
+        misLigas = null; rkInicio = null; await cargarMisLigas(true); openLiga(id, true);
       } catch (e) { console.warn(e); toast("No se ha podido crear. Inténtalo en un momento."); $("#lgOk", s).disabled = false; }
     };
   });
@@ -114,7 +114,7 @@ async function openUnirmeLiga(code) {
     <button class="btn block" id="lgIn" style="background:var(--ink);color:#fff;border:0;margin-top:12px">Unirme a la liga</button>`, s => {
     $("#lgIn", s).onclick = async () => {
       try { await entrarLiga(L.id, L); } catch (e) { console.warn(e); toast("No se ha podido entrar. Inténtalo de nuevo."); return; }
-      misLigas = null; await cargarMisLigas(true); toast("¡Ya estás dentro! 🎾"); openLiga(L.id);
+      misLigas = null; rkInicio = null; await cargarMisLigas(true); toast("¡Ya estás dentro! 🎾"); openLiga(L.id);
       if (!(state.perfil.padel || {}).nivel0 && !(social.me && social.me.nivelPadel) && typeof openNivelTest === "function") setTimeout(() => toast("Calcula tu nivel para aparecer en la clasificación"), 1500);
     };
   });
@@ -166,4 +166,30 @@ async function openLiga(id, recienCreada) {
       catch (e) { toast("No se ha podido enviar"); }
     };
   });
+}
+
+// ---------- Ranking en Inicio ----------
+let rkInicio = null; // {L, rows} cacheado
+function rankingInicioHTML() {
+  const cta = (tit, sub) => `<div class="hrk"><h3>🏆 ${tit}</h3><p class="sub">${sub}</p><div class="hrkb"><button class="btn" id="hRkNew" style="background:var(--ink);color:#fff;border:0">Crear liga</button><button class="btn" id="hRkJoin">Tengo un código</button></div></div>`;
+  if (!(typeof socialOn === "function" && socialOn())) {
+    if (typeof me !== "undefined" && me && me.uid && !window.__rkWait) { window.__rkWait = 1; let k = 0; const iv = setInterval(() => { if (socialOn() || ++k > 20) { clearInterval(iv); window.__rkWait = 0; if (socialOn()) rkPintar(); } }, 700); }
+    return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero cada semana."); }
+  if (!misLigas) { cargarMisLigas().then(async () => { await rkCargar(); rkPintar(); }); return `<div class="hrk"><h3>🏆 Tu ranking</h3><p class="sub">Cargando…</p></div>`; }
+  if (!misLigas.length) { const fr = typeof rankAmigosHTML === "function" ? rankAmigosHTML() : ""; return fr ? fr + cta("Crea tu liga", "Ranking propio con tu grupo, muro y pique semanal.") : cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero cada semana."); }
+  if (!rkInicio) { rkCargar().then(rkPintar); return `<div class="hrk"><h3>🏆 ${esc(misLigas[0].nombre)}</h3><p class="sub">Cargando clasificación…</p></div>`; }
+  const { L, rows } = rkInicio; const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
+  const sub = !yo || !yo.nivelPadel ? "Apunta un partido para entrar en la clasificación." : pos === 1 ? "Vas primero 👑 Que no te adelanten." : `Vas ${pos}º de ${rows.length}. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
+  return `<div class="hrk"><h3>🏆 ${esc(L.nombre)}</h3><p class="sub">${sub}</p>${rows.length > 1 ? podioHTML(rows) : ""}
+    <div class="hrkb"><button class="btn" id="hRkOpen" style="background:var(--ink);color:#fff;border:0">Ver la liga</button><button class="btn" id="hRkAdd">${svg("plus")}Apuntar partido</button></div></div>`;
+}
+async function rkCargar() { try { if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (L) rkInicio = { L, rows: await clasificacion(L) }; } } catch (e) { console.warn(e); } }
+function rkPintar() { const h = document.getElementById("hRank"); if (h && view === "inicio") { h.innerHTML = rankingInicioHTML(); wireRankingInicio(); } }
+function wireRankingInicio() {
+  const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
+  on("hRkNew", () => socialOn() ? openCrearLiga() : (padelTab = "ligas", setView("padel")));
+  on("hRkJoin", () => socialOn() ? openUnirmeLiga("") : (padelTab = "ligas", setView("padel")));
+  on("hRkOpen", () => rkInicio && openLiga(rkInicio.L.id));
+  on("hRkAdd", () => (state.perfil.padel || {}).nivel0 ? openPadelMatch() : openNivelTest());
+  $$("#hRank [data-user]").forEach(b => b.onclick = () => openUser(b.dataset.user));
 }

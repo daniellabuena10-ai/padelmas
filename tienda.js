@@ -113,17 +113,18 @@ function inicioHomeHTML() {
     <div class="hgrid">${[["palas", "pala", "Palas", "Por nivel y juego", palaSvg], ["zpadel", "zapa", "Zapatillas", "Suela, horma y peso", "👟"], ["outfits", "ropa", "Ropa", "Mujer y hombre", "👕"], ["acces", "acces", "Accesorios", "Paleteros, grips…", "🎒"]].map(([seg, cat, tit, sub, ic]) => { const f = escaparate(cat, 1, cat === "pala" ? 3 : 0)[0]; return `<button data-hg="${seg}"><span class="hgimg">${f ? fotoReal(f, 96) : `<span class="pe">${ic}</span>`}</span><b>${tit}</b><small>${sub}</small></button>`; }).join("")}</div>
     ${CAT ? `<div class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>Selección de la semana</span><button class="link tiny" id="hSelAll" style="font-size:13px">Ver tienda</button></div>
     <div class="hsel">${[...escaparate("pala", 4), ...escaparate("zapa", 2), ...escaparate("pala", 2, 4)].map(p => `<a class="hsi" href="${esc(p.u)}" target="_blank" rel="noopener sponsored"><span class="hsimg">${fotoReal(p, 130)}${dto(p) >= 5 ? `<span class="hsd">-${dto(p)}%</span>` : ""}</span><span class="hsm">${esc(p.m || "")}</span><span class="hsn">${esc(limpiaNombre(p.n, p.m))}</span><span class="hsp"><b>${eur(p.p)}</b>${p.o && p.o > p.p ? ` <s>${eur(p.o)}</s>` : ""}</span></a>`).join("")}</div>` : ""}
+    <div id="hRank">${typeof rankingInicioHTML === "function" ? rankingInicioHTML() : ""}</div>
     ${maxd ? `<button class="hof" id="hOfAll"><span><b>${ofTit}</b><small>Palas hasta -${maxd}%, actualizado cada día</small></span><span class="ar">→</span></button>` : ""}
-    <a class="gbanner" href="guia.html"><span class="gi">🎾</span><span><small>Guía 2026</small><b>¿Qué pala de pádel me compro?</b><span class="s">Las mejores por nivel, con fotos y precio de hoy</span></span><span class="ar">→</span></a>
-    <button class="lgbanner" id="hLiga"><span class="gi">🏆</span><span><b>Crea tu liga con amigos</b><span class="s">Ranking propio, muro y pique semanal</span></span><span class="ar">→</span></button>`;
+    <a class="gbanner" href="guia.html"><span class="gi">🎾</span><span><small>Guía 2026</small><b>¿Qué pala de pádel me compro?</b><span class="s">Las mejores por nivel, con fotos y precio de hoy</span></span><span class="ar">→</span></a>`;
 }
 function wireInicioTienda() {
   $$("[data-hg]").forEach(b => b.onclick = () => { gearSeg = b.dataset.hg; setView("material"); window.scrollTo(0, 0); });
   { const e = $("#hMis"); if (e) e.onclick = () => { const s = rpSaved(); rpQ = { ...s, extras: new Set(s.extras || []) }; rpResultados(); }; }
   { const e = $("#hRe"); if (e) e.onclick = () => openRecPala(); }
+  if (typeof wireRankingInicio === "function") wireRankingInicio();
   { const e = $("#hSelAll"); if (e) e.onclick = () => { gearSeg = "tienda"; tdCat = "pala"; setView("material"); window.scrollTo(0, 0); }; }
   const v = $("#view"); if (typeof wireGearRows === "function") wireGearRows(v);
   const on = (id, f) => { const e = $(id); if (e) e.onclick = f; };
   on("#hLiga", () => { padelTab = "ligas"; setView("padel"); }); on("#hRec", () => { gearSeg = "palas"; openRecPala(); }); on("#hShop", () => { gearSeg = "tienda"; tdCat = "pala"; setView("material"); });
-  on("#hOfAll", () => { gearSeg = "tienda"; tdCat = "pala"; tdOrden = "oferta"; setView("material"); });
+  on("#hOfAll", () => { gearSeg = "tienda"; tdCat = "pala"; tdQ = ""; tdGen = ""; tdOrden = "oferta"; setView("material"); window.scrollTo(0, 0); });
 }
