@@ -11,7 +11,11 @@ function ago(t) { const s = (Date.now() - t) / 1000; if (s < 60) return "ahora";
 // ---------- Arranque ----------
 let socialUnsubs = [];
 async function startSocial() {
-  if (store.kind !== "firebase") return;
+  if (store.kind !== "firebase" || window.__socStarting) return;
+  window.__socStarting = Date.now();
+  try { await startSocial2(); } finally { window.__socStarting = 0; }
+}
+async function startSocial2() {
   socialUnsubs.forEach(f => f()); socialUnsubs = [];
   const conTiempo = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
   for (let intento = 0; intento < 3; intento++) {
@@ -71,7 +75,13 @@ async function unpublishAct(a) { if (socialOn() && a.postId) { try { await FS().
 // ---------- Vista Comunidad ----------
 function vComunidad() {
   if (store.kind !== "firebase") return `<div class="card empty">${svg("users")}<p>La comunidad necesita conexión.</p></div>`;
-  if (!social.loaded) { clearTimeout(window.__comTo); window.__comTo = setTimeout(() => { if (view === "comunidad" && !sheetOpen) render(); }, 1500); return `<div class="empty">Cargando…</div>`; }
+  if (!social.loaded) {
+    window.__comT0 = window.__comT0 || Date.now(); const esp = Date.now() - window.__comT0;
+    if (esp > 3000 && !window.__socStarting && typeof me !== "undefined" && me && me.uid) startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); });
+    clearTimeout(window.__comTo); window.__comTo = setTimeout(() => { if (view === "comunidad" && !sheetOpen) render(); }, 1500);
+    return esp > 12000 ? `<div class="card empty"><p>La comunidad está tardando en cargar. Comprueba tu conexión.</p><button class="btn" id="comRetry" style="margin-top:12px">Reintentar</button></div>` : `<div class="empty">Cargando…</div>`;
+  }
+  window.__comT0 = 0;
   if (!social.me) return `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Comunidad Pádel+</div><h2 style="font-size:26px;letter-spacing:-.5px;margin:8px 0 10px">Juega con tu gente</h2>
       <p class="small" style="color:var(--mute);line-height:1.55">Sigue a tus amigos, mira sus partidos, dales <b>kudos</b>, comenta y habla por mensaje. Pregunta por palas y zapatillas a gente que juega como tú.</p>
@@ -164,6 +174,7 @@ async function loadFeed(force = false) {
   if (view === "comunidad" && !sheetOpen) render();
 }
 WIRE.comunidad = () => {
+  const rt = $("#comRetry"); if (rt) { rt.onclick = () => { window.__comT0 = Date.now() - 3500; window.__socStarting = 0; render(); }; return; }
   const st = $("#cpStart"); if (st) { st.onclick = () => openPerfilPublico(); return; }
   if (!social.me) return;
   loadFeed();
