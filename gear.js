@@ -81,7 +81,8 @@ const durTxt = v => v < 1.7 ? "Blando" : v < 2.4 ? "Medio" : "Duro";
 // ---------- Recomendador de palas ----------
 function myPadelBand() { const r = (state.perfil.padel || {}).nivel0 ? computeNivel() : null; if (!r) return 2; return r.nivel < 2.6 ? 1 : r.nivel < 4.1 ? 2 : 3; }
 function recPala(q) {
-  return PALAS.map(p => {
+  const PL = typeof realOf === "function" && typeof CAT !== "undefined" && CAT && PALAS.some(p => realOf(p)) ? PALAS.filter(p => realOf(p)) : PALAS;
+  return PL.map(p => {
     let sc = 0; const why = [];
     const dn = Math.abs(p.nivel - q.nivel); sc += 2.2 - dn * 2; if (dn < .6) why.push(`para nivel ${NIVL[q.nivel].toLowerCase()}`);
     const dp = Math.abs(p.perfil - q.estilo); sc += 2 - dp * 1.4; if (dp < .5) why.push(perfilTxt(p.perfil).toLowerCase() === "polivalente" ? "polivalente" : `de ${perfilTxt(p.perfil).toLowerCase()}`);
@@ -118,7 +119,8 @@ function openRecPala() {
 
 // ---------- Recomendador de zapatillas de pádel ----------
 function recZP(q) {
-  return ZPADEL.map(z => {
+  const ZL = typeof realOf === "function" && typeof CAT !== "undefined" && CAT && ZPADEL.some(z => realOf(z)) ? ZPADEL.filter(z => realOf(z)) : ZPADEL;
+  return ZL.map(z => {
     let sc = 0; const why = [];
     const sue = { arena: { espiga: 2, "híbrida": 1.2, omni: .2 }, moqueta: { omni: 2, "híbrida": 1.4, espiga: .6 }, mixto: { "híbrida": 2, espiga: 1.4, omni: 1 } }[q.pista][z.suela];
     sc += sue * 1.4; if (sue >= 2) why.push(`suela ${z.suela}: ideal para tu pista`);
@@ -267,7 +269,8 @@ function materialView() {
   const isP = gearSeg === "palas"; const all = isP ? PALAS : ZPADEL;
   const cats = isP ? [["todas", "Todas"], ["1", "Control"], ["2", "Polivalente"], ["3", "Potencia"]] : [["todas", "Todas"], ["espiga", "Espiga"], ["omni", "Omni"], ["híbrida", "Híbrida"]];
   const list0 = all.filter(g => (gearFilter === "todas" || (isP ? String(Math.round(g.perfil)) === gearFilter : g.suela === gearFilter)) && (gearBrand === "todas" || g.marca === gearBrand));
-  const list = typeof realOf === "function" ? [...list0].sort((a, b) => (realOf(b) ? 1 : 0) - (realOf(a) ? 1 : 0)) : list0;
+  const enTienda = typeof realOf === "function" && typeof CAT !== "undefined" && CAT ? list0.filter(g => realOf(g)) : [];
+  const list = enTienda.length ? enTienda : list0;
   return seg + `<div class="hero">
       <div class="lbl" style="color:var(--mute)">Recomendador</div><h2 style="font-size:24px;letter-spacing:-.5px;margin:6px 0 8px">${isP ? "¿Cuál es mi pala ideal?" : "¿Cuáles son mis zapatillas ideales?"}</h2>
       <p class="small" style="color:var(--mute);line-height:1.5">${isP ? `Tu nivel, cómo juegas, tu lado y si te molesta el codo. Te digo las mejores de ${PALAS.length} palas y te explico por qué.` : `Tu pista, cuánto juegas, tus rodillas y tobillos. Te recomiendo entre ${ZPADEL.length} modelos y te explico el tipo de suela.`}</p>

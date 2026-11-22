@@ -55,7 +55,8 @@ function rpScore(q) {
   const fuerte = ex.has("fuerte");
   const horas = ex.has("horas") || tx.horas;
   const precio = tx.precio || q.precio;
-  const L = PALAS.map(p => {
+  const base = typeof CAT !== "undefined" && CAT && typeof realOf === "function" && PALAS.some(p => realOf(p)) ? PALAS.filter(p => realOf(p)) : PALAS;
+  const L = base.map(p => {
     let sc = 0; const why = [];
     const dn = Math.abs(p.nivel - nivel); sc += 2.4 - dn * 2.1; if (dn < .6) why.push(`Hecha para nivel ${NIVL[nivel].toLowerCase()}`);
     const dp = Math.abs(p.perfil - estilo); sc += 2.2 - dp * 1.5;
@@ -162,6 +163,7 @@ function openRecPala(stepIx) {
 }
 
 function rpResultados() {
+  if (typeof CAT !== "undefined" && !CAT && typeof loadCatalogo === "function" && !window.__rpEsp) { window.__rpEsp = 1; openSheet("Tus palas ideales", `<p class="mute" style="text-align:center;margin:30px 0">Buscando tus palas…</p>`); loadCatalogo().then(() => { window.__rpEsp = 0; rpResultados(); }); return; }
   rpSave(rpQ);
   const R = rpScore(rpQ); const [h, ...rest] = R.list; if (!h) return;
   const resumen = [NIVL[R.nivel], ["", "Control", "Polivalente", "Ataque"][rpQ.estilo], rpQ.lado === "drive" ? "Drive" : rpQ.lado === "reves" ? "Revés" : null,
