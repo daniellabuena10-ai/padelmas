@@ -1,5 +1,5 @@
 // ===== Pádel+ · Ligas: grupos con ranking propio, invitación por enlace y muro =====
-// Firestore: ligas/{codigo} {nombre, sede, creador, miembros[], t} · ligas/{codigo}/msgs/{id} {uid, nombre, color, texto, t}
+// Firestore (sin reglas nuevas): perfiles/{uid}.ligas[] + ligasInfo{codigo:{nombre,sede,creador,t}} · muro en posts {tipo:'liga', liga, uid, texto, t} (sin 'fecha', así no sale en el muro general)
 
 const LIGA_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 let misLigas = null, ligasCargando = false;
@@ -28,22 +28,36 @@ setInterval(() => {
 }, 1200);
 
 // ---------- Datos ----------
+// Cada jugador guarda en su perfil público las ligas a las que pertenece (ligas[]) y sus datos (ligasInfo).
+const PERF = () => FS().collection("perfiles");
 async function cargarMisLigas(force) {
   if (!socialOn()) { misLigas = []; return; }
   if (ligasCargando || (misLigas && !force)) return;
   ligasCargando = true;
-  try { const q = await FS().collection("ligas").where("miembros", "array-contains", me.uid).get(); misLigas = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.t || 0) - (a.t || 0)); }
-  catch (e) { console.warn("ligas", e); misLigas = misLigas || []; }
+  try {
+    const d = await PERF().doc(me.uid).get(); const p = d.exists ? d.data() : {};
+    if (social.me) { social.me.ligas = p.ligas || []; social.me.ligasInfo = p.ligasInfo || {}; }
+    const info = p.ligasInfo || {};
+    misLigas = await Promise.all((p.ligas || []).map(async id => { let n = 0; try { n = (await PERF().where("ligas", "array-contains", id).limit(300).get()).size; } catch {} return { id, ...(info[id] || { nombre: "Liga " + id }), n }; }));
+    misLigas.sort((a, b) => (b.t || 0) - (a.t || 0));
+  } catch (e) { console.warn("ligas", e); misLigas = misLigas || []; }
   ligasCargando = false;
+}
+async function leerLiga(id) {
+  const q = await PERF().where("ligas", "array-contains", id).limit(300).get();
+  const docs = q.docs.map(d => d.data()); if (!docs.length) return null;
+  const info = (docs.find(x => x.ligasInfo && x.ligasInfo[id] && x.ligasInfo[id].creador === x.uid) || docs.find(x => x.ligasInfo && x.ligasInfo[id]) || {}).ligasInfo || {};
+  return { id, ...(info[id] || { nombre: "Liga " + id }), miembros: docs.map(x => x.uid), perfiles: docs };
+}
+async function entrarLiga(id, info) {
+  await PERF().doc(me.uid).set({ ligas: FV().arrayUnion(id), ligasInfo: { [id]: { nombre: info.nombre, sede: info.sede || "", creador: info.creador, t: info.t || Date.now() } } }, { merge: true });
 }
 function yoRank() {
   const r = typeof computeNivel === "function" ? computeNivel() : null; const st = typeof padelStats === "function" ? padelStats() : { n: 0, w: 0 };
   return { uid: me.uid, nombre: (social.me && social.me.nombre) || "Tú", color: social.me && social.me.color, nivelPadel: r ? r.nivel : (social.me && social.me.nivelPadel) || null, nPadel: st.n, wPadel: st.w, nivel7: social.me && social.me.nivel7, yo: true };
 }
 async function clasificacion(L) {
-  const otros = (L.miembros || []).filter(u => u !== me.uid);
-  if (otros.length) await fetchProfiles(otros);
-  const rows = [(L.miembros || []).includes(me.uid) ? yoRank() : null, ...otros.map(u => profCache[u] ? { uid: u, ...profCache[u] } : null)].filter(Boolean);
+  const rows = (L.perfiles || []).map(p => p.uid === me.uid ? yoRank() : { ...p });
   return rows.sort((a, b) => (b.nivelPadel || 0) - (a.nivelPadel || 0) || (b.nPadel || 0) - (a.nPadel || 0));
 }
 
@@ -75,11 +89,12 @@ function openCrearLiga() {
     $("#lgOk", s).onclick = async () => {
       const nombre = $("#lgN", s).value.trim(), sede = $("#lgS", s).value.trim(); if (nombre.length < 3) { toast("Ponle un nombre"); return; }
       $("#lgOk", s).disabled = true;
-      for (let i = 0; i < 4; i++) {
-        const id = ligaCod();
-        try { await FS().collection("ligas").doc(id).set({ nombre: nombre.slice(0, 40), sede: sede.slice(0, 40), creador: me.uid, miembros: [me.uid], t: Date.now() }); misLigas = null; await cargarMisLigas(true); openLiga(id, true); return; }
-        catch (e) { if (i === 3) { console.warn(e); toast("No se ha podido crear. Inténtalo en un momento."); $("#lgOk", s).disabled = false; } }
-      }
+      try {
+        let id = ligaCod();
+        for (let i = 0; i < 3; i++) { const ex = await PERF().where("ligas", "array-contains", id).limit(1).get(); if (ex.empty) break; id = ligaCod(); }
+        await entrarLiga(id, { nombre: nombre.slice(0, 40), sede: sede.slice(0, 40), creador: me.uid, t: Date.now() });
+        misLigas = null; await cargarMisLigas(true); openLiga(id, true);
+      } catch (e) { console.warn(e); toast("No se ha podido crear. Inténtalo en un momento."); $("#lgOk", s).disabled = false; }
     };
   });
 }
@@ -89,18 +104,18 @@ async function openUnirmeLiga(code) {
       s => { $("#lgCk", s).onclick = () => { const c = $("#lgC", s).value.trim().toUpperCase(); if (c.length === 6) openUnirmeLiga(c); else toast("El código tiene 6 caracteres"); }; });
     return;
   }
-  let L = null; try { const d = await FS().collection("ligas").doc(code).get(); if (d.exists) L = { id: d.id, ...d.data() }; } catch {}
+  let L = null; try { L = await leerLiga(code); } catch (e) { console.warn(e); }
   try { localStorage.removeItem("pm-liga-inv"); } catch {}
   if (!L) { openSheet("Liga no encontrada", `<p class="mute">No existe ninguna liga con el código <b>${esc(code)}</b>. Pide a quien te invitó que te pase el enlace de nuevo.</p>`); return; }
   if ((L.miembros || []).includes(me.uid)) { openLiga(L.id); return; }
-  const rows = await clasificacion({ ...L, miembros: L.miembros });
+  const rows = await clasificacion(L);
   openSheet("Te han invitado", `<div class="ligahero" style="margin-top:0"><div class="lgem">🏆</div><h2>${esc(L.nombre)}</h2><p>${(L.miembros || []).length} jugador${(L.miembros || []).length === 1 ? "" : "es"}${L.sede ? " · " + esc(L.sede) : ""}</p></div>
     ${rows.length ? `<div class="sec">Así va la clasificación</div>${podioHTML(rows)}` : ""}
     <button class="btn block" id="lgIn" style="background:var(--ink);color:#fff;border:0;margin-top:12px">Unirme a la liga</button>`, s => {
     $("#lgIn", s).onclick = async () => {
-      try { await FS().collection("ligas").doc(L.id).update({ miembros: FV().arrayUnion(me.uid) }); } catch (e) { console.warn(e); toast("No se ha podido entrar. Inténtalo de nuevo."); return; }
+      try { await entrarLiga(L.id, L); } catch (e) { console.warn(e); toast("No se ha podido entrar. Inténtalo de nuevo."); return; }
       misLigas = null; await cargarMisLigas(true); toast("¡Ya estás dentro! 🎾"); openLiga(L.id);
-      if (!(state.perfil.padel || {}).nivel0 && typeof openNivelTest === "function") setTimeout(() => toast("Calcula tu nivel para aparecer en la clasificación"), 1500);
+      if (!(state.perfil.padel || {}).nivel0 && !(social.me && social.me.nivelPadel) && typeof openNivelTest === "function") setTimeout(() => toast("Calcula tu nivel para aparecer en la clasificación"), 1500);
     };
   });
 }
@@ -112,8 +127,7 @@ function podioHTML(rows) {
   return `<div class="podio">${ord.map(p => { const i = rows.indexOf(p); return `<div class="pod p${i + 1}" ${p.yo ? "" : `data-user="${p.uid}"`}>${i === 0 ? `<div class="crown">👑</div>` : ""}${avatar(p, i === 0 ? 56 : 46)}<div class="pn">${esc(p.yo ? "Tú" : (p.nombre || "").split(" ")[0])}</div><div class="pv num">${p.nivelPadel ? fmtNivel(p.nivelPadel) : "–"}</div><div class="pb" style="height:${alt[i]}px"><span>${i + 1}</span></div></div>`; }).join("")}</div>`;
 }
 async function openLiga(id, recienCreada) {
-  let L = (misLigas || []).find(x => x.id === id);
-  try { const d = await FS().collection("ligas").doc(id).get(); if (d.exists) L = { id, ...d.data() }; } catch {}
+  let L = null; try { L = await leerLiga(id); } catch (e) { console.warn(e); }
   if (!L) { toast("No se ha encontrado la liga"); return; }
   const rows = await clasificacion(L); const pos = rows.findIndex(r => r.yo) + 1;
   const invTxt = `🏆 Únete a mi liga de pádel "${L.nombre}" en Pádel+ y a ver quién va primero 😏\n\n👉 ${ligaLink(L.id)}\n\n(Código: ${L.id})`;
@@ -135,20 +149,20 @@ async function openLiga(id, recienCreada) {
     $("#lgInv", s).onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(invTxt)}`, "_blank");
     $("#lgCopy", s).onclick = async () => { try { if (navigator.share) await navigator.share({ text: invTxt }); else { await navigator.clipboard.writeText(invTxt); toast("Enlace copiado"); } } catch {} };
     $("#lgAdd", s).onclick = () => { closeSheet(); if ((state.perfil.padel || {}).nivel0) openPadelMatch(); else openNivelTest(); };
-    const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await FS().collection("ligas").doc(id).update({ miembros: FV().arrayRemove(me.uid) }); } catch {} misLigas = null; closeSheet(); });
+    const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} misLigas = null; closeSheet(); });
     const muro = $("#lgMuro", s);
     const pinta = async () => {
       try {
-        const q = await FS().collection("ligas").doc(id).collection("msgs").orderBy("t", "desc").limit(40).get();
-        const M = q.docs.map(d => ({ id: d.id, ...d.data() }));
-        muro.innerHTML = M.length ? M.map(m => `<div class="lgm">${avatar({ nombre: m.nombre, color: m.color }, 32)}<div style="flex:1;min-width:0"><div class="tiny"><b>${esc(m.uid === me.uid ? "Tú" : m.nombre || "Jugador")}</b> <span class="mute">${ago(m.t)}</span></div><div style="line-height:1.4;white-space:pre-wrap">${esc(m.texto)}</div></div>${m.uid === me.uid || L.creador === me.uid ? `<button class="link tiny" data-dm="${m.id}">Borrar</button>` : ""}</div>`).join("") : `<p class="small mute" style="text-align:center;margin:12px 0">Todavía no hay mensajes. ¡Rompe el hielo! 🎾</p>`;
-        $$("[data-dm]", muro).forEach(b => b.onclick = async () => { try { await FS().collection("ligas").doc(id).collection("msgs").doc(b.dataset.dm).delete(); } catch {} pinta(); });
+        const q = await FS().collection("posts").where("liga", "==", id).limit(80).get();
+        const M = q.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => m.tipo === "liga").sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 40);
+        muro.innerHTML = M.length ? M.map(m => `<div class="lgm">${avatar({ nombre: m.nombre, color: m.color }, 32)}<div style="flex:1;min-width:0"><div class="tiny"><b>${esc(m.uid === me.uid ? "Tú" : m.nombre || "Jugador")}</b> <span class="mute">${ago(m.t)}</span></div><div style="line-height:1.4;white-space:pre-wrap">${esc(m.texto)}</div></div>${m.uid === me.uid ? `<button class="link tiny" data-dm="${m.id}">Borrar</button>` : ""}</div>`).join("") : `<p class="small mute" style="text-align:center;margin:12px 0">Todavía no hay mensajes. ¡Rompe el hielo! 🎾</p>`;
+        $$("[data-dm]", muro).forEach(b => b.onclick = async () => { try { await FS().collection("posts").doc(b.dataset.dm).delete(); } catch {} pinta(); });
       } catch (e) { muro.innerHTML = `<p class="small mute" style="text-align:center">No se ha podido cargar el muro.</p>`; }
     };
     pinta();
     $("#lgSend", s).onclick = async () => {
       const ta = $("#lgMsg", s), tx = ta.value.trim(); if (!tx) return;
-      try { await FS().collection("ligas").doc(id).collection("msgs").add({ uid: me.uid, nombre: (social.me && social.me.nombre) || "Jugador", color: (social.me && social.me.color) || null, texto: tx.slice(0, 500), t: Date.now() }); ta.value = ""; pinta(); }
+      try { const ref = FS().collection("posts").doc(); await ref.set({ id: ref.id, uid: me.uid, tipo: "liga", liga: id, nombre: (social.me && social.me.nombre) || "Jugador", color: (social.me && social.me.color) || null, texto: tx.slice(0, 500), t: Date.now() }); ta.value = ""; pinta(); }
       catch (e) { toast("No se ha podido enviar"); }
     };
   });

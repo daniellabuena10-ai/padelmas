@@ -144,7 +144,7 @@ async function loadFeed(force = false) {
   try {
     const ids = [me.uid, ...social.following];
     const res = await Promise.all(ids.slice(0, 60).map(u => FS().collection("posts").where("uid", "==", u).limit(15).get().catch(() => ({ docs: [] }))));
-    let all = res.flatMap(s => s.docs.map(d => d.data()));
+    let all = res.flatMap(s => s.docs.map(d => d.data())).filter(p => p.tipo !== "liga" && p.fecha);
     // Limpieza: publicaciones mías de partidos/entrenos que ya no existen (p. ej. partidos que no llegaron a guardarse)
     const ghost = new Set();
     if (loaded && state.act) all.filter(p => p.uid === me.uid && p.act && !state.act[p.act]).forEach(p => { ghost.add(p.id); FS().collection("posts").doc(p.id).delete().catch(() => {}); });
@@ -239,7 +239,7 @@ function openPerfilPublico() {
         if (!social.me) { const h = await FS().collection("usuarios").doc(usuario).get().catch(() => null); if (h && h.exists) { $("#ppE", s).textContent = "Ese usuario ya existe. Prueba otro."; b.disabled = false; return; }
           await FS().collection("usuarios").doc(usuario).set({ uid: me.uid }); }
         const data = { uid: me.uid, nombre, nombreLower: nombre.toLowerCase(), usuario, ciudad: $("#ppC", s).value.trim(), bio: $("#ppB", s).value.trim(), color, ocultarInicio: $("#ppZ", s).checked, creado: (social.me && social.me.creado) || Date.now() };
-        await FS().collection("perfiles").doc(me.uid).set(data); const first = !social.me; social.me = data;
+        await FS().collection("perfiles").doc(me.uid).set(data, { merge: true }); const first = !social.me; social.me = { ...(social.me || {}), ...data };
         closeSheet(); toast(first ? "¡Bienvenido a la comunidad! 🎉" : "Perfil guardado");
         if (first) { for (const a of actList().filter(a => Date.now() - Date.parse(a.fecha) < 10 * 864e5)) await publishAct(a, false); social.lastLoad = 0; loadFeed(true); }
       } catch (e) { console.warn(e); $("#ppE", s).textContent = "No se pudo guardar. Revisa tu conexión."; b.disabled = false; }
@@ -261,7 +261,7 @@ async function openUser(uid) {
   try {
     const db = FS(); const [ps, fo, fi, po] = await Promise.all([db.collection("perfiles").doc(uid).get(), db.collection("follows").where("a", "==", uid).get(), db.collection("follows").where("de", "==", uid).get(), db.collection("posts").where("uid", "==", uid).limit(30).get()]);
     if (!ps.exists) { $("#sheet .empty").textContent = "Este perfil ya no existe."; return; }
-    const p = ps.data(); userPosts = po.docs.map(d => d.data()).filter(x => x.tipo !== "historia").sort((a, b) => b.fecha.localeCompare(a.fecha)); const mine = uid === me.uid, sigo = social.following.has(uid);
+    const p = ps.data(); userPosts = po.docs.map(d => d.data()).filter(x => x.tipo !== "historia" && x.tipo !== "liga" && x.fecha).sort((a, b) => b.fecha.localeCompare(a.fecha)); const mine = uid === me.uid, sigo = social.following.has(uid);
     const y = new Date().getFullYear(); const ya = userPosts.filter(x => new Date(x.fecha).getFullYear() === y);
     const html = `<div style="display:flex;align-items:center;gap:14px">${avatar(p, 68)}<div style="min-width:0"><div style="font-weight:800;font-size:20px">${esc(p.nombre)}</div><div class="small mute">@${esc(p.usuario)}${p.ciudad ? ` · ${esc(p.ciudad)}` : ""}</div></div></div>
       ${p.bio ? `<p style="margin-top:12px;line-height:1.45">${esc(p.bio)}</p>` : ""}
