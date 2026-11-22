@@ -54,10 +54,13 @@ h2{font-size:clamp(24px,4.5vw,32px);letter-spacing:-1px;line-height:1.1;font-wei
 .off{position:absolute;top:8px;left:8px;background:var(--red);color:#fff;font-weight:800;font-size:13px;padding:3px 9px;border-radius:99px}
 .p .b{padding:2px 11px 12px;display:flex;flex-direction:column;flex:1}
 .brand{font-size:12.5px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.3px}
-.name{font-weight:800;font-size:15px;line-height:1.25;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.name{font-weight:800;font-size:15px;line-height:1.25;margin-top:2px;min-height:2.5em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
 .chip{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--soft);color:var(--ink)}
 .chip.l{background:rgba(132,204,22,.16);color:var(--lime-t)}
+.spec{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin-top:10px;font-size:12.5px;align-items:center}
+.spec dt{color:var(--mute);font-weight:600}.spec dd{margin:0;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spec dd.l{color:var(--lime-t)}
 .why{font-size:13px;color:var(--mute);margin-top:8px;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .price{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:7px;margin-top:12px;white-space:nowrap}
 .price b{font-size:19px;font-weight:900;letter-spacing:-.5px}
@@ -176,16 +179,17 @@ const real = g => CAT && CAT.match && BY[CAT.match[g.id]] || null;
 function prod(p, { marca, nombre, chips = "", why = "" } = {}) {
   const d = dto(p);
   return `<div class="p"><div class="img"><img src="${esc(foto(p.f, 500))}" alt="${esc(nombre || p.n)}" loading="lazy" referrerpolicy="no-referrer">${d >= 5 ? `<span class="off">-${d}%</span>` : ""}</div>
-  <div class="b"><div class="brand">${esc(marca || p.m || "")}</div><div class="name">${esc(nombre || (() => { let s = p.n.replace(/\s*\((pala|zapatillas?)\)\s*$/i, ""); if (p.m && norm(s).startsWith(norm(p.m) + " ")) s = s.slice(p.m.length + 1); return s; })())}</div>${chips ? `<div class="chips">${chips}</div>` : ""}${why ? `<p class="why">${esc(why)}</p>` : `<div style="flex:1"></div>`}
+  <div class="b"><div class="brand">${esc(marca || p.m || "")}</div><div class="name">${esc(nombre || (() => { let s = p.n.replace(/\s*\((pala|zapatillas?)\)\s*$/i, ""); if (p.m && norm(s).startsWith(norm(p.m) + " ")) s = s.slice(p.m.length + 1); return s; })())}</div>${chips ? `<dl class="spec">${chips}</dl>` : ""}${why ? `<p class="why">${esc(why)}</p>` : `<div style="flex:1"></div>`}
   <div class="price"><b>${eur(p.p)}</b>${p.o && p.o > p.p ? `<s>${eur(p.o)}</s>` : ""}</div>
   <a class="btn" href="${esc(p.u)}" target="_blank" rel="noopener sponsored">Comprar</a></div></div>`;
 }
-const chip = (t, l) => `<span class="chip${l ? " l" : ""}">${esc(t)}</span>`;
+const cap = s => String(s || "").replace(/^./, c => c.toUpperCase());
+const chip = (k, v, l) => `<dt>${esc(k)}</dt><dd${l ? ' class="l"' : ""}>${esc(cap(v))}</dd>`;
 const bandOf = p => { const r = real(p); return p.nivel <= 2 && r && r.p <= 130 ? 1 : p.nivel < 2.9 ? 2 : 3; };
 let nivel = 1;
 function drawPalas() {
   const l = PALAS.filter(p => bandOf(p) === nivel).map(p => [p, real(p)]).filter(x => x[1]).sort((a, b) => a[0].perfil - b[0].perfil);
-  document.getElementById("palas-list").innerHTML = l.length ? l.map(([g, r]) => prod(r, { marca: g.marca, nombre: g.modelo, chips: chip(perfilTxt(g.perfil), 1) + chip(g.forma) + chip("tacto " + durTxt(g.dureza).toLowerCase()), why: g.desc })).join("") : `<p class="load">Ahora mismo no hay palas de este nivel en la tienda. Mira las ofertas de abajo.</p>`;
+  document.getElementById("palas-list").innerHTML = l.length ? l.map(([g, r]) => prod(r, { marca: g.marca, nombre: g.modelo, chips: chip("Juego", perfilTxt(g.perfil), 1) + chip("Forma", g.forma) + chip("Balance", blTxt(g.balance)) + chip("Tacto", durTxt(g.dureza)) + chip("Peso", "~" + g.peso + " g"), why: g.desc })).join("") : `<p class="load">Ahora mismo no hay palas de este nivel en la tienda. Mira las ofertas de abajo.</p>`;
 }
 document.querySelectorAll("#tabsP button").forEach(b => b.onclick = () => { nivel = +b.dataset.n; document.querySelectorAll("#tabsP button").forEach(x => x.classList.toggle("on", x === b)); drawPalas(); });
 document.getElementById("acc-list").innerHTML = ACCES.map(a => `<div><span class="e">${a.e}</span><span><b>${esc(a.t)}</b><p>${esc(a.r)}</p></span></div>`).join("");
@@ -195,7 +199,7 @@ fetch("data/catalogo.json").then(r => r.json()).then(d => {
   const of = d.p.filter(p => p.c === "pala" && !p.x && dto(p) >= 15 && !/\bjr\b|junior|nino|nina|kids/.test(norm(p.n))).sort((a, b) => dto(b) - dto(a)).slice(0, 8);
   document.getElementById("ofertas-list").innerHTML = of.map(p => prod(p)).join("");
   const zs = ZPADEL.map(z => [z, real(z)]).filter(x => x[1]);
-  document.getElementById("zp-list").innerHTML = zs.map(([z, r]) => prod(r, { marca: z.marca, nombre: z.modelo, chips: chip("suela " + z.suela, 1) + chip("~" + z.peso + " g") + (z.horma !== "normal" ? chip("horma " + z.horma) : ""), why: z.desc })).join("");
+  document.getElementById("zp-list").innerHTML = zs.map(([z, r]) => prod(r, { marca: z.marca, nombre: z.modelo, chips: chip("Suela", z.suela, 1) + chip("Peso", "~" + z.peso + " g") + chip("Horma", z.horma), why: z.desc })).join("");
 }).catch(() => { ["palas-list", "ofertas-list", "zp-list"].forEach(id => document.getElementById(id).innerHTML = `<p class="load">No se ha podido cargar. <a href="./">Ábrelo en la app</a>.</p>`); });
 </script>
 </body>
