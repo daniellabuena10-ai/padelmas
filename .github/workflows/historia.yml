@@ -1,0 +1,29 @@
+name: Historia de Instagram
+on:
+  workflow_dispatch:
+    inputs:
+      tipo: { description: "oferta | ofertas3 | recomendador | liga | qr", required: true, default: "oferta" }
+      n: { description: "Puesto de la oferta (solo oferta)", required: false, default: "1" }
+      salida: { description: "Archivo, p. ej. ig/story-20261124.jpg", required: true }
+      tema: { description: "noche | lima | claro (vacío = automático)", required: false, default: "" }
+permissions:
+  contents: write
+concurrency: datos
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Preparar
+        run: pip install playwright "qrcode[pil]" && python -m playwright install --with-deps chromium
+      - name: Generar historia (con fotos reales)
+        run: python scripts/ig_story.py "${{ inputs.tipo }}" "${{ inputs.salida }}" "${{ inputs.n }}" "${{ inputs.tema }}"
+      - name: Guardar
+        run: |
+          git config user.name "padelmas-bot"
+          git config user.email "holapadelmas@gmail.com"
+          git add "${{ inputs.salida }}"
+          git commit -q -m "Instagram: historia ${{ inputs.tipo }}"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
