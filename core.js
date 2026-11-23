@@ -187,7 +187,7 @@ function initNav() {
   $("#avBtn").onclick = openPerfil; $("#chatBtn").onclick = openChats; $("#bellBtn").onclick = openAvisos;
   $("#sheetBg").onclick = closeSheet;
 }
-function setView(v) { if (TU_SUB[v] || v === "tu") v = "tablon"; view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); window.scrollTo(0, 0); render(); }
+function setView(v) { if (TU_SUB[v] || v === "tu") v = "tablon"; view = v; $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); window.scrollTo(0, 0); $("#view").__v = null; render(); }
 function render() {
   if (!me || !loaded) return;
   const name = (me.name || state.perfil.nombre || me.email || "R").trim();
@@ -196,7 +196,19 @@ function render() {
   const V = { inicio: vInicio, padel: vPadel, comunidad: vComunidad, tablon: vTablon, material: () => materialView() }[view];
   $("#title").textContent = TABS[view][1];
   document.body.classList.toggle("shopw", view === "material" && typeof gearSeg !== "undefined" && gearSeg === "tienda");
-  $("#view").innerHTML = `<div class="fade">${V()}</div>`;
+  const box = $("#view"), html = V(), cur = box.firstElementChild;
+  if (box.__v === view && cur && cur.__kids) {
+    // Mismo apartado: solo cambiamos los trozos que han cambiado (sin parpadeo ni recargar fotos)
+    if (cur.__h === html) return;
+    const tmp = document.createElement("div"); tmp.innerHTML = html;
+    const nk = [...tmp.children], ns = nk.map(k => k.outerHTML), ok = [...cur.children];
+    if (ok.length === nk.length) nk.forEach((k, i) => { if (cur.__kids[i] !== ns[i]) cur.replaceChild(k, ok[i]); });
+    else cur.replaceChildren(...nk);
+    cur.__kids = ns; cur.__h = html;
+  } else {
+    box.innerHTML = `<div class="fade">${html}</div>`; box.__v = view;
+    const f = box.firstElementChild; f.__h = html; f.__kids = [...f.children].map(k => k.outerHTML);
+  }
   (view === "material" ? () => wireMaterial($("#view")) : WIRE[view] || (() => {}))();
 }
 const WIRE = {};
