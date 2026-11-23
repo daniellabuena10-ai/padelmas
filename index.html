@@ -387,12 +387,22 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 .hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin:0 -2px 14px;scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
 
 /* ===== Portada oscura (como el folleto) ===== */
+.lnivel{background:linear-gradient(160deg,#1e293b,#162033);border:1px solid #334155;border-radius:22px;padding:18px;margin:0 0 22px}
+.lnh{display:flex;justify-content:space-between;align-items:center}.lnh span{font-size:11.5px;font-weight:800;letter-spacing:1.2px;color:#94a3b8}.lnh em{font-style:normal;font-size:12px;font-weight:800;color:#0f172a;background:#d4ff3a;border-radius:999px;padding:4px 9px}
+.lnn{display:flex;align-items:baseline;gap:8px;margin-top:6px}.lnn b{font-family:"Barlow Condensed",Inter,sans-serif;font-size:64px;line-height:1;color:#d4ff3a}.lnn small{font-size:15px;color:#cbd5e1;font-weight:600}
+.lvl i.half{background:linear-gradient(90deg,#d4ff3a 40%,#334155 40%)}
+.lnr{margin-top:14px;background:#0f172a;border-radius:14px;padding:6px}.lnr .r{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px}.lnr .r.me{background:rgba(212,255,58,.12)}
+.lnr .p{width:16px;font-weight:800;color:#94a3b8;font-size:14px}.lnr .a{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0f172a}.lnr b{flex:1;font-size:14.5px}.lnr .up{color:#d4ff3a;font-size:12px}.lnr .v{font-family:"Barlow Condensed",Inter,sans-serif;font-weight:700;font-size:20px}
+.lnivel p{font-size:13px;color:#cbd5e1;line-height:1.45;margin-top:12px}
+.lnc{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.lnc span{font-size:12px;font-weight:700;background:#0f172a;border:1px solid #334155;border-radius:999px;padding:6px 10px}
+
 body:has(#auth:not([hidden]) #land:not([hidden])){background:#0f172a!important}
 #auth:has(#land:not([hidden])){color:#fff}
 #auth:has(#land:not([hidden])) .logo{color:#fff}
 #land h1{color:#fff}#land h1 em{color:#d4ff3a}
 #land .pitch{color:#cbd5e1;font-size:16.5px}#land .pitch b{color:#fff}
 .btn.lime{background:#d4ff3a;color:#0f172a;border:0;font-weight:800}
+.btn.lime .pal{vertical-align:-8px;margin-right:2px}
 .btn.lghost{background:transparent;color:#fff;border:1.5px solid #334155;font-weight:700}
 .lbtns{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .lnote{font-size:13px;color:#94a3b8;text-align:center;margin:10px 0 14px}
@@ -421,20 +431,27 @@ body:has(#auth:not([hidden]) #land:not([hidden])){background:#0f172a!important}
     <div class="lcol">
     <h1>Todo tu pádel,<br><em>en una sola app.</em></h1>
     <p class="pitch">Te hacemos un test de 1 minuto y te decimos <b>tu pala ideal</b>. Y la compras desde la app, con descuento. Además, <b>tu nivel, tu ranking con amigos y una comunidad</b> de jugadores como tú.</p>
-    <div class="lbtns"><button class="btn lime block big" id="goPala">🎾 Descubrir mi pala</button></div>
+    <div class="lbtns"><button class="btn lime block big" id="goPala"><svg class="pal" viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><g transform="rotate(-35 12 12)"><path d="M12 1.6c4.1 0 6.7 3 6.7 6.9 0 3.6-2.3 6.1-4.7 7.2v2.1h-4v-2.1C7.6 14.6 5.3 12.1 5.3 8.5c0-3.9 2.6-6.9 6.7-6.9z" fill="#0f172a"/><rect x="10.4" y="17.4" width="3.2" height="5.4" rx="1.6" fill="#0f172a"/><g fill="#d4ff3a"><circle cx="9.6" cy="6" r=".85"/><circle cx="12" cy="5.2" r=".85"/><circle cx="14.4" cy="6" r=".85"/><circle cx="8.6" cy="8.6" r=".85"/><circle cx="11" cy="8.2" r=".85"/><circle cx="13.4" cy="8.2" r=".85"/><circle cx="15.6" cy="8.8" r=".85"/><circle cx="10" cy="11" r=".85"/><circle cx="12.4" cy="11" r=".85"/><circle cx="14.6" cy="11.4" r=".85"/></g></g></svg>Descubre tu pala ideal</button></div>
     <p class="lnote">Sin registrarte · Desde el móvil, sin descargar nada</p>
-    <div class="lchips"><span>🏆 Ranking con amigos</span><span>👥 Comunidad</span><span>🏟️ Ligas</span><span>🔥 Ofertas</span></div>
+    
     </div>
     <div class="rcol">
+    <div class="lnivel">
+      <div class="lnh"><span>TU NIVEL DE PÁDEL</span><em>▲ 0,14 esta semana</em></div>
+      <div class="lnn"><b>3,39</b><small>/ 7 · Intermedio</small></div>
+      <div class="lvl"><i class="on"></i><i class="on"></i><i class="on"></i><i class="half"></i><i></i><i></i><i></i></div>
+      <div class="lnr">
+        <div class="r"><span class="p">1</span><span class="a" style="background:#38bdf8">M</span><b>Marta</b><span class="v">4,10</span></div>
+        <div class="r me"><span class="p">2</span><span class="a" style="background:#d4ff3a;color:#0f172a">T</span><b>Tú</b><span class="up">▲</span><span class="v">3,39</span></div>
+        <div class="r"><span class="p">3</span><span class="a" style="background:#f472b6">J</span><b>Javi</b><span class="v">3,21</span></div>
+      </div>
+      <p>Apunta tus partidos en 10 segundos: tu nivel sube o baja según contra quién ganas, y en tu liga se ve quién va primero.</p>
+      <div class="lnc"><span>👥 Comunidad</span><span>🏟️ Ligas con amigos</span><span>📈 Nivel real</span></div>
+    </div>
     <div class="lph">
       <figure><div class="fr"><img src="img/land1.jpg" alt="Tu pala ideal en la app"></div><figcaption><b>Tu pala ideal</b>Según tu nivel, tu lado y tu juego</figcaption></figure>
       <figure><div class="fr"><img src="img/land2.jpg" alt="Test de zapatillas en la app"></div><figcaption><b>Tu equipación</b>Zapatillas, ropa y accesorios</figcaption></figure>
       <figure><div class="fr"><img src="img/land3.jpg" alt="Tu nivel y tu ranking en la app"></div><figcaption><b>Tu ranking</b>Tu nivel y tu liga con amigos</figcaption></figure>
-    </div>
-    <div class="lrk">
-      <div class="lrkt"><span>🏆</span><div><b>Tu nivel y tu ranking</b><small>Apunta tus partidos, sube del 1 al 7 y crea una liga con tu grupo para ver quién va primero.</small></div></div>
-      <div class="lvl"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
-      <div class="lrkt" style="margin-top:14px;padding-top:14px;border-top:1px solid #334155"><span>👥</span><div><b>Comunidad de jugadores</b><small>Sigue a tus amigos, comparte tus partidos y mira qué opinan otros de cada pala.</small></div></div>
     </div>
     <div class="lcards">
       <button class="lc" id="goZap"><span>👟</span><div><b>Tus zapatillas</b><small>Espiga u omni, según tu pista y tu pie</small></div><i>›</i></button>
@@ -442,7 +459,6 @@ body:has(#auth:not([hidden]) #land:not([hidden])){background:#0f172a!important}
       <button class="lc" id="goRopa"><span>👕</span><div><b>Ropa de hombre y mujer</b><small>Camisetas, sudaderas, pantalones, faldas…</small></div><i>›</i></button>
       <button class="lc" id="goAcc"><span>🎒</span><div><b>Accesorios</b><small>Paleteros, overgrip, pelotas</small></div><i>›</i></button>
     </div>
-    <a class="gbanner" href="guia.html"><span class="gi">📘</span><span><small>Guía 2026</small><b>¿Qué pala de pádel me compro?</b><span class="s">Las mejores por nivel, con fotos y precio de hoy</span></span><span class="ar">→</span></a>
     </div>
     <div class="lcta">
     <button class="btn lime block big" id="goUp">Crear mi cuenta</button>
