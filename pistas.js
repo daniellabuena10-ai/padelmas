@@ -183,7 +183,7 @@ function pistasPromo() {
   const of = typeof CAT !== "undefined" && CAT ? CAT.p.filter(p => p.c === "pala" && !p.x && dto(p) >= 20 && !/\bjr\b|junior|nino|nina/.test(norm2(p.n))).sort((a, b) => dto(b) - dto(a))[0] : null;
   return `<button id="piPromo" class="card" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-bottom:12px;border-color:rgba(132,204,22,.45);background:radial-gradient(300px 150px at 100% 0%,rgba(132,204,22,.18),transparent 70%),var(--card)">
     ${of ? `<div class="tdimg" style="width:84px;height:84px;flex:0 0 84px">${fotoReal(of, 78)}<span class="dtob" style="position:absolute;top:4px;left:4px;font-size:11px">-${dto(of)}%</span></div>` : `<span style="font-size:34px">🎾</span>`}
-    <div style="flex:1;min-width:0"><div class="tiny" style="color:#a16207;font-weight:800">PÁDEL+ · TIENDA</div><div style="font-weight:800;margin-top:2px">¿Vas a jugar? Llega con buen material</div>
+    <div style="flex:1;min-width:0"><div class="tiny" style="color:#a16207;font-weight:800">PÁDEL+ · TIENDA</div><div style="font-weight:800;margin-top:2px">¿Vas a jugar? Llega bien equipado</div>
     <div class="small mute" style="margin-top:2px">${of ? `${esc(limpiaNombre(of.n, ""))} a <b style="color:#a16207">${eur(of.p)}</b>` : "Palas, zapatillas y ropa con descuento"}</div></div>${svg("chev", "chev")}</button>`;
 }
 // ---------- ficha del club ----------

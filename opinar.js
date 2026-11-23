@@ -12,7 +12,7 @@ function openOpinar(pre = null) {
   if (pre) return openOpinarForm(pre);
   const all = [...PALAS, ...ZPADEL];
   const list = q => { q = q.trim().toLowerCase(); return (q ? all.filter(g => `${g.marca} ${g.modelo}`.toLowerCase().includes(q)) : all.slice(0, 0)).slice(0, 20); };
-  openSheet("Opinar sobre material", `<p class="small mute" style="margin:-6px 0 12px">Tu opinión ayuda a otros jugadores a acertar. Busca la pala o la zapatilla:</p>
+  openSheet("Opinar sobre tu equipación", `<p class="small mute" style="margin:-6px 0 12px">Tu opinión ayuda a otros jugadores a acertar. Busca la pala o la zapatilla:</p>
     <label class="field"><input id="opQ" placeholder="Ej. Nox AT10, Bullpadel Vertex…" autocomplete="off" enterkeyhint="search"></label>
     <div id="opL"></div>
     <button class="item" id="opOtro" style="margin-top:6px"><span style="font-size:22px;width:28px;text-align:center">➕</span><div style="flex:1"><div style="font-weight:700">No está en la lista</div><div class="tiny mute">Otra pala, zapatilla, ropa o accesorio</div></div>${svg("chev", "chev")}</button>`, s => {
@@ -28,7 +28,7 @@ function openOpinar(pre = null) {
 function openOpinarForm(g) {
   const tipo = opTipo(g); let nota = 0; const crit = {}; let cat = "pala";
   const critHTML = t => OP_CRIT[t].map(([k, n]) => `<div class="field" style="margin-bottom:8px"><div class="small" style="margin-bottom:4px">${n}</div><div class="seg" data-crit="${k}">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" class="${crit[k] === v ? "on" : ""}">${v}</button>`).join("")}</div></div>`).join("");
-  openSheet(g ? `Opinar: ${esc(g.modelo)}` : "Opinar sobre material", `
+  openSheet(g ? `Opinar: ${esc(g.modelo)}` : "Opinar sobre tu equipación", `
     ${g ? `<div class="item" style="cursor:default;margin-top:-6px"><span style="width:44px;display:grid;place-items:center">${gearArt(g, 40)}</span><div><div style="font-weight:800">${esc(g.marca)} ${esc(g.modelo)}</div><div class="tiny mute">${tipo === "pala" ? "Pala" : "Zapatilla de pádel"}</div></div></div>`
       : `<div class="field">¿Qué es?<div class="seg" id="opCat">${[["pala", "Pala"], ["zapa", "Zapatillas"], ["ropa", "Ropa"], ["acces", "Accesorio"]].map(([k, n]) => `<button data-v="${k}" class="${cat === k ? "on" : ""}">${n}</button>`).join("")}</div></div>
       <div class="row"><label class="field">Marca<input id="opM" maxlength="30" placeholder="Nox"></label><label class="field">Modelo<input id="opMo" maxlength="50" placeholder="AT10 Genius"></label></div>`}
@@ -70,7 +70,7 @@ function openOpinarForm(g) {
 // Tarjeta de opinión en el muro
 function opinionCard(p) {
   const mine = p.uid === me.uid, k = (p.kudos || []).includes(me.uid), g = p.gear && p.gear.id ? gearOf(p.gear.id) : null;
-  const tipoN = { pala: "Pala", zapa: "Zapatillas", ropa: "Ropa", acces: "Accesorio" }[p.gear && p.gear.tipo] || "Material";
+  const tipoN = { pala: "Pala", zapa: "Zapatillas", ropa: "Ropa", acces: "Accesorio" }[p.gear && p.gear.tipo] || "Equipación";
   const cr = OP_CRIT[p.gear && (p.gear.tipo === "pala" || p.gear.tipo === "zapa") ? p.gear.tipo : "otro"];
   return `<div class="act post" data-post="${p.id}">
     <div class="hd"><button data-user="${p.uid}" style="display:flex;align-items:center;gap:10px;text-align:left;min-width:0">${avatar(p, 40)}<div style="min-width:0"><div class="t" style="font-size:14.5px">${esc(p.autor)}${mine ? ` <span class="tiny mute">(tú)</span>` : ""}</div><div class="tiny mute">${relDate(p.fecha)}${p.nivel ? ` · nivel ${nf(p.nivel, 1)}` : ""}</div></div></button>

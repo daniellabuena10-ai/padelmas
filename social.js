@@ -97,7 +97,7 @@ function vComunidad() {
   return `<div class="row" style="margin-bottom:12px"><label class="field" style="margin:0;flex:1"><input id="srch" placeholder="Buscar personas por @usuario o nombre" autocomplete="off" style="margin:0"></label></div>
     <div id="srchRes"></div>
     ${historiasHTML()}
-    <button class="card" id="opNew" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(132,204,22,.35);background:radial-gradient(300px 140px at 100% 0%,rgba(132,204,22,.12),transparent 70%),var(--card)"><span style="font-size:26px">✍️</span><div style="flex:1"><div style="font-weight:800">Opina sobre tu material</div><div class="small mute">Pala, zapatillas, ropa o accesorios. Ayuda a otros a acertar.</div></div>${svg("chev", "chev")}</button>
+    <button class="card" id="opNew" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border-color:rgba(132,204,22,.35);background:radial-gradient(300px 140px at 100% 0%,rgba(132,204,22,.12),transparent 70%),var(--card)"><span style="font-size:26px">✍️</span><div style="flex:1"><div style="font-weight:800">Opina sobre tu equipación</div><div class="small mute">Pala, zapatillas, ropa o accesorios. Ayuda a otros a acertar.</div></div>${svg("chev", "chev")}</button>
     <div class="tabs">${[["siguiendo", "Siguiendo"], ["descubrir", "Descubrir"], ["opiniones", "Opiniones"], ["ranking", "Ranking"]].map(([k, n]) => `<button data-st="${k}" class="${social.tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
     ${social.tab === "ranking" ? rankHTML(rank) : social.tab === "opiniones" ? `<div id="feed">${opinionesHTML()}</div>` : `${genteHTML()}<div id="feed">${feedHTML(social.tab === "siguiendo" ? social.feed : social.disc)}</div>`}`;
 }
