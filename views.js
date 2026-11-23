@@ -214,6 +214,7 @@ function openPerfil() {
       <a class="item" href="privacidad.html">${svg("shield")}Aviso legal, privacidad y cookies${svg("chev", "chev")}</a>
       <a class="item" href="mailto:holapadelmas@gmail.com?subject=P%C3%A1del%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
       <button class="item" id="pOut">${svg("logout")}Cerrar sesión${svg("chev", "chev")}</button>
+      <button class="item" id="pSalud">${svg("shield")}<span style="flex:1;text-align:left">Guardar mis molestias en la cuenta<span class="small mute" style="display:block">${saludOk() ? "Activado · toca para retirarlo" : "Desactivado · solo se usan en el test"}</span></span>${svg("chev", "chev")}</button>
       <button class="item" id="pDel" style="color:var(--neg)">${svg("trash")}Borrar mi cuenta${svg("chev", "chev")}</button>
     </div><p class="tiny mute" style="text-align:center;margin-top:8px">Pádel+ · versión 1.0</p>`, s => {
     $$("[data-m]", s).forEach(b => b.onclick = () => { savePerfil({ metaMin: +b.dataset.m }); $$("[data-m]", s).forEach(x => x.classList.toggle("on", x === b)); toast("Meta actualizada"); });
@@ -222,7 +223,7 @@ function openPerfil() {
     $("#pFis", s).onclick = () => { closeSheet(); setView("tablon"); };
     $("#pPub", s).onclick = () => { if (social.me) openUser(me.uid); else if (store.kind === "firebase") openPerfilPublico(); else toast("Necesitas conexión"); }; 
     $("#pOut", s).onclick = () => confirmSheet("¿Cerrar sesión?", "Tus datos quedan guardados en tu cuenta.", "Cerrar sesión", async () => { closeSheet(); await store.signOut(); }, false);
-    $("#pDel", s).onclick = openBorrar;
+    $("#pDel", s).onclick = openBorrar; const ps = $("#pSalud", s); if (ps) ps.onclick = () => { const on = !saludOk(); const lg = { ...((state.perfil && state.perfil.legal) || { v: LEGAL_V, t: new Date().toISOString() }), salud: on, tSalud: new Date().toISOString() }; savePerfil({ legal: lg }); if (!on) legalAlEntrar(); closeSheet(); toast(on ? "Guardaremos tus molestias para afinar tus recomendaciones" : "Hecho: hemos quitado tus molestias de la cuenta"); };
   });
 }
 function openBorrar() {

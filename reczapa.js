@@ -37,11 +37,12 @@ function zqScore(q) {
   const pista = q.pista === "i" ? "h" : q.pista;
   return CAT.p.filter(p => p.c === "zapa" && !p.x && p.f && (!q.gen || (p.g ? p.g === q.gen : !(q.gen === "h" ? /\b(w|women|woman|mujer)\b/ : /\b(m|men|man|hombre)\b/).test(norm2(p.n)))) && !/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n))).map(p => {
     let sc = 0; const why = [];
-    if (p.s === pista) { sc += 3; why.push(pista === "e" ? "Suela de espiga, ideal para tu pista" : pista === "o" ? "Suela omni: máximo agarre" : "Suela híbrida: vale para cualquier pista"); }
-    else if (p.s === "h" && pista !== "h") { sc += 1.8; why.push("Suela híbrida, también sirve en tu pista"); }
-    else if (p.s && p.s !== pista) sc -= 1.5;
-    if (q.pie === "a") { if (p.h === "a") { sc += 2.5; why.push("Horma ancha: no te aprietan"); } else if (p.h === "e") sc -= 3; }
-    if (q.pie === "e") { if (p.h === "e") { sc += 2.5; why.push("Horma estrecha: sujetan bien el pie"); } else if (p.h === "a") sc -= 3; }
+    if (p.s === pista) { sc += 4; why.push(pista === "e" ? "Suela de espiga, ideal para tu pista" : pista === "o" ? "Suela omni: máximo agarre" : "Suela híbrida: vale para cualquier pista"); }
+    else if (p.s === "h" && pista !== "h") { sc += 1; why.push("Suela híbrida, también sirve en tu pista"); }
+    else if (p.s && p.s !== pista) sc -= 2;
+    if (q.pie === "a") { if (p.h === "a") { sc += 2; why.push("Horma ancha: no te aprietan"); } else if (p.h === "e") sc -= 3; }
+    if (q.pie === "e") { if (p.h === "e") { sc += 2; why.push("Horma estrecha: sujetan bien el pie"); } else if (p.h === "a") sc -= 3; }
+    if (q.gen && (p.g === q.gen || (q.gen === "m" ? /\b(w|women|woman|mujer)\b/ : /\b(m|men|man|hombre)\b/).test(norm2(p.n)))) sc += 1.2;
     const pr = q.prio || new Set();
     if (pr.has("a") && p.a) { sc += 1.5; why.push("Muy buena amortiguación"); }
     if (pr.has("l") && (p.r || "").includes("l")) { sc += 2.2; why.push("Ligeras y rápidas"); }
@@ -77,7 +78,7 @@ function zqResultados() {
   const R = zqScore(zQ); if (!R.length) { openSheet("Tus zapatillas ideales", `<p class="mute">Ahora mismo no hay zapatillas que encajen. Prueba a cambiar el presupuesto.</p><button class="btn block" id="zqA">Cambiar respuestas</button>`, s => { $("#zqA", s).onclick = () => openRecZapa(0); }); return; }
   const [h, ...rest] = R;
   const precio = x => `<span style="white-space:nowrap"><span class="num" style="font-size:22px;color:var(--ink)">${eur(x.p.p)}</span>${x.p.o && x.p.o > x.p.p ? ` <s class="tiny mute">${eur(x.p.o)}</s>` : ""}</span>`;
-  const comprar = (x, big) => `<a class="btn buy${big ? " block" : ""}" href="${esc(x.p.u)}" target="_blank" rel="noopener sponsored" style="${big ? "" : "padding:10px 12px;font-size:14px"}">${svg("cart")}Comprar</a>`;
+  const comprar = (x, big) => `<a class="btn buy${big ? " block" : ""}" href="${esc(x.p.u)}" target="_blank" rel="noopener sponsored" style="${big ? "" : "padding:10px 12px;font-size:14px"}">${svg("cart")}${big ? "Comprar en Padel Market" : "Comprar"}</a>`;
   const res = [["e", "Espiga"], ["o", "Omni"], ["h", "Híbrida"], ["i", "Indoor"]].find(x => x[0] === zQ.pista)[1];
   const chips = [res, zQ.pie === "a" ? "Pie ancho" : zQ.pie === "e" ? "Pie estrecho" : null, zQ.gen === "m" ? "Mujer" : "Hombre", zQ.precio ? `Hasta ${zQ.precio} €` : null].filter(Boolean);
   openSheet("Tus zapatillas ideales", `<div class="chips" style="margin:-4px 0 6px">${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>

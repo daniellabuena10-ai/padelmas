@@ -164,7 +164,15 @@ function wirePistas(root) {
   }
   const pp = $("#piPromo", root); if (pp) pp.onclick = () => { gearSeg = "tienda"; if (typeof tdCat !== "undefined") { tdCat = "pala"; tdOrden = "oferta"; } setView("material"); };
 }
+// El mapa (Leaflet) solo se descarga cuando abres Pistas
+let leafletP = null;
+function cargaLeaflet() {
+  if (window.L) return Promise.resolve();
+  if (!leafletP) leafletP = new Promise((ok, ko) => { const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "lib/leaflet.css"; document.head.appendChild(c); const s = document.createElement("script"); s.src = "lib/leaflet.js"; s.onload = ok; s.onerror = () => { leafletP = null; ko(); }; document.head.appendChild(s); });
+  return leafletP;
+}
 function drawPistasMap(el) {
+  if (!window.L) { cargaLeaflet().then(() => drawPistasMap(el)).catch(() => {}); return; }
   if (pistasMap) { try { pistasMap.remove(); } catch {} pistasMap = null; }
   if (!document.body.contains(el)) return;
   const m = L.map(el, { zoomControl: false, attributionControl: false }); pistasMap = m;

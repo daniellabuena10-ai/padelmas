@@ -2,10 +2,19 @@
 <html lang="es" style="background:#f7f9fc">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pádel+</title>
 <meta name="theme-color" content="#f4f5f7">
-<meta name="description" content="Pádel+: tu nivel de pádel, tus partidos, tu pala ideal y cómo mejorar.">
+<meta name="description" content="Pádel+: haz el test y descubre tu pala y tus zapatillas ideales, con ofertas de hasta -60%. Y además tu nivel y un ranking con tus amigos.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pádel+">
+<meta property="og:title" content="Pádel+ · Tu pala y tus zapatillas ideales, en 1 minuto">
+<meta property="og:description" content="Haz el test y descubre la pala y las zapatillas que encajan con tu juego, con ofertas de hasta -60%. Y compite con tus amigos en el ranking.">
+<meta property="og:url" content="https://padelmas.club/">
+<meta property="og:image" content="https://padelmas.club/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash2/1290x2796.png">
@@ -25,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="Pádel+">
 
 <link rel="stylesheet" href="fonts.css">
-<link rel="stylesheet" href="lib/leaflet.css" media="print" onload="this.media='all'">
+
 <style>
 :root{--bg:#f4f5f7;--bg2:#eceef1;--card:#ffffff;--card2:#f1f3f6;--line:rgba(15,23,42,.10);--line2:rgba(15,23,42,.18);--vt:#4d7c0f;
 --ink:#0f172a;--mute:#5b6573;--mute2:#8b94a1;--volt:#d4ff3a;--volt-d:#a8d400;--volt-soft:rgba(132,204,22,.16);--hot:#ff6a3d;--hot-soft:rgba(255,106,61,.14);
@@ -92,7 +101,7 @@ body.tg{font-size:18px}body.tg .small{font-size:16px}body.tg .tiny{font-size:14.
 /* Layout */
 #app{max-width:560px;margin:0 auto;padding:calc(var(--safe-t) + 10px) 16px calc(110px + var(--safe-b))}
 header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 14px}
-header.top h1{font-size:26px;letter-spacing:-.6px;font-weight:800}
+header.top #title{font-size:26px;letter-spacing:-.6px;font-weight:800}
 .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--volt),#7bd600);color:#0b0f02;display:grid;place-items:center;font-weight:800}
 .card{background:var(--card);border:1px solid var(--line);box-shadow:0 1px 2px rgba(15,23,42,.04),0 4px 14px rgba(15,23,42,.04);border-radius:var(--r);padding:16px;margin-bottom:14px}
 .card h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:12px}
@@ -407,7 +416,7 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
       <div class="tiny mute" style="margin-top:6px">Apunta el partido en 10 segundos y tu nivel se mueve según contra quién ganas.</div>
     </div>
     <div class="what">
-      <div><span>⭐</span><p><b>Opiniones reales.</b> Lo que dicen de cada pala jugadores de tu mismo nivel.</p></div>
+      <div><span>⭐</span><p><b>Opiniones reales.</b> Con tu cuenta, ves lo que dicen de cada pala jugadores de tu nivel.</p></div>
       <div><span>📍</span><p><b>Pistas en tu ciudad.</b> Clubes, pistas cubiertas o al aire libre, cómo llegar y dónde reservar.</p></div>
     </div>
     </div>
@@ -427,7 +436,12 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
     <label class="field">Email<input id="aEmail" type="email" autocomplete="email" required></label>
     <label class="field">Contraseña<input id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
     <div class="err" id="aErr"></div>
-    <p class="tiny mute" id="aLegal" hidden style="margin:2px 0 12px;line-height:1.5">Al crear tu cuenta aceptas las <a class="link" href="privacidad.html#condiciones">condiciones de uso</a> y confirmas que tienes al menos 14 años. Responsable: Daniel Labuena. Usamos tus datos solo para que la app funcione y no los vendemos. Puedes ver, corregir o borrar tus datos cuando quieras. <a class="link" href="privacidad.html#privacidad">Más información</a></p>
+    <div id="aLegal" hidden>
+    <label class="check"><input type="checkbox" id="aTerms"><span>Tengo 14 años o más y acepto las <a class="link" href="privacidad.html#condiciones" target="_blank">condiciones de uso</a> y la <a class="link" href="privacidad.html#privacidad" target="_blank">política de privacidad</a>.</span></label>
+    <label class="check"><input type="checkbox" id="aHealth"><span>(Opcional) Guardar en mi cuenta mis molestias físicas (codo, hombro) para afinar mis recomendaciones. Puedo retirarlo cuando quiera.</span></label>
+    <p class="tiny mute" style="margin:0 0 12px;line-height:1.5">Responsable: Daniel Labuena. Finalidad: crear tu cuenta y que funcione la app. Base: el contrato de uso. Datos alojados en Google Firebase (EE. UU., con las garantías del Marco de Privacidad UE-EE. UU.). Puedes ver, corregir y borrar tus datos. <a class="link" href="privacidad.html#privacidad" target="_blank">Más información</a></p>
+    </div>
+    <p class="tiny mute" id="aLegalIn" style="margin:0 0 12px">Al entrar se aplica nuestra <a class="link" href="privacidad.html#privacidad" target="_blank">política de privacidad</a>.</p>
     <button class="btn pri block" id="aBtn">Entrar</button>
     <p class="small mute" style="text-align:center;margin-top:16px"><span id="aSwTxt">¿No tienes cuenta?</span> <button type="button" class="link" id="aSw">Crear cuenta</button></p>
     <p class="small mute" style="text-align:center;margin-top:10px"><button type="button" class="link" id="aReset">He olvidado mi contraseña</button></p>
@@ -435,7 +449,7 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 </section>
 
 <div id="app" hidden>
-  <header class="top"><h1 id="title">Inicio</h1><div class="hdr"><button class="hb" id="chatBtn" aria-label="Mensajes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg><b id="chatBadge" hidden></b></button><button class="hb" id="bellBtn" aria-label="Avisos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><b id="bellBadge" hidden></b></button><button class="av" id="avBtn" aria-label="Perfil">R</button></div></header>
+  <header class="top"><div id="title" role="heading" aria-level="2">Inicio</div><div class="hdr"><button class="hb" id="chatBtn" aria-label="Mensajes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg><b id="chatBadge" hidden></b></button><button class="hb" id="bellBtn" aria-label="Avisos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><b id="bellBadge" hidden></b></button><button class="av" id="avBtn" aria-label="Perfil">R</button></div></header>
   <main id="view"></main>
 </div>
 <nav class="tabbar" id="tabbar" hidden>
@@ -452,7 +466,7 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="lib/leaflet.js"></script>
+
 <script src="config.js"></script>
 <script src="icons.js"></script>
 <script src="data.js"></script>
@@ -469,7 +483,7 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 <script src="ligas.js"></script>
 <script src="reczapa.js"></script><script src="subir.js"></script><script src="stats.js"></script>
 <script>boot();</script>
-<script>["gesturestart","gesturechange"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+<script>
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");</script>
 </body>
 </html>

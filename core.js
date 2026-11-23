@@ -118,14 +118,31 @@ function initAuthUI() {
   const ga = $("#goAcc"); if (ga) ga.onclick = () => { window.guest = true; openSheet("Accesorios de pádel", accesHTML(), s => wireAcces(s)); };
   $("#goUp").onclick = () => show("up"); $("#goIn").onclick = () => show("in");
   $("#aBack").onclick = () => { $("#authForm").hidden = true; $("#land").hidden = false; };
-  const setMode = m => { authMode = m; $("#aTitle").textContent = m === "up" ? "Crea tu cuenta" : "Hola de nuevo"; $("#fName").hidden = m !== "up"; $("#aLegal").hidden = m !== "up"; $("#aBtn").textContent = m === "up" ? "Crear cuenta" : "Entrar"; $("#aSwTxt").textContent = m === "up" ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; $("#aSw").textContent = m === "up" ? "Entrar" : "Crear cuenta"; $("#aPass").autocomplete = m === "up" ? "new-password" : "current-password"; $("#aErr").textContent = ""; };
+  const setMode = m => { authMode = m; $("#aTitle").textContent = m === "up" ? "Crea tu cuenta" : "Hola de nuevo"; $("#fName").hidden = m !== "up"; $("#aLegal").hidden = m !== "up"; $("#aLegalIn").hidden = m === "up"; $("#aBtn").textContent = m === "up" ? "Crear cuenta" : "Entrar"; $("#aSwTxt").textContent = m === "up" ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; $("#aSw").textContent = m === "up" ? "Entrar" : "Crear cuenta"; $("#aPass").autocomplete = m === "up" ? "new-password" : "current-password"; $("#aErr").textContent = ""; };
   $("#aSw").onclick = () => setMode(authMode === "up" ? "in" : "up");
   $("#aReset").onclick = async () => { const e = $("#aEmail").value.trim(); if (!e) { $("#aErr").textContent = "Escribe tu email arriba y vuelve a tocar."; return; } try { await store.reset(e); $("#aErr").textContent = ""; toast("Te hemos enviado un email para cambiarla"); } catch (er) { $("#aErr").textContent = authErr(er); } };
   $("#authForm").onsubmit = async ev => {
     ev.preventDefault(); const b = $("#aBtn"); b.disabled = true; $("#aErr").textContent = "";
-    try { const e = $("#aEmail").value.trim(), p = $("#aPass").value; if (authMode === "up") await store.signUp(e, p, $("#aName").value.trim()); else await store.signIn(e, p); }
+    try { const e = $("#aEmail").value.trim(), p = $("#aPass").value;
+      if (authMode === "up") {
+        if (!$("#aTerms").checked) { $("#aErr").textContent = "Para crear la cuenta tienes que marcar la casilla de las condiciones y la privacidad."; return; }
+        try { localStorage.setItem("pm-legal-pend", JSON.stringify({ v: LEGAL_V, t: new Date().toISOString(), salud: $("#aHealth").checked })); } catch {}
+        await store.signUp(e, p, $("#aName").value.trim());
+      } else await store.signIn(e, p); }
     catch (er) { $("#aErr").textContent = authErr(er); } finally { b.disabled = false; }
   };
+}
+const LEGAL_V = "2026-11-23";
+const saludOk = () => !!(state.perfil && state.perfil.legal && state.perfil.legal.salud);
+// Guarda la prueba de que aceptó las condiciones y quita de la cuenta los datos de salud si no dio permiso
+function legalAlEntrar() {
+  try {
+    const pend = JSON.parse(localStorage.getItem("pm-legal-pend") || "null");
+    if (pend && !(state.perfil && state.perfil.legal)) savePerfil({ legal: pend });
+    localStorage.removeItem("pm-legal-pend");
+    const rp = state.perfil && state.perfil.recPala;
+    if (rp && !saludOk() && ((rp.extras || []).some(x => x === "codo" || x === "hombro") || rp.texto)) savePerfil({ recPala: { ...rp, extras: (rp.extras || []).filter(x => x !== "codo" && x !== "hombro"), texto: "" } });
+  } catch {}
 }
 function authErr(e) {
   const c = e && e.code || ""; return ({ "auth/invalid-credential": "Email o contraseña incorrectos.", "auth/wrong-password": "Contraseña incorrecta.", "auth/user-not-found": "No hay ninguna cuenta con ese email.", "auth/email-already-in-use": "Ya existe una cuenta con ese email. Prueba a entrar.", "auth/weak-password": "La contraseña debe tener al menos 6 caracteres.", "auth/invalid-email": "Ese email no es válido.", "auth/too-many-requests": "Demasiados intentos. Espera un momento.", "auth/network-request-failed": "Sin conexión. Revisa tu internet." })[c] || "No se ha podido. Inténtalo otra vez.";
@@ -141,7 +158,7 @@ function boot() {
   store.onUser(u => {
     if (!u) { hideSplash(); me = null; state = { act: {}, com: {}, peso: {}, dia: {}, perfil: {} }; loaded = false; $("#auth").hidden = false; $("#app").hidden = true; $("#tabbar").hidden = true; return; }
     me = u; $("#auth").hidden = true; $("#app").hidden = false; $("#tabbar").hidden = false;
-    store.start(u, first => { loaded = true; if (first) { const go = () => { window.__shown = true; setView(view); (typeof fotosListas === "function" ? fotosListas($("#view") || document, 2500) : Promise.resolve()).then(() => requestAnimationFrame(hideSplash)); }; (typeof CAT !== "undefined" && CAT) ? go() : Promise.race([catP, new Promise(r => setTimeout(r, 2500))]).then(go); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (window.__shown && !sheetOpen && !recActive) render(); });
+    store.start(u, first => { loaded = true; if (first) { legalAlEntrar(); const go = () => { window.__shown = true; setView(view); (typeof fotosListas === "function" ? fotosListas($("#view") || document, 2500) : Promise.resolve()).then(() => requestAnimationFrame(hideSplash)); }; (typeof CAT !== "undefined" && CAT) ? go() : Promise.race([catP, new Promise(r => setTimeout(r, 2500))]).then(go); checkRecovery(); startSocial().then(() => { if (view === "comunidad" && !sheetOpen) render(); }); } else if (window.__shown && !sheetOpen && !recActive) render(); });
   });
 }
 

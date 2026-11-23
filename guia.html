@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>¿Qué pala de pádel me compro? Guía 2026 · Pádel+</title>
 <meta name="description" content="Qué pala de pádel elegir según tu nivel y tu juego, las mejores palas y zapatillas de 2026 con su precio de hoy, y qué suela necesitas. Guía clara de Pádel+.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pádel+">
+<meta property="og:title" content="¿Qué pala de pádel me compro? Guía 2026 · Pádel+">
+<meta property="og:description" content="Las mejores palas y zapatillas de 2026 por nivel, con el precio de hoy y qué suela necesitas.">
+<meta property="og:url" content="https://padelmas.club/guia.html">
+<meta property="og:image" content="https://padelmas.club/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -112,7 +121,7 @@ footer a{color:var(--mute)}
 
   <section id="palas">
     <h2>Las mejores palas de 2026</h2>
-    <p class="sub">Elegidas por nivel, con el precio de hoy en Padel Market.</p>
+    <p class="sub">Elegidas por nivel, con el precio de hoy en Padel Market. <span style="opacity:.8">Enlaces de afiliado: si compras, podemos recibir una comisión, sin coste para ti (<a href="privacidad.html#afiliacion">más info</a>).</span></p>
     <div class="tabs" id="tabsP"><button data-n="1" class="on">Iniciación</button><button data-n="2">Intermedio</button><button data-n="3">Avanzado</button></div>
     <div class="grid" id="palas-list"><p class="load">Cargando palas…</p></div>
   </section>
@@ -144,7 +153,7 @@ footer a{color:var(--mute)}
     <div class="acc" id="acc-list"></div>
   </section>
 
-  <div class="band"><h2>¿No sabes cuál es la tuya?</h2><p>Contesta 3 preguntas en la app y te decimos la pala y las zapatillas ideales para tu juego.</p><a class="btn" href="./?pala=1">Encontrar mi pala</a></div>
+  <div class="band"><h2>¿No sabes cuál es la tuya?</h2><p>Haz el test de 1 minuto en la app y te decimos la pala y las zapatillas ideales para tu juego.</p><a class="btn" href="./?pala=1">Encontrar mi pala</a></div>
 
   <footer>Pádel+ · Precios orientativos, se actualizan cada día. Enlaces de afiliado: podemos recibir una comisión, sin coste para ti (<a href="privacidad.html#afiliacion">más info</a>). · <a href="privacidad.html">Privacidad</a> · <a href="mailto:holapadelmas@gmail.com">holapadelmas@gmail.com</a></footer>
 </div>
@@ -166,7 +175,7 @@ function prod(p, { marca, nombre, chips = "", why = "" } = {}) {
   return `<div class="p"><div class="img"><img src="${esc(foto(p.f, 500))}" alt="${esc(nombre || p.n)}" loading="lazy" referrerpolicy="no-referrer">${d >= 5 ? `<span class="off">-${d}%</span>` : ""}</div>
   <div class="b"><div class="brand">${esc(marca || p.m || "")}</div><div class="name">${esc(nombre || (() => { let s = p.n.replace(/\s*\((pala|zapatillas?)\)\s*$/i, ""); if (p.m && norm(s).startsWith(norm(p.m) + " ")) s = s.slice(p.m.length + 1); return s; })())}</div>${chips ? `<dl class="spec">${chips}</dl>` : ""}${why ? `<p class="why">${esc(why)}</p>` : `<div style="flex:1"></div>`}
   <div class="price"><b>${eur(p.p)}</b>${p.o && p.o > p.p ? `<s>${eur(p.o)}</s>` : ""}</div>
-  <a class="btn" href="${esc(p.u)}" target="_blank" rel="noopener sponsored">Comprar</a></div></div>`;
+  <a class="btn" href="${esc(p.u)}" target="_blank" rel="noopener sponsored">Comprar en Padel Market</a></div></div>`;
 }
 const cap = s => String(s || "").replace(/^./, c => c.toUpperCase());
 const chip = (k, v, l) => `<dt>${esc(k)}</dt><dd${l ? ' class="l"' : ""}>${esc(cap(v))}</dd>`;

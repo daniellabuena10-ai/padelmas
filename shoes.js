@@ -137,7 +137,7 @@ async function openShoe(id) {
       <p class="small mute" style="margin-top:12px">Ritmo ideal: <b style="color:var(--ink)">${fmtPace(sh.rMin)} – ${fmtPace(sh.rMax)} /km</b></p></div>
     ${priceBtns(sh)}
     <div class="row"><button class="btn ${mine ? "" : "pri"}" id="shHave">${mine ? "✓ La tengo" : `${svg("plus")}La tengo`}</button>${socialOn() ? `<button class="btn" id="shRev">${svg("edit")}Opinar</button>` : ""}</div>
-    <div class="sec">Opiniones de la comunidad</div><div id="shRevs"><p class="small mute">${socialOn() ? "Cargando…" : "Únete a la comunidad para ver y dejar opiniones."}</p></div>`, s => {
+    <div class="sec">Opiniones de la comunidad</div><div id="shRevs"><p class="small mute">${socialOn() ? "Cargando…" : "Crea tu cuenta para ver y dejar opiniones de otros jugadores."}</p></div>`, s => {
     $("#shHave", s).onclick = () => { if (!mine) addZapa(id); else toast("Ya está en Mis zapatillas"); };
     const rv = $("#shRev", s); if (rv) rv.onclick = () => openReview(sh);
     if (socialOn()) loadReviews(id);

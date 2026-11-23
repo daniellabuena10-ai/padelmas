@@ -6,7 +6,7 @@ function rpSaved() { try { return JSON.parse(localStorage.getItem(RP_KEY) || "nu
 function rpSave(q) {
   const o = { nivel: q.nivel, estilo: q.estilo, lado: q.lado, extras: [...q.extras], precio: q.precio, texto: q.texto || "", t: Date.now() };
   try { localStorage.setItem(RP_KEY, JSON.stringify(o)); } catch {}
-  try { if (typeof me !== "undefined" && me && me.uid && typeof savePerfil === "function") savePerfil({ recPala: o }); } catch {}
+  try { if (typeof me !== "undefined" && me && me.uid && typeof savePerfil === "function") savePerfil({ recPala: (typeof saludOk === "function" && saludOk()) ? o : { ...o, extras: o.extras.filter(x => x !== "codo" && x !== "hombro"), texto: "" } }); } catch {}
 }
 // Lo que se usa en Inicio ("Elegido para ti")
 function rpInicioQ() {
@@ -25,7 +25,7 @@ function rpLeeTexto(txt) {
   if (has(/codo|epicondil|hombro|munec|tendin|lesion|dolor|molest/)) { a.brazo = true; a.notas.push("cuidar el brazo"); }
   if (has(/potencia|remat|pegar|pego fuerte|atac|smash|por tres|por 3|x3|x4|vibora|salida de bola|me falta pegada/)) { a.estilo = .6; a.notas.push("más potencia"); }
   if (has(/control|coloc|defien|defens|precis|se me escapan|se me van|me paso|globo|bajada de pared/)) { a.estilo = (a.estilo || 0) - .6; a.notas.push("más control"); }
-  if (has(/ligera|pesa mucho|pesada|cansa el brazo|manejable|rapida de manos|red\b|volea/)) { a.ligera = true; a.notas.push("pala ligera y manejable"); }
+  if (has(/ligera|me pesa|pesa mucho|pesa demasiado|pesada|cansa el brazo|manejable|rapida de manos|red\b|volea/)) { a.ligera = true; a.notas.push("pala ligera y manejable"); }
   if (has(/tenis|tenista|frontenis|squash/)) { a.tenis = true; a.notas.push("vienes de otro deporte de raqueta"); }
   if (has(/empiezo|empezando|principiante|novato|nuevo en el padel|primera pala|poco tiempo/)) { a.nivel = 1; a.notas.push("estás empezando"); }
   if (has(/compito|torneo|federad|nivel alto|avanzado/)) { a.nivel = 3; a.notas.push("juegas a buen nivel"); }
@@ -56,15 +56,19 @@ function rpScore(q) {
   const horas = ex.has("horas") || tx.horas;
   const precio = tx.precio || q.precio;
   const base = typeof CAT !== "undefined" && CAT && typeof realOf === "function" && PALAS.some(p => realOf(p)) ? PALAS.filter(p => realOf(p)) : PALAS;
-  const L = base.map(p => {
+  // Con molestias o si la pala le pesa, descartamos lo que le haría daño (si quedan opciones suficientes)
+  let pool = base;
+  if (brazo) { const f = pool.filter(p => p.forma !== "diamante" && p.balance <= 2.4 && p.dureza <= 2.3); if (f.length >= 5) pool = f; }
+  if (ligera) { const f = pool.filter(p => p.peso <= 355); if (f.length >= 5) pool = f; }
+  const L = pool.map(p => {
     let sc = 0; const why = [];
     const dn = Math.abs(p.nivel - nivel); sc += 2.4 - dn * 2.1; if (dn < .6) why.push(`Hecha para nivel ${NIVL[nivel].toLowerCase()}`);
     const dp = Math.abs(p.perfil - estilo); sc += 2.2 - dp * 1.5;
     if (dp < .5) why.push(p.perfil < 1.7 ? "Pala de control: coloca la bola donde quieres" : p.perfil < 2.4 ? "Polivalente: defiende y ataca bien" : "Pala de ataque: más pegada en el remate");
-    if (q.lado === "reves" && p.perfil >= 2.3) { sc += .35; why.push("Ideal para rematar desde el revés"); }
+    if (q.lado === "reves" && p.perfil >= 2.3 && !brazo) { sc += .35; why.push("Ideal para rematar desde el revés"); }
     if (q.lado === "drive" && p.perfil <= 2.2) { sc += .35; why.push("Precisa para construir desde el drive"); }
     if (brazo) { sc += (3 - p.dureza) * .6 + (3 - p.balance) * .5 - (p.peso > 365 ? .6 : 0) - (p.forma === "diamante" ? .5 : 0); if (p.dureza < 1.7) why.push("Tacto blando que cuida el codo y el hombro"); else if (p.dureza < 2.2) why.push("Tacto cómodo, sin castigar el brazo"); if (p.dureza > 2.6) sc -= 1.1; }
-    if (ligera) { if (p.peso <= 355) { sc += .7; why.push(`Ligera (~${p.peso} g), muy manejable`); } if (p.peso >= 370) sc -= .7; }
+    if (ligera) { if (p.peso <= 355) { sc += .7; why.push(`Ligera (~${p.peso} g), muy manejable`); } else sc -= (p.peso - 355) * .09; }
     if (fuerte && !brazo) { sc += (p.dureza - 2) * .4 + (p.balance - 2) * .3; if (p.dureza >= 2.5) why.push("Tacto duro para quien pega fuerte"); }
     if (horas) { sc += (2.6 - p.dureza) * .25 + (p.peso <= 360 ? .2 : 0); }
     if (tx.dureza) { sc += (p.dureza - 2) * .6 * tx.dureza; }
@@ -170,7 +174,7 @@ function rpResultados() {
     R.brazo ? "Cuidando el brazo" : null, R.ligera ? "Ligera" : null, ["", "Hasta 100 €", "Hasta 200 €", "Gama alta", ""][rpQ.precio] || null].filter(Boolean);
   const foto = (x, sz) => x.r ? fotoReal(x.r, sz) : palaArt(x.s, sz * .85);
   const precio = x => x.r ? `<span style="white-space:nowrap"><span class="num" style="font-size:22px;color:var(--ink)">${eur(x.r.p)}</span>${x.r.o && x.r.o > x.r.p ? ` <s class="tiny mute">${eur(x.r.o)}</s>` : ""}</span>` : `<span class="small mute">${priceTxt(x.s)}</span>`;
-  const comprar = (x, big) => `<a class="btn buy${big ? " block" : ""}" href="${esc(buyUrl(x.s))}" target="_blank" rel="noopener sponsored" style="${big ? "" : "padding:10px 12px;font-size:14px"}">${svg("cart")}Comprar</a>`;
+  const comprar = (x, big) => `<a class="btn buy${big ? " block" : ""}" href="${esc(buyUrl(x.s))}" target="_blank" rel="noopener sponsored" style="${big ? "" : "padding:10px 12px;font-size:14px"}">${svg("cart")}${big ? "Comprar en Padel Market" : "Comprar"}</a>`;
   const hero = `<div class="rwhero">
       <div class="rwbadge">🥇 Tu pala ideal</div>
       <div class="rwimg">${foto(h, 190)}${h.r && dto(h.r) >= 5 ? `<span class="dtob" style="position:absolute;top:10px;right:10px">-${dto(h.r)}%</span>` : ""}</div>
