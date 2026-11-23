@@ -1,0 +1,30 @@
+name: Carruseles de Instagram
+on:
+  workflow_dispatch:
+    inputs:
+      trabajos: { description: "Uno o varios 'modo:prefijo' separados por espacios (modos: presentacion quepala compite ofertas suelas)", required: true }
+      titulo: { description: "Título de la portada (solo ofertas)", required: false, default: "" }
+      etiqueta: { description: "Etiqueta de la portada (solo ofertas)", required: false, default: "" }
+permissions:
+  contents: write
+concurrency: datos
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Preparar
+        run: pip install playwright && python -m playwright install --with-deps chromium
+      - name: Generar (con fotos reales)
+        env: { TRABAJOS: "${{ inputs.trabajos }}", TITULO: "${{ inputs.titulo }}", ETIQUETA: "${{ inputs.etiqueta }}" }
+        run: |
+          for t in $TRABAJOS; do python scripts/ig_posts.py "${t%%:*}" "${t#*:}" "$TITULO" "$ETIQUETA"; done
+      - name: Guardar
+        run: |
+          git config user.name "padelmas-bot"
+          git config user.email "holapadelmas@gmail.com"
+          git add ig/
+          git commit -q -m "Instagram: carruseles ${{ inputs.trabajos }}" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
