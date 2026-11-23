@@ -118,7 +118,7 @@ function initAuthUI() {
   const ga = $("#goAcc"); if (ga) ga.onclick = () => { window.guest = true; openSheet("Accesorios de pádel", accesHTML(), s => wireAcces(s)); };
   $("#goUp").onclick = () => show("up"); $("#goIn").onclick = () => show("in");
   $("#aBack").onclick = () => { $("#authForm").hidden = true; $("#land").hidden = false; };
-  const setMode = m => { authMode = m; $("#aTitle").textContent = m === "up" ? "Crea tu cuenta" : "Hola de nuevo"; $("#fName").hidden = m !== "up"; $("#aBtn").textContent = m === "up" ? "Crear cuenta" : "Entrar"; $("#aSwTxt").textContent = m === "up" ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; $("#aSw").textContent = m === "up" ? "Entrar" : "Crear cuenta"; $("#aPass").autocomplete = m === "up" ? "new-password" : "current-password"; $("#aErr").textContent = ""; };
+  const setMode = m => { authMode = m; $("#aTitle").textContent = m === "up" ? "Crea tu cuenta" : "Hola de nuevo"; $("#fName").hidden = m !== "up"; $("#aLegal").hidden = m !== "up"; $("#aBtn").textContent = m === "up" ? "Crear cuenta" : "Entrar"; $("#aSwTxt").textContent = m === "up" ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; $("#aSw").textContent = m === "up" ? "Entrar" : "Crear cuenta"; $("#aPass").autocomplete = m === "up" ? "new-password" : "current-password"; $("#aErr").textContent = ""; };
   $("#aSw").onclick = () => setMode(authMode === "up" ? "in" : "up");
   $("#aReset").onclick = async () => { const e = $("#aEmail").value.trim(); if (!e) { $("#aErr").textContent = "Escribe tu email arriba y vuelve a tocar."; return; } try { await store.reset(e); $("#aErr").textContent = ""; toast("Te hemos enviado un email para cambiarla"); } catch (er) { $("#aErr").textContent = authErr(er); } };
   $("#authForm").onsubmit = async ev => {

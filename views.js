@@ -211,7 +211,7 @@ function openPerfil() {
       <button class="item" id="pFis">${svg("bolt")}Tablón: torneos y novedades${svg("chev", "chev")}</button>
       <div class="item" style="cursor:default">${svg("eye")}<div style="flex:1">Tamaño del texto</div><div class="seg" id="pTxt" style="width:auto;margin:0">${[["n", "Normal"], ["g", "Grande"]].map(([k, n]) => `<button data-t="${k}" class="${(localStorage.getItem("pm-texto") || "n") === k ? "on" : ""}" style="padding:8px 12px">${n}</button>`).join("")}</div></div>
       <button class="item" id="pName">${svg("user")}Cambiar nombre${svg("chev", "chev")}</button>
-      <a class="item" href="privacidad.html">${svg("shield")}Privacidad y condiciones${svg("chev", "chev")}</a>
+      <a class="item" href="privacidad.html">${svg("shield")}Aviso legal, privacidad y cookies${svg("chev", "chev")}</a>
       <a class="item" href="mailto:holapadelmas@gmail.com?subject=P%C3%A1del%2B">${svg("mail")}Contacto y soporte${svg("chev", "chev")}</a>
       <button class="item" id="pOut">${svg("logout")}Cerrar sesión${svg("chev", "chev")}</button>
       <button class="item" id="pDel" style="color:var(--neg)">${svg("trash")}Borrar mi cuenta${svg("chev", "chev")}</button>

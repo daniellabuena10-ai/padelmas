@@ -23,8 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Pádel+">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap"></noscript>
+
+<link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="lib/leaflet.css" media="print" onload="this.media='all'">
 <style>
 :root{--bg:#f4f5f7;--bg2:#eceef1;--card:#ffffff;--card2:#f1f3f6;--line:rgba(15,23,42,.10);--line2:rgba(15,23,42,.18);--vt:#4d7c0f;
@@ -417,7 +417,7 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
     </div>
     <div class="lfoot">
     <p class="small" style="text-align:center;margin-top:10px"><a class="link" href="guia.html">Ver la guía de palas y zapatillas →</a></p>
-    <p class="tiny mute" style="text-align:center;margin-top:8px">Enlaces de afiliado: podemos recibir una comisión, sin coste para ti.<br><a class="link" href="privacidad.html#afiliacion">Aviso de afiliación</a> · <a class="link" href="privacidad.html">Privacidad y condiciones</a></p>
+    <p class="tiny mute" style="text-align:center;margin-top:8px">Enlaces de afiliado: podemos recibir una comisión, sin coste para ti.<br><a class="link" href="privacidad.html#aviso-legal">Aviso legal</a> · <a class="link" href="privacidad.html#privacidad">Privacidad</a> · <a class="link" href="privacidad.html#cookies">Cookies</a> · <a class="link" href="privacidad.html#afiliacion">Afiliación</a></p>
     </div>
   </div>
   <form id="authForm" hidden>
@@ -427,6 +427,7 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
     <label class="field">Email<input id="aEmail" type="email" autocomplete="email" required></label>
     <label class="field">Contraseña<input id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
     <div class="err" id="aErr"></div>
+    <p class="tiny mute" id="aLegal" hidden style="margin:2px 0 12px;line-height:1.5">Al crear tu cuenta aceptas las <a class="link" href="privacidad.html#condiciones">condiciones de uso</a> y confirmas que tienes al menos 14 años. Responsable: Daniel Labuena. Usamos tus datos solo para que la app funcione y no los vendemos. Puedes ver, corregir o borrar tus datos cuando quieras. <a class="link" href="privacidad.html#privacidad">Más información</a></p>
     <button class="btn pri block" id="aBtn">Entrar</button>
     <p class="small mute" style="text-align:center;margin-top:16px"><span id="aSwTxt">¿No tienes cuenta?</span> <button type="button" class="link" id="aSw">Crear cuenta</button></p>
     <p class="small mute" style="text-align:center;margin-top:10px"><button type="button" class="link" id="aReset">He olvidado mi contraseña</button></p>
