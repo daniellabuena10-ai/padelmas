@@ -113,7 +113,7 @@ function openRecPala() {
       const r = recPala(q); openSheet("Tus palas ideales", `<p class="small mute" style="margin:-6px 0 12px">Nivel ${NIVL[q.nivel].toLowerCase()} · ${["", "control", "polivalente", "ataque"][q.estilo]}${q.brazo ? " · cuidando el brazo" : ""}</p>${r.map((x, i) => gearRow(x.s, i === 0 ? "🥇 Mejor opción" : null, x.why)).join("")}
         ${q.brazo ? `<div class="hint">${svg("info")}<span>Con molestias de codo: busca tacto blando, balance bajo o medio y no más de ~365 g. Si duele, consulta con un fisio.</span></div>` : ""}
         <p class="tiny mute" style="text-align:center;margin-top:10px">Orientativo. Si puedes, pruébala antes: el tacto es muy personal.</p><button class="btn block" id="rAgain">${svg("refresh")}Cambiar respuestas</button>
-        ${window.guest && !(me && me.uid) ? `<div class="card" style="margin-top:12px;border-color:rgba(212,255,58,.35)"><h3>Esto es solo el principio</h3><p class="small mute" style="margin:6px 0 12px">Crea tu cuenta gratis: calcula tu nivel real con tus partidos y la recomendación se ajusta a cómo juegas de verdad.</p><button class="btn pri block" id="rUp">Crear cuenta gratis</button></div>` : ""}`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecPala; const u = $("#rUp", s2); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); }; }); };
+        ${window.guest && !(me && me.uid) ? `<div class="card" style="margin-top:12px;border-color:rgba(212,255,58,.35)"><h3>Esto es solo el principio</h3><p class="small mute" style="margin:6px 0 12px">Crea tu cuenta: calcula tu nivel real con tus partidos y la recomendación se ajusta a cómo juegas de verdad.</p><button class="btn pri block" id="rUp">Crear mi cuenta</button></div>` : ""}`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecPala; const u = $("#rUp", s2); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); }; }); };
   });
 }
 
@@ -161,7 +161,7 @@ function openRecZP() {
       const r = recZP(q); openSheet("Tus zapatillas de pádel", `${r.map((x, i) => gearRow(x.s, i === 0 ? "🥇 Mejor opción" : null, x.why)).join("")}
         <div class="hint">${svg("info")}<span><b style="color:var(--ink)">Suela:</b> espiga para césped con arena (lo más habitual), omni para moqueta o pistas rápidas indoor, híbrida si juegas en ambas.</span></div>
         <button class="btn block" id="rAgain">${svg("refresh")}Cambiar respuestas</button>
-        ${window.guest && !(me && me.uid) ? `<button class="btn pri block" id="rUp" style="margin-top:10px">Crear cuenta gratis</button>` : ""}`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecZP; const u = $("#rUp", s2); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); }; }); };
+        ${window.guest && !(me && me.uid) ? `<button class="btn pri block" id="rUp" style="margin-top:10px">Crear mi cuenta</button>` : ""}`, s2 => { wireGearRows(s2); $("#rAgain", s2).onclick = openRecZP; const u = $("#rUp", s2); if (u) u.onclick = () => { closeSheet(); $("#goUp").click(); }; }); };
   });
 }
 

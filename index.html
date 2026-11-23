@@ -385,6 +385,30 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 .tdimg{position:relative;display:grid;place-items:center;background:#fff;border-radius:14px;height:140px;overflow:hidden}.tdname{font-weight:700;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
 .hpick{display:flex;flex-direction:column;text-align:left;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 10px rgba(15,23,42,.06);border-radius:16px;padding:10px;color:inherit}
 .hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin:0 -2px 14px;scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
+
+/* ===== Portada oscura (como el folleto) ===== */
+body:has(#auth:not([hidden]) #land:not([hidden])){background:#0f172a!important}
+#auth:has(#land:not([hidden])){color:#fff}
+#auth:has(#land:not([hidden])) .logo{color:#fff}
+#land h1{color:#fff}#land h1 em{color:#d4ff3a}
+#land .pitch{color:#cbd5e1;font-size:16.5px}#land .pitch b{color:#fff}
+.btn.lime{background:#d4ff3a;color:#0f172a;border:0;font-weight:800}
+.btn.lghost{background:transparent;color:#fff;border:1.5px solid #334155;font-weight:700}
+.lbtns{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.lnote{font-size:13px;color:#94a3b8;text-align:center;margin:10px 0 22px}
+.lph{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 18px}
+.lph figure{margin:0}.lph .fr{background:#475569;border-radius:20px;padding:4px}.lph .fr img{display:block;width:100%;aspect-ratio:480/700;object-fit:cover;object-position:top;border-radius:16px;background:#f4f5f7}
+.lph figcaption{font-size:11.5px;color:#cbd5e1;line-height:1.3;margin-top:8px}.lph figcaption b{display:block;color:#fff;font-size:13.5px;margin-bottom:2px}
+.lcards{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.lc{display:flex;align-items:center;gap:12px;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:12px 14px;color:#fff;text-align:left;width:100%;font:inherit}
+.lc>span{font-size:24px;flex:none}.lc>div{flex:1;min-width:0}.lc b{display:block;font-size:15px}.lc small{display:block;font-size:12.5px;color:#94a3b8;margin-top:1px}.lc i{font-style:normal;color:#d4ff3a;font-size:24px;font-weight:700}
+.lrk{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:14px;margin-bottom:14px}
+.lrkt{display:flex;gap:12px;align-items:flex-start}.lrkt>span{font-size:24px}.lrkt b{display:block;font-size:15px}.lrkt small{display:block;font-size:12.5px;color:#94a3b8;margin-top:2px;line-height:1.35}
+.lvl{display:flex;gap:4px;margin-top:12px}.lvl i{flex:1;height:7px;border-radius:4px;background:#334155}.lvl i.on{background:#d4ff3a}
+#land .gbanner{background:#1e293b;border:1px solid #334155;box-shadow:none}
+#land .lfoot .link{color:#d4ff3a}
+#auth.wide #land .lph{gap:16px}
+#auth.wide .lcol>p.lnote{font-size:14px!important;text-align:left}
 </style>
 </head>
 <body style="background:#f7f9fc">
@@ -394,39 +418,34 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
   <div class="logo sm"><div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="9" rx="6.2" ry="6.6"/><path d="M14.3 13.6L20 20"/><path d="M19 3v5M16.5 5.5h5"/></svg></div>Pádel<b>+</b></div>
   <div id="land">
     <div class="lcol">
-    <h1>Sube de nivel.<br><em>Dentro y fuera de la pista.</em></h1>
-    <p class="pitch">La pala, la zapatilla y la ropa que de verdad necesitas para tu juego, con opiniones de jugadores de tu nivel. Y tu ranking con amigos. Gratis.</p>
-    <p style="margin:6px 2px 12px;font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.25">Saber jugar es la mitad.<br><span style="color:var(--vt)">La otra mitad es tu equipación.</span></p>
+    <h1>Todo tu pádel,<br><em>en una sola app.</em></h1>
+    <p class="pitch">Te hacemos un test de 1 minuto y te decimos la pala y las zapatillas que encajan contigo. <b>Y la compras desde la app, con descuento.</b></p>
+    <div class="lbtns"><button class="btn lime block big" id="goPala">🎾 Descubrir mi pala</button><button class="btn lghost block" id="goZap">👟 Encontrar mis zapatillas</button></div>
+    <p class="lnote">Sin registrarte · Desde el móvil, sin descargar nada</p>
     </div>
     <div class="rcol">
-    <div class="pick">
-      <button id="goPala"><svg class="pe" viewBox="8 2 48 58" width="38" height="38" aria-hidden="true"><g transform="rotate(-35 32 32)"><ellipse cx="32" cy="24" rx="15" ry="17" fill="#facc15"/><circle cx="26" cy="16" r="1.8" fill="#151b10"/><circle cx="32" cy="14" r="1.8" fill="#151b10"/><circle cx="38" cy="16" r="1.8" fill="#151b10"/><circle cx="24" cy="22" r="1.8" fill="#151b10"/><circle cx="30" cy="21" r="1.8" fill="#151b10"/><circle cx="36" cy="21" r="1.8" fill="#151b10"/><circle cx="41" cy="22" r="1.8" fill="#151b10"/><circle cx="26" cy="28" r="1.8" fill="#151b10"/><circle cx="32" cy="27" r="1.8" fill="#151b10"/><circle cx="38" cy="28" r="1.8" fill="#151b10"/><circle cx="29" cy="34" r="1.8" fill="#151b10"/><circle cx="35" cy="34" r="1.8" fill="#151b10"/><rect x="29" y="40" width="6" height="18" rx="3" fill="#facc15"/><rect x="29" y="49" width="6" height="9" rx="3" fill="#0b0f14" opacity=".55"/></g></svg><b>Pala</b><small>Para tu nivel, tu juego y tu brazo</small></button>
-      <button id="goZap"><span class="pe">👟</span><b>Zapatillas</b><small>Suela, horma y tu peso</small></button>
-      <button id="goRopa"><span class="pe">👕</span><b>Ropa</b><small>Mujer y hombre</small></button>
-      <button id="goAcc"><span class="pe">🎒</span><b>Accesorios</b><small>Paletero, overgrip, pelotas</small></button>
+    <div class="lph">
+      <figure><div class="fr"><img src="img/land1.jpg" alt="Tu pala ideal en la app"></div><figcaption><b>Tu pala ideal</b>Según tu nivel, tu lado y tu juego</figcaption></figure>
+      <figure><div class="fr"><img src="img/land2.jpg" alt="Test de zapatillas en la app"></div><figcaption><b>Tus zapatillas</b>Según tu pista y tu pie</figcaption></figure>
+      <figure><div class="fr"><img src="img/land3.jpg" alt="Tu nivel y tu ranking en la app"></div><figcaption><b>Tu ranking</b>Tu nivel y tu liga con amigos</figcaption></figure>
     </div>
-    <p class="tiny mute" style="text-align:center;margin:2px 0 20px">Sin registrarte. Te explicamos por qué es para ti y dónde comprarlo.</p>
-    <a class="gbanner" href="guia.html"><span class="gi">🎾</span><span><small>Guía 2026</small><b>¿Qué pala de pádel me compro?</b><span class="s">Las mejores por nivel, con fotos y precio de hoy</span></span><span class="ar">→</span></a>
-    <div class="sec" style="margin:22px 0 10px">Y además, pícate con tus amigos</div>
-    <div class="dc dpad lrank" style="width:100%;margin:0 0 18px;padding:12px 14px">
-      <div class="dl">🏆 Ranking de tu grupo</div>
-      <div class="rk"><span class="p">1</span><span class="av2" style="background:#38bdf8">D</span><b>Daniel</b><span class="num v">4,10</span></div>
-      <div class="rk me"><span class="p">2</span><span class="av2" style="background:#d4ff3a;color:#0a0d02">T</span><b>Tú</b><span class="up">▲ +0,13</span><span class="num v" style="color:var(--vt)">3,89</span></div>
-      <div class="rk"><span class="p">3</span><span class="av2" style="background:#f472b6">C</span><b>Claudia</b><span class="num v">3,50</span></div>
-      <div class="tiny mute" style="margin-top:6px">Apunta el partido en 10 segundos y tu nivel se mueve según contra quién ganas.</div>
+    <div class="lcards">
+      <div class="lc"><span>🔥</span><div><b>Ofertas de hasta -60%</b><small>Palas, zapatillas y paleteros, con el precio de hoy</small></div></div>
+      <button class="lc" id="goRopa"><span>👕</span><div><b>Ropa de hombre y mujer</b><small>Camisetas, sudaderas, pantalones, faldas…</small></div><i>›</i></button>
+      <button class="lc" id="goAcc"><span>🎒</span><div><b>Accesorios</b><small>Paleteros, overgrip, pelotas</small></div><i>›</i></button>
     </div>
-    <div class="what">
-      <div><span>⭐</span><p><b>Opiniones reales.</b> Con tu cuenta, ves lo que dicen de cada pala jugadores de tu nivel.</p></div>
-      <div><span>📍</span><p><b>Pistas en tu ciudad.</b> Clubes, pistas cubiertas o al aire libre, cómo llegar y dónde reservar.</p></div>
+    <div class="lrk">
+      <div class="lrkt"><span>🏆</span><div><b>Tu nivel y tu ranking</b><small>Apunta tus partidos, sube del 1 al 7 y crea una liga con tu grupo.</small></div></div>
+      <div class="lvl"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
     </div>
+    <a class="gbanner" href="guia.html"><span class="gi">📘</span><span><small>Guía 2026</small><b>¿Qué pala de pádel me compro?</b><span class="s">Las mejores por nivel, con fotos y precio de hoy</span></span><span class="ar">→</span></a>
     </div>
     <div class="lcta">
-    <button class="btn pri block big" id="goUp">Empezar gratis</button>
-    <button class="btn block ghost" id="goIn">Ya tengo cuenta</button>
+    <button class="btn lime block big" id="goUp">Crear mi cuenta</button>
+    <button class="btn lghost block" id="goIn">Ya tengo cuenta</button>
     </div>
     <div class="lfoot">
-    <p class="small" style="text-align:center;margin-top:10px"><a class="link" href="guia.html">Ver la guía de palas y zapatillas →</a></p>
-    <p class="tiny mute" style="text-align:center;margin-top:8px">Enlaces de afiliado: podemos recibir una comisión, sin coste para ti.<br><a class="link" href="privacidad.html#aviso-legal">Aviso legal</a> · <a class="link" href="privacidad.html#privacidad">Privacidad</a> · <a class="link" href="privacidad.html#cookies">Cookies</a> · <a class="link" href="privacidad.html#afiliacion">Afiliación</a></p>
+    <p class="tiny" style="text-align:center;margin-top:14px;color:#94a3b8">Enlaces de afiliado: podemos recibir una comisión, sin coste para ti.<br><a class="link" href="privacidad.html#aviso-legal">Aviso legal</a> · <a class="link" href="privacidad.html#privacidad">Privacidad</a> · <a class="link" href="privacidad.html#cookies">Cookies</a> · <a class="link" href="privacidad.html#afiliacion">Afiliación</a></p>
     </div>
   </div>
   <form id="authForm" hidden>
