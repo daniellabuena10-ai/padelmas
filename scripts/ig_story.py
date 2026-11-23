@@ -17,7 +17,7 @@ tipo = sys.argv[1] if len(sys.argv) > 1 else "oferta"
 out = sys.argv[2] if len(sys.argv) > 2 else f"ig/story-{tipo}.jpg"
 n = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].isdigit() else 1
 TEMAS = ["noche", "lima", "claro"]
-tema = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] in TEMAS else TEMAS[(datetime.now().timetuple().tm_yday + "orlq".find(tipo[0])) % 3]
+tema = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] in TEMAS else TEMAS[(datetime.now().timetuple().tm_yday + max(0, "orlq".find(tipo[0]))) % 3]
 
 d = json.load(open(os.path.join(ROOT, "data/catalogo.json")))
 def dto(p): return round(100 * (1 - p["p"] / p["o"])) if p.get("o") and p["o"] > p["p"] else 0
@@ -126,6 +126,14 @@ elif tipo == "liga":
     <div style="position:absolute;top:720px;left:80px;right:80px;background:#fff;color:#0f172a;border-radius:40px 40px 40px 8px;padding:30px 40px;font-size:42px;font-weight:600;line-height:1.3">Os he metido en la liga del jueves 🏆 Apuntad los partidos y a ver quién acaba primero 😏</div>
     <div style="position:absolute;bottom:330px;left:80px;right:80px;display:flex;align-items:flex-end;gap:24px">{pod}</div>
     <div class="foot"><span class="url">padelmas.club</span><p>Pádel → Ligas<br>→ Crear liga</p></div>'''
+elif tipo == "reto":
+    sel = con_foto(top, 1)
+    if not sel: sys.exit("Sin fotos de producto")
+    body = f'''<div class="top">{logo}<span class="chip">Test · 1 min</span></div>
+    <h1 style="position:absolute;top:320px;left:80px;right:80px;font-size:190px;letter-spacing:-8px">Tu pala<br>tiene la<br><span style="color:var(--hot)">culpa.</span></h1>
+    <div class="blob" style="position:absolute;top:1000px;right:80px;width:440px;height:540px;transform:rotate(10deg)"><img src="{sel[0][1]}"></div>
+    <div style="position:absolute;top:1040px;left:80px;width:440px"><p style="font-size:44px;font-weight:700;line-height:1.3">¿Codo, peso, la bola no sale?</p><p style="font-size:44px;font-weight:900;margin-top:24px;color:var(--hot)">Haz el test y descubre la tuya.</p></div>
+    <div class="foot"><span class="url">padelmas.club</span><p>Te reto 👆</p></div>'''
 else:  # qr
     import qrcode, io
     q = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=20, border=1); q.add_data("https://padelmas.club"); q.make(fit=True)

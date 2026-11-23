@@ -227,6 +227,40 @@ elif modo == "suelas":
       <p class="sub" style="margin-top:30px">Te lo decimos según tu pista y tu pie.<br>Y las compras desde la app.</p>
       <div style="display:inline-block;margin-top:70px;background:#d4ff3a;color:#0f172a;font-weight:900;font-size:72px;padding:30px 60px;border-radius:999px;letter-spacing:-2px">padelmas.club</div>
       <p style="margin-top:34px;font-size:36px;font-weight:700;color:#cbd5e1">Enlace en el perfil 👆</p></div>''')
+elif modo == "reto":
+    pal = con_foto(ranking("pala", 30), 4)
+    if len(pal) < 4: sys.exit("Sin fotos suficientes")
+    N = 6; mx = max(dto(p) for p, _ in pal); info["max"] = mx
+    p0, f0 = pal[0]
+    S(f'''<div class="glow" style="width:1200px;height:1200px;top:-200px;right:-500px;background:radial-gradient(circle,rgba(255,90,54,.22),transparent 62%)"></div><div class="hd"><div class="logo"><img src="{icon}">Pádel<b>+</b></div><span class="num">1/{N}</span></div>
+      <div style="position:absolute;top:210px;left:72px;right:72px"><h1 style="font-size:170px;letter-spacing:-7px">Tu pala<br>tiene la<br><span style="color:#ff5a36">culpa.</span></h1></div>
+      <div class="blob" style="position:absolute;right:60px;bottom:150px;width:400px;height:500px;transform:rotate(12deg)"><img src="{f0}"></div>
+      <div style="position:absolute;right:330px;bottom:520px;width:150px;height:150px;border-radius:50%;background:#ff5a36;display:grid;place-items:center;font-size:110px;font-weight:900;transform:rotate(-10deg);box-shadow:0 16px 40px rgba(0,0,0,.4)">?</div>
+      <p class="sub" style="position:absolute;left:72px;bottom:200px;max-width:480px">Y nadie te lo ha dicho.</p>{ft()}''')
+    sen = "".join(f'<div style="display:flex;gap:26px;align-items:center;background:#1e293b;border:2px solid #334155;border-radius:30px;padding:26px 30px;margin-top:22px"><span style="font-size:58px">{e}</span><span style="font-size:42px;font-weight:700;line-height:1.2">{x}</span></div>' for e, x in [("😖", "Te duele el codo al acabar"), ("🪨", "Te pesa en el tercer set"), ("🎯", "La bola no sale donde quieres"), ("💸", "Te la compraste porque estaba de oferta")])
+    S(f'''{hd(2,N)}<div style="position:absolute;top:180px;left:72px;right:72px"><span class="tag" style="background:#ff5a36;color:#fff">Señales</span>
+      <h1 style="font-size:92px;margin-top:26px">¿Te pasa<br><em>alguna?</em></h1>{sen}
+      <p class="sub" style="margin-top:34px">Si has dicho que sí a una, sigue →</p></div>{ft()}''')
+    S(f'''{hd(3,N)}<div style="position:absolute;top:190px;left:72px;width:540px"><span class="tag">🎾 Test de 1 minuto</span>
+      <h1 style="font-size:86px;margin-top:30px">Te decimos<br><em>cuál es<br>la tuya.</em></h1>
+      <p class="sub" style="margin-top:30px">Según tu nivel, tu lado, tu juego y tu brazo. Sin registrarte.</p></div>
+      <div class="ph" style="position:absolute;right:72px;top:220px;width:400px;transform:rotate(4deg)"><img src="{shot[1]}"></div>
+      <div style="position:absolute;right:300px;top:860px;background:#d4ff3a;color:#0f172a;font-weight:900;font-size:46px;padding:16px 28px;border-radius:24px;transform:rotate(-5deg);box-shadow:0 14px 30px rgba(0,0,0,.35)">98% para ti</div>{ft()}''')
+    cards = "".join(f'''<div style="position:relative"><div class="blob" style="height:250px;border-radius:30px"><img src="{f}"></div><div class="badge" style="top:-16px;left:-10px;font-size:36px;padding:8px 18px">-{dto(p)}%</div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-top:14px"><span class="price" style="font-size:48px;color:#d4ff3a">{eur(p["p"])}</span><span class="old" style="font-size:26px">{eur(p["o"])}</span></div></div>''' for p, f in pal)
+    S(f'''{hd(4,N)}<div style="position:absolute;top:180px;left:72px;right:72px"><span class="tag">🛒 Y la compras desde la app</span>
+      <h1 style="font-size:96px;margin-top:26px">Hasta <span style="color:#ff5a36">-{mx}%</span><br><em>hoy.</em></h1></div>
+      <div style="position:absolute;left:72px;right:72px;top:500px;display:grid;grid-template-columns:1fr 1fr;gap:34px 30px">{cards}</div>{ft()}''')
+    S(f'''{hd(5,N)}<div style="position:absolute;top:190px;left:72px;right:72px"><span class="tag">🏆 Y después</span>
+      <h1 style="font-size:100px;margin-top:30px">Demuéstralo<br><em>en la pista.</em></h1>
+      <p class="sub" style="margin-top:24px;max-width:880px">Tu nivel real del 1 al 7 y una liga con tus amigos para ver quién manda.</p></div>
+      <div style="position:absolute;left:72px;right:72px;bottom:190px;display:flex;align-items:flex-end;justify-content:space-between">{anillo()}{podio()}</div>{ft()}''')
+    S(f'''<div class="glow" style="top:200px;right:-200px"></div><div class="hd"><div class="logo"><img src="{icon}">Pádel<b>+</b></div><span class="num">6/6</span></div>
+      <div style="position:absolute;top:250px;left:72px;right:72px;text-align:center"><span class="tag" style="background:#ff5a36;color:#fff">Te reto</span>
+      <h1 style="font-size:104px;margin-top:34px">¿A que no te sale<br><em>la pala que tienes?</em></h1>
+      <p class="sub" style="margin-top:30px">Haz el test y cuéntanos en comentarios 👇</p>
+      <div style="display:inline-block;margin-top:60px;background:#d4ff3a;color:#0f172a;font-weight:900;font-size:72px;padding:30px 60px;border-radius:999px;letter-spacing:-2px">padelmas.club</div>
+      <p style="margin-top:30px;font-size:36px;font-weight:700;color:#cbd5e1">Enlace en el perfil 👆</p></div>''')
 else:
     sys.exit("Modo desconocido")
 
