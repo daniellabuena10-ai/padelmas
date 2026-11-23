@@ -387,6 +387,17 @@ a.btn.buy{background:var(--volt);color:#0b0f02!important;border:0;font-weight:80
 .hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin:0 -2px 14px;scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
 
 /* ===== Portada oscura (como el folleto) ===== */
+.lcom{background:radial-gradient(120% 80% at 100% 0%,rgba(212,255,58,.16),transparent 60%),#1e293b;border:1.5px solid rgba(212,255,58,.45);border-radius:24px;padding:20px 18px 18px;margin:4px 0 24px}
+.lctag{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:1.2px;color:#0f172a;background:#d4ff3a;border-radius:999px;padding:5px 10px}
+.lcom h2{font-size:30px;line-height:1.02;letter-spacing:-1px;font-weight:900;color:#fff;margin:12px 0 14px}
+.lcgame{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+.lcg{position:relative;width:112px;height:112px;flex:none}.lcg svg{width:100%;height:100%}.lcg div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.lcg b{font-family:"Barlow Condensed",Inter,sans-serif;font-size:36px;line-height:1;color:#fff}.lcg small{font-size:11px;color:#94a3b8;font-weight:700}
+.lcpod{flex:1;display:flex;align-items:flex-end;gap:6px;max-width:190px}.pd{flex:1;display:flex;flex-direction:column;align-items:center}.pa{font-size:22px;margin-bottom:4px}
+.pb{width:100%;border-radius:10px 10px 4px 4px;background:#334155;color:#cbd5e1;font-weight:900;font-size:14px;display:flex;align-items:flex-start;justify-content:center;padding-top:8px}.pb.me{background:#d4ff3a;color:#0f172a}
+.lcmsg{font-size:14px;color:#cbd5e1;margin:14px 0 12px;line-height:1.4}.lcmsg b{color:#fff}
+.lcl{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:9px}.lcl li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:#cbd5e1;line-height:1.35}.lcl i{font-style:normal;font-size:18px;width:24px;text-align:center;flex:none}.lcl b{color:#fff}
+.lcn{font-size:12px;color:#94a3b8;text-align:center;margin-top:8px}
+
 .lnivel{background:linear-gradient(160deg,#1e293b,#162033);border:1px solid #334155;border-radius:22px;padding:18px;margin:0 0 22px}
 .lnh{display:flex;justify-content:space-between;align-items:center}.lnh span{font-size:11.5px;font-weight:800;letter-spacing:1.2px;color:#94a3b8}.lnh em{font-style:normal;font-size:12px;font-weight:800;color:#0f172a;background:#d4ff3a;border-radius:999px;padding:4px 9px}
 .lnn{display:flex;align-items:baseline;gap:8px;margin-top:6px}.lnn b{font-family:"Barlow Condensed",Inter,sans-serif;font-size:64px;line-height:1;color:#d4ff3a}.lnn small{font-size:15px;color:#cbd5e1;font-weight:600}
@@ -436,17 +447,21 @@ body:has(#auth:not([hidden]) #land:not([hidden])){background:#0f172a!important}
     
     </div>
     <div class="rcol">
-    <div class="lnivel">
-      <div class="lnh"><span>TU NIVEL DE PÁDEL</span><em>▲ 0,14 esta semana</em></div>
-      <div class="lnn"><b>3,39</b><small>/ 7 · Intermedio</small></div>
-      <div class="lvl"><i class="on"></i><i class="on"></i><i class="on"></i><i class="half"></i><i></i><i></i><i></i></div>
-      <div class="lnr">
-        <div class="r"><span class="p">1</span><span class="a" style="background:#38bdf8">M</span><b>Marta</b><span class="v">4,10</span></div>
-        <div class="r me"><span class="p">2</span><span class="a" style="background:#d4ff3a;color:#0f172a">T</span><b>Tú</b><span class="up">▲</span><span class="v">3,39</span></div>
-        <div class="r"><span class="p">3</span><span class="a" style="background:#f472b6">J</span><b>Javi</b><span class="v">3,21</span></div>
+    <div class="lcom">
+      <span class="lctag">👥 COMUNIDAD PÁDEL+</span>
+      <h2>Compite con<br>tus amigos.</h2>
+      <div class="lcgame">
+        <div class="lcg"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="#334155" stroke-width="11"/><circle cx="60" cy="60" r="50" fill="none" stroke="#d4ff3a" stroke-width="11" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="162" transform="rotate(-90 60 60)"/></svg><div><b>3,39</b><small>tu nivel</small></div></div>
+        <div class="lcpod">
+          <div class="pd"><span class="pa">🥈</span><div class="pb me" style="height:58px">TÚ</div></div>
+          <div class="pd"><span class="pa">👑</span><div class="pb" style="height:78px">1º</div></div>
+          <div class="pd"><span class="pa">🥉</span><div class="pb" style="height:42px">3º</div></div>
+        </div>
       </div>
-      <p>Apunta tus partidos en 10 segundos: tu nivel sube o baja según contra quién ganas, y en tu liga se ve quién va primero.</p>
-      <div class="lnc"><span>👥 Comunidad</span><span>🏟️ Ligas con amigos</span><span>📈 Nivel real</span></div>
+      <p class="lcmsg">Vas <b>2º en tu liga</b>. Gana el próximo partido y pasas al primero 🔥</p>
+      <ul class="lcl"><li><i>📈</i><span><b>Tu nivel real</b>, del 1 al 7, que sube o baja con cada partido</span></li><li><i>🏟️</i><span><b>Ligas con tu grupo</b>: invítales por WhatsApp</span></li><li><i>💬</i><span><b>Comparte partidos y opiniones</b> de palas con otros jugadores</span></li></ul>
+      <button class="btn lime block big" id="goUp2">Unirme a la comunidad</button>
+      <p class="lcn">En 30 segundos, con tu email.</p>
     </div>
     <div class="lph">
       <figure><div class="fr"><img src="img/land1.jpg" alt="Tu pala ideal en la app"></div><figcaption><b>Tu pala ideal</b>Según tu nivel, tu lado y tu juego</figcaption></figure>
