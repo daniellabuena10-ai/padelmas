@@ -112,11 +112,11 @@ elif tipo == "ofertas3":
     <div class="fine">Precios en Padel Market a {fecha}. Pueden cambiar.</div>'''
 elif tipo == "recomendador":
     sel = con_foto(top, 1)
-    ph = f'<div class="blob" style="position:absolute;bottom:330px;right:80px;width:380px;height:460px;transform:rotate(6deg)"><img src="{sel[0][1]}"></div>' if sel else ""
+    ph = f'<div class="blob" style="position:absolute;bottom:300px;right:70px;width:320px;height:400px;transform:rotate(6deg)"><img src="{sel[0][1]}"></div>' if sel else ""
     opts = "".join(f'<div style="background:var(--card);color:#0f172a;border-radius:999px;padding:30px 44px;font-size:46px;font-weight:800;margin-top:24px;display:flex;align-items:center;gap:22px;width:{w}px"><span style="font-size:52px">{e}</span>{t}</div>' for e, t, w in [("🎯", "Control", 520), ("⚖️", "Polivalente", 600), ("💥", "Potencia", 540)])
     body = f'''<div class="top">{logo}<span class="chip">Test · 1 min</span></div>
     <h1 style="position:absolute;top:310px;left:80px;right:80px;font-size:150px">¿Qué<br>pala<br>eres?</h1>
-    <div style="position:absolute;top:900px;left:80px">{opts}<p style="font-size:36px;font-weight:700;color:var(--mute);margin-top:40px;max-width:520px;line-height:1.3">Te decimos la tuya según tu nivel, tu lado y tu juego.</p></div>
+    <div style="position:absolute;top:860px;left:80px">{opts}<p style="font-size:36px;font-weight:700;color:var(--mute);margin-top:40px;max-width:520px;line-height:1.3">Te decimos la tuya según tu nivel, tu lado y tu juego.</p></div>
     {ph}
     <div class="foot"><span class="url">padelmas.club</span><p>Haz el<br>test 👆</p></div>'''
 elif tipo == "liga":
