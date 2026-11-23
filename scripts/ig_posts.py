@@ -71,7 +71,7 @@ h1{font-weight:900;letter-spacing:-4px;line-height:.95}h1 em{font-style:normal;c
 .ft{position:absolute;left:72px;right:72px;bottom:64px;display:flex;align-items:center;justify-content:space-between}
 .url{font-weight:900;font-size:34px}.url b{color:#d4ff3a}
 .sw{background:#d4ff3a;color:#0f172a;font-weight:900;font-size:28px;border-radius:999px;padding:14px 26px}
-.blob{background:#fff;border-radius:44px;display:grid;place-items:center;overflow:hidden}.blob img{max-width:86%;max-height:86%;object-fit:contain}
+.blob{background:#fff;border-radius:44px;display:flex;align-items:center;justify-content:center;overflow:hidden}.blob img{width:86%;height:86%;object-fit:contain}
 .badge{position:absolute;background:#ff5a36;color:#fff;font-weight:900;border-radius:20px;transform:rotate(-6deg);box-shadow:0 12px 28px rgba(0,0,0,.3)}
 .card{background:#1e293b;border:2px solid #334155;border-radius:36px}
 .ph{background:#475569;border-radius:44px;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.4)}.ph img{display:block;width:100%;border-radius:36px}
