@@ -35,7 +35,7 @@ function zqScore(q) {
   if (!CAT) return [];
   const TOP = ["bullpadel", "nox", "adidas", "head", "babolat", "asics", "joma", "wilson", "mizuno", "lotto", "drop shot", "siux", "kswiss", "k swiss", "lacoste"];
   const pista = q.pista === "i" ? "h" : q.pista;
-  return CAT.p.filter(p => p.c === "zapa" && !p.x && p.f && (!q.gen || !p.g || p.g === q.gen) && !/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n))).map(p => {
+  return CAT.p.filter(p => p.c === "zapa" && !p.x && p.f && (!q.gen || (p.g ? p.g === q.gen : !(q.gen === "h" ? /\b(w|women|woman|mujer)\b/ : /\b(m|men|man|hombre)\b/).test(norm2(p.n)))) && !/\bjr\b|junior|nino|nina|kids/.test(norm2(p.n))).map(p => {
     let sc = 0; const why = [];
     if (p.s === pista) { sc += 3; why.push(pista === "e" ? "Suela de espiga, ideal para tu pista" : pista === "o" ? "Suela omni: máximo agarre" : "Suela híbrida: vale para cualquier pista"); }
     else if (p.s === "h" && pista !== "h") { sc += 1.8; why.push("Suela híbrida, también sirve en tu pista"); }
@@ -44,9 +44,9 @@ function zqScore(q) {
     if (q.pie === "e") { if (p.h === "e") { sc += 2.5; why.push("Horma estrecha: sujetan bien el pie"); } else if (p.h === "a") sc -= 3; }
     const pr = q.prio || new Set();
     if (pr.has("a") && p.a) { sc += 1.5; why.push("Muy buena amortiguación"); }
-    if (pr.has("l") && (p.r || "").includes("l")) { sc += .5; why.push("Ligeras y rápidas"); }
-    if (pr.has("t") && (p.r || "").includes("t")) { sc += .5; why.push("Estables en los giros"); }
-    if (pr.has("d") && (p.r || "").includes("d")) { sc += .5; why.push("Suela muy resistente"); }
+    if (pr.has("l") && (p.r || "").includes("l")) { sc += 2.2; why.push("Ligeras y rápidas"); }
+    if (pr.has("t") && (p.r || "").includes("t")) { sc += 2.2; why.push("Estables en los giros"); }
+    if (pr.has("d") && (p.r || "").includes("d")) { sc += 2.2; why.push("Suela muy resistente"); }
     if (q.precio && p.p > q.precio) sc -= 2 + (p.p - q.precio) / 40;
     if (TOP.some(m => norm2(p.m || p.n).startsWith(m))) sc += .6;
     const d = dto(p); if (d >= 10) { sc += Math.min(.8, d / 60); why.push(`Ahora con un ${d}% de descuento`); }
