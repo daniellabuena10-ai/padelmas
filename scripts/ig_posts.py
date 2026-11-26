@@ -208,10 +208,17 @@ elif modo == "suelas":
              ("o", "Omni", "Máximo agarre", "Para pistas con mucha arena o que resbalan."),
              ("h", "Híbrida", "Vale para todo", "Si juegas en clubes distintos y no sabes qué pista te toca.")]
     sel = []
+    TOPZ = ("asics", "bullpadel", "adidas", "nike", "head", "babolat", "wilson", "mizuno", "nox")
+    def topz(s):
+        L = [p for p in ranking("zapa", 10, lambda p, s=s: p.get("s") == s) if (p.get("m") or "").lower().startswith(TOPZ)]
+        rk = {m: i for i, m in enumerate(TOPZ)}
+        L.sort(key=lambda p: (min(i for m, i in rk.items() if (p.get("m") or "").lower().startswith(m)), -(p.get("o") or p["p"])))
+        return L or ranking("zapa", 15, lambda p, s=s: p.get("s") == s)
+    usadas = set()
     for s, *_ in tipos:
-        r = con_foto(ranking("zapa", 15, lambda p, s=s: p.get("s") == s), 1)
+        r = con_foto([p for p in topz(s) if (p.get("m") or "").lower() not in usadas], 1) or con_foto(topz(s), 1)
         if not r: sys.exit(f"Sin foto de zapatilla {s}")
-        sel.append(r[0])
+        sel.append(r[0]); usadas.add((r[0][0].get("m") or "").lower())
     N = 5
     S(f'''{hd(1,N)}<div style="position:absolute;top:200px;left:72px;right:72px"><span class="tag">👟 Zapatillas</span>
       <h1 style="font-size:124px;margin-top:34px">¿Espiga<br>u <em>omni</em>?</h1>
