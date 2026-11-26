@@ -196,5 +196,6 @@ fetch("data/catalogo.json").then(r => r.json()).then(d => {
   document.getElementById("zp-list").innerHTML = zs.map(([z, r]) => prod(r, { marca: z.marca, nombre: z.modelo, chips: chip("Suela", z.suela, 1) + chip("Peso", "~" + z.peso + " g") + chip("Horma", z.horma), why: z.desc })).join("");
 }).catch(() => { ["palas-list", "ofertas-list", "zp-list"].forEach(id => document.getElementById(id).innerHTML = `<p class="load">No se ha podido cargar. <a href="./">Ábrelo en la app</a>.</p>`); });
 </script>
+<!-- Cloudflare Web Analytics (sin cookies) --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ea2ffd921bf641a4baf0661dfcad8489"}'></script>
 </body>
 </html>
