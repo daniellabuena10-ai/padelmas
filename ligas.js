@@ -30,10 +30,16 @@ setInterval(() => {
 // ---------- Datos ----------
 // Cada jugador guarda en su perfil público las ligas a las que pertenece (ligas[]) y sus datos (ligasInfo).
 const PERF = () => FS().collection("perfiles");
-async function cargarMisLigas(force) {
-  if (!socialOn()) return;
-  if (ligasCargando || (misLigas && !force)) return;
+let ligasProm = null;
+function cargarMisLigas(force) {
+  if (!socialOn()) return Promise.resolve();
+  if (ligasCargando) return force ? ligasProm.then(() => cargarMisLigas(true)) : ligasProm; // ya se están cargando: se espera a esa misma carga (evita bucles de repintado)
+  if (misLigas && !force) return Promise.resolve();
   ligasCargando = true;
+  ligasProm = cargarMisLigas_().finally(() => { ligasCargando = false; });
+  return ligasProm;
+}
+async function cargarMisLigas_() {
   try {
     const d = await PERF().doc(me.uid).get(); const p = d.exists ? d.data() : {};
     if (social.me) { social.me.ligas = p.ligas || []; social.me.ligasInfo = p.ligasInfo || {}; }
@@ -48,7 +54,12 @@ async function cargarMisLigas(force) {
     misLigas.sort((a, b) => (b.t || 0) - (a.t || 0));
     try { localStorage.setItem("pm-ligas", JSON.stringify(misLigas)); } catch {}
   } catch (e) { console.warn("ligas", e); misLigas = misLigas || []; }
-  ligasCargando = false;
+}
+// Quita una liga de lo guardado en el móvil sin recargar nada (al salir o eliminarla)
+function quitarLigaLocal(id) {
+  misLigas = (misLigas || []).filter(l => l.id !== id);
+  if (rkInicio && rkInicio.L && rkInicio.L.id === id) { rkInicio = null; window.__rkFresh = 0; }
+  try { localStorage.setItem("pm-ligas", JSON.stringify(misLigas)); if (!rkInicio) localStorage.removeItem("pm-rk"); } catch {}
 }
 async function leerLiga(id) {
   const q = await PERF().where("ligas", "array-contains", id).limit(300).get();
@@ -72,7 +83,7 @@ async function clasificacion(L) {
 // ---------- Pestaña Ligas ----------
 function ligasHTML() {
   if (!socialOn()) return `<div class="card empty"><p>Las ligas necesitan tu perfil público de la comunidad. Actívalo en Comunidad para crear o unirte a una liga.</p></div>`;
-  if (!misLigas) { cargarMisLigas().then(() => { if (view === "padel" && padelTab === "ligas" && !sheetOpen) render(); }); }
+  if (!misLigas) { cargarMisLigas().then(() => { if (misLigas && view === "padel" && padelTab === "ligas" && !sheetOpen) render(); }); }
   const lista = misLigas || [];
   return `<div class="ligahero"><div class="lgem">🏆</div><h2>Tu liga, tu ranking</h2><p>Crea una liga con tu grupo, tu club o tu americana de los jueves. Cada partido que apuntéis mueve la clasificación.</p>
       <div class="row" style="gap:8px;margin-top:14px"><button class="btn" id="lgNew" style="flex:1;background:var(--ink);color:#fff;border:0">${svg("plus")}Crear liga</button><button class="btn" id="lgJoin" style="flex:1">Tengo un código</button></div></div>
@@ -86,7 +97,7 @@ function wireLigas(root) {
 }
 // Para quien aún no ha calculado su nivel: las ligas en una hoja
 function openMisLigasSheet() {
-  openSheet("Ligas", ligasHTML(), s => { wireLigas(s); if (!misLigas) cargarMisLigas().then(() => sheetOpen && openMisLigasSheet()); });
+  openSheet("Ligas", ligasHTML(), s => { wireLigas(s); if (!misLigas) cargarMisLigas().then(() => misLigas && sheetOpen && openMisLigasSheet()); });
 }
 
 // ---------- Crear / unirse ----------
@@ -157,8 +168,8 @@ async function openLiga(id, recienCreada) {
     $("#lgInv", s).onclick = () => { const tx = encodeURIComponent(invTxt); if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) location.href = `whatsapp://send?text=${tx}`; else window.open(`https://web.whatsapp.com/send?text=${tx}`, "_blank"); };
     $("#lgCopy", s).onclick = async () => { try { if (navigator.share) await navigator.share({ text: invTxt }); else { await navigator.clipboard.writeText(invTxt); toast("Enlace copiado"); } } catch {} };
     $("#lgAdd", s).onclick = () => { closeSheet(); if ((state.perfil.padel || {}).nivel0) openPadelMatch(); else openNivelTest(); };
-    const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} misLigas = null; rkInicio = null; window.__rkFresh = 0; try { localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); } catch {} closeSheet(); });
-    const del = $("#lgDel", s); if (del) del.onclick = () => confirmSheet("Eliminar liga", `¿Seguro que quieres eliminar “${esc(L.nombre)}”? Desaparecerá para todos sus jugadores y no se puede deshacer.`, "Eliminar", async () => { try { await PERF().doc(me.uid).set({ ligasInfo: { [id]: { borrada: true } } }, { merge: true }); } catch (e) { console.warn(e); toast("No se ha podido eliminar. Inténtalo en un momento."); return; } misLigas = null; rkInicio = null; window.__rkFresh = 0; try { localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); } catch {} closeSheet(); toast("Liga eliminada"); if (typeof render === "function") render(); });
+    const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} quitarLigaLocal(id); closeSheet(); });
+    const del = $("#lgDel", s); if (del) del.onclick = () => confirmSheet("Eliminar liga", `¿Seguro que quieres eliminar “${esc(L.nombre)}”? Desaparecerá para todos sus jugadores y no se puede deshacer.`, "Eliminar", async () => { const ok = $("#cOk"); if (ok) { if (ok.disabled) return; ok.disabled = true; ok.textContent = "Eliminando…"; } try { await PERF().doc(me.uid).set({ ligasInfo: { [id]: { borrada: true } } }, { merge: true }); } catch (e) { console.warn(e); toast("No se ha podido eliminar. Inténtalo en un momento."); return; } quitarLigaLocal(id); closeSheet(); toast("Liga eliminada"); });
     const muro = $("#lgMuro", s);
     const pinta = async () => {
       try {
@@ -213,7 +224,7 @@ function rankingInicioHTML() {
 }
 async function rkCargar() {
   try {
-    if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (L) { const rows = await clasificacion(L); rkInicio = { L: { id: L.id, nombre: L.nombre }, rows: rows.map(r => ({ uid: r.uid, nombre: r.nombre, color: r.color, foto: r.foto, nivelPadel: r.nivelPadel, yo: !!r.yo })) }; } }
+    if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (!L) rkInicio = null; else { const rows = await clasificacion(L); rkInicio = { L: { id: L.id, nombre: L.nombre }, rows: rows.map(r => ({ uid: r.uid, nombre: r.nombre, color: r.color, foto: r.foto, nivelPadel: r.nivelPadel, yo: !!r.yo })) }; } }
     else rkInicio = null;
     try { localStorage.setItem("pm-rk", JSON.stringify(rkInicio)); localStorage.setItem("pm-rk-uid", me.uid); } catch {}
   } catch (e) { console.warn(e); }
