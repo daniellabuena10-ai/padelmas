@@ -38,7 +38,13 @@ async function cargarMisLigas(force) {
     const d = await PERF().doc(me.uid).get(); const p = d.exists ? d.data() : {};
     if (social.me) { social.me.ligas = p.ligas || []; social.me.ligasInfo = p.ligasInfo || {}; }
     const info = p.ligasInfo || {};
-    misLigas = await Promise.all((p.ligas || []).map(async id => { let n = 0; try { n = (await PERF().where("ligas", "array-contains", id).limit(300).get()).size; } catch {} return { id, ...(info[id] || { nombre: "Liga " + id }), n }; }));
+    misLigas = (await Promise.all((p.ligas || []).map(async id => {
+      if (info[id] && info[id].borrada) return null; // la eliminé yo
+      let n = 0, borr = false;
+      try { const q = await PERF().where("ligas", "array-contains", id).limit(300).get(); n = q.size; borr = q.docs.some(d => { const x = d.data(); return x.ligasInfo && x.ligasInfo[id] && x.ligasInfo[id].borrada; }); } catch {}
+      if (borr) { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} return null; } // el creador la eliminó
+      return { id, ...(info[id] || { nombre: "Liga " + id }), n };
+    }))).filter(Boolean);
     misLigas.sort((a, b) => (b.t || 0) - (a.t || 0));
     try { localStorage.setItem("pm-ligas", JSON.stringify(misLigas)); } catch {}
   } catch (e) { console.warn("ligas", e); misLigas = misLigas || []; }
@@ -47,6 +53,7 @@ async function cargarMisLigas(force) {
 async function leerLiga(id) {
   const q = await PERF().where("ligas", "array-contains", id).limit(300).get();
   const docs = q.docs.map(d => d.data()); if (!docs.length) return null;
+  if (docs.some(x => x.ligasInfo && x.ligasInfo[id] && x.ligasInfo[id].borrada)) return null; // eliminada por su creador
   const info = (docs.find(x => x.ligasInfo && x.ligasInfo[id] && x.ligasInfo[id].creador === x.uid) || docs.find(x => x.ligasInfo && x.ligasInfo[id]) || {}).ligasInfo || {};
   return { id, ...(info[id] || { nombre: "Liga " + id }), miembros: docs.map(x => x.uid), perfiles: docs };
 }
@@ -70,7 +77,7 @@ function ligasHTML() {
   return `<div class="ligahero"><div class="lgem">🏆</div><h2>Tu liga, tu ranking</h2><p>Crea una liga con tu grupo, tu club o tu americana de los jueves. Cada partido que apuntéis mueve la clasificación.</p>
       <div class="row" style="gap:8px;margin-top:14px"><button class="btn" id="lgNew" style="flex:1;background:var(--ink);color:#fff;border:0">${svg("plus")}Crear liga</button><button class="btn" id="lgJoin" style="flex:1">Tengo un código</button></div></div>
     ${!misLigas ? `<p class="small mute" style="text-align:center;margin:16px 0">Cargando tus ligas…</p>` : lista.length ? `<div class="sec">Tus ligas</div>${lista.map(L => `<button class="ligarow" data-liga="${L.id}"><span class="lgic">${esc((L.nombre || "?")[0].toUpperCase())}</span><span style="flex:1;min-width:0"><b>${esc(L.nombre)}</b><small>${(L.miembros || []).length} jugador${(L.miembros || []).length === 1 ? "" : "es"}${L.sede ? " · " + esc(L.sede) : ""}</small></span><span class="mute">›</span></button>`).join("")}`
-      : `<div class="card" style="margin-top:12px"><h3>¿Cómo funciona?</h3><ol class="lgsteps"><li><b>Crea la liga</b> y ponle nombre (“Los del jueves”, “Club X”).</li><li><b>Invita</b> por WhatsApp con el enlace: entran en 10 segundos.</li><li><b>Apuntad vuestros partidos</b>: el nivel de cada uno sube o baja según contra quién gana.</li><li><b>Mirad quién va primero</b> y picaos en el muro de la liga.</li></ol></div>`}`;
+      : `<div class="card" style="margin-top:12px"><h3>¿Cómo funciona?</h3><ol class="lgsteps"><li><b>Crea la liga</b> y ponle nombre (“Los del jueves”, “Club X”).</li><li><b>Invita</b> por WhatsApp con el enlace: entran en 10 segundos.</li><li><b>Apuntad vuestros partidos</b>: el nivel de cada uno sube o baja según contra quién gana.</li><li><b>Mirad quién va primero</b> y retaos en el muro de la liga.</li></ol></div>`}`;
 }
 function wireLigas(root) {
   const n = $("#lgNew", root); if (n) n.onclick = openCrearLiga;
@@ -136,21 +143,22 @@ async function openLiga(id, recienCreada) {
   const yo = rows[pos - 1];
   const msgPos = !yo || !yo.nivelPadel ? `Calcula tu nivel y apunta un partido para entrar en la clasificación.` : pos === 1 ? `Vas primero de la liga 👑 Que no te adelanten.` : `Vas ${pos}º. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
   openSheet(esc(L.nombre), `
-    ${recienCreada ? `<div class="hint" style="margin-bottom:10px">🎉<span>¡Liga creada! Ahora invita a tu gente: cuantos más seáis, más pique.</span></div>` : ""}
+    ${recienCreada ? `<div class="hint" style="margin-bottom:10px">🎉<span>¡Liga creada! Ahora invita a tu gente: cuantos más seáis, más emoción.</span></div>` : ""}
     <div class="lgcab"><div><div class="tiny mute">${(L.miembros || []).length} jugador${(L.miembros || []).length === 1 ? "" : "es"}${L.sede ? " · " + esc(L.sede) : ""}</div><div class="small" style="margin-top:4px">${msgPos}</div></div></div>
     <div class="row" style="gap:8px;margin:12px 0"><button class="btn" id="lgInv" style="flex:1;background:var(--ink);color:#fff;border:0">Invitar por WhatsApp</button><button class="btn" id="lgCopy" style="flex:0 0 auto">Compartir</button></div>
     ${podioHTML(rows)}
     <div class="sec">Clasificación</div><div class="card" style="padding:4px 8px">${rows.map(fila).join("")}</div>
     <button class="btn block" id="lgAdd" style="margin-top:10px">${svg("plus")}Apuntar un partido</button>
     <div class="sec">Muro de la liga</div>
-    <div class="lgcompose"><textarea id="lgMsg" rows="2" maxlength="500" placeholder="Reta a alguien, organiza el próximo partido o pica al líder…"></textarea><button class="btn" id="lgSend" style="background:var(--ink);color:#fff;border:0">Enviar</button></div>
+    <div class="lgcompose"><textarea id="lgMsg" rows="2" maxlength="500" placeholder="Reta a alguien, organiza el próximo partido o reta al líder…"></textarea><button class="btn" id="lgSend" style="background:var(--ink);color:#fff;border:0">Enviar</button></div>
     <div id="lgMuro"><p class="small mute" style="text-align:center;margin:12px 0">Cargando…</p></div>
-    <p class="tiny mute" style="text-align:center;margin-top:14px">Código de la liga: <b style="letter-spacing:2px">${L.id}</b>${L.creador !== me.uid ? ` · <button class="link" id="lgOut" style="font-size:inherit">Salir de la liga</button>` : ""}</p>`, s => {
+    <p class="tiny mute" style="text-align:center;margin-top:14px">Código de la liga: <b style="letter-spacing:2px">${L.id}</b>${L.creador !== me.uid ? ` · <button class="link" id="lgOut" style="font-size:inherit">Salir de la liga</button>` : ` · <button class="link" id="lgDel" style="font-size:inherit;color:var(--red,#e11d48)">Eliminar liga</button>`}</p>`, s => {
     $$("[data-user]", s).forEach(b => b.onclick = () => openUser(b.dataset.user));
     $("#lgInv", s).onclick = () => { const tx = encodeURIComponent(invTxt); if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) location.href = `whatsapp://send?text=${tx}`; else window.open(`https://web.whatsapp.com/send?text=${tx}`, "_blank"); };
     $("#lgCopy", s).onclick = async () => { try { if (navigator.share) await navigator.share({ text: invTxt }); else { await navigator.clipboard.writeText(invTxt); toast("Enlace copiado"); } } catch {} };
     $("#lgAdd", s).onclick = () => { closeSheet(); if ((state.perfil.padel || {}).nivel0) openPadelMatch(); else openNivelTest(); };
     const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} misLigas = null; rkInicio = null; window.__rkFresh = 0; try { localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); } catch {} closeSheet(); });
+    const del = $("#lgDel", s); if (del) del.onclick = () => confirmSheet("Eliminar liga", `¿Seguro que quieres eliminar “${esc(L.nombre)}”? Desaparecerá para todos sus jugadores y no se puede deshacer.`, "Eliminar", async () => { try { await PERF().doc(me.uid).set({ ligasInfo: { [id]: { borrada: true } } }, { merge: true }); } catch (e) { console.warn(e); toast("No se ha podido eliminar. Inténtalo en un momento."); return; } misLigas = null; rkInicio = null; window.__rkFresh = 0; try { localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); } catch {} closeSheet(); toast("Liga eliminada"); if (typeof render === "function") render(); });
     const muro = $("#lgMuro", s);
     const pinta = async () => {
       try {
@@ -191,12 +199,12 @@ function rankingInicioHTML() {
       if (rkInicio && misLigas && misLigas.length) { /* hay datos guardados: se pintan abajo */ }
       else return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 Tu liga</b><span>Cargando…</span></div></div>`;
     }
-    if (!(rkInicio && misLigas && misLigas.length) || window.__rkNoSocial) return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
+    if (!(rkInicio && misLigas && misLigas.length) || window.__rkNoSocial) return cta("Compite con tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
   }
   try { const cu = localStorage.getItem("pm-rk-uid"); if (cu && cu !== me.uid) { rkInicio = null; misLigas = null; localStorage.removeItem("pm-rk"); localStorage.removeItem("pm-ligas"); localStorage.setItem("pm-rk-uid", me.uid); } } catch {}
   if (!window.__rkFresh && socialOn()) { window.__rkFresh = 1; cargarMisLigas(true).then(rkCargar).then(rkPintar); }
   if (!misLigas || (misLigas.length && !rkInicio)) return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 Tu liga</b><span>Cargando clasificación…</span></div></div>`;
-  if (!misLigas.length || !rkInicio) return cta("Pica a tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
+  if (!misLigas.length || !rkInicio) return cta("Compite con tus amigos", "Crea una liga con tu grupo y mirad quién va primero.");
   const yoR = yoRank(); const rows = rkInicio.rows.map(r => r.uid === me.uid ? { ...r, ...yoR } : r).sort((a, b) => (b.nivelPadel || 0) - (a.nivelPadel || 0)); const L = rkInicio.L;
   const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
   const sub = !yo || !yo.nivelPadel ? "Apunta un partido para entrar en la clasificación." : pos === 1 ? "Vas primero 👑 Que no te adelanten." : `Vas ${pos}º de ${rows.length}. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
