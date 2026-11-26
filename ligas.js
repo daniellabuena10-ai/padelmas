@@ -3,7 +3,7 @@
 
 const LIGA_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 let misLigas = null, ligasCargando = false;
-const ligaLink = c => `https://padelmas.club/?liga=${c}`;
+const ligaLink = c => `https://padelmas.club/liga/?c=${c}`;
 const ligaCod = () => Array.from({ length: 6 }, () => LIGA_ABC[Math.floor(Math.random() * LIGA_ABC.length)]).join("");
 
 // ---------- Invitación por enlace ----------
