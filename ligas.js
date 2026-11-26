@@ -139,41 +139,142 @@ async function openUnirmeLiga(code) {
   });
 }
 
+// ---------- Partidos de liga (cuentan cuando un rival los confirma) ----------
+// posts {tipo:'ligapartido', liga, uid, t, a:[uids de quien lo apunta y su pareja], b:[uids rivales], s:"6-4,6-3", kudos:[]}
+//   kudos = rivales que lo confirman (las reglas solo dejan que cada uno se añada a sí mismo, así nadie confirma por otro)
+// posts {tipo:'ligarech', liga, uid, ref, t} = un rival dice que el resultado no es correcto
+const LP_GANA = 3, LP_PIERDE = 1;
+const lpSets = s => String(s || "").split(",").map(x => x.split("-").map(Number)).filter(x => x.length === 2 && x.every(n => !isNaN(n)));
+function lpEstado(m, rech) {
+  const riv = m.b || [];
+  if (rech.some(r => r.ref === m.id && riv.includes(r.uid))) return "rech";
+  if ((m.kudos || []).some(u => riv.includes(u))) return "ok";
+  return "pend";
+}
+async function leerLigaPosts(id) {
+  const q = await FS().collection("posts").where("liga", "==", id).limit(400).get();
+  const all = q.docs.map(d => ({ id: d.id, ...d.data() }));
+  const rech = all.filter(x => x.tipo === "ligarech");
+  const partidos = all.filter(x => x.tipo === "ligapartido").map(m => ({ ...m, estado: lpEstado(m, rech) })).sort((a, b) => (b.t || 0) - (a.t || 0));
+  return { muro: all.filter(x => x.tipo === "liga").sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 40), partidos, rech };
+}
+// Clasificación de la liga: 3 puntos por victoria y 1 por partido jugado y perdido. Solo partidos confirmados.
+function tablaLiga(L, partidos) {
+  const T = {}; (L.perfiles || []).forEach(p => { T[p.uid] = { ...(p.uid === me.uid ? yoRank() : p), pj: 0, pg: 0, pts: 0, ds: 0 }; });
+  partidos.filter(m => m.estado === "ok").forEach(m => {
+    const sets = lpSets(m.s), gA = setsWin(sets); if (gA === null) return;
+    let sA = 0, sB = 0; sets.forEach(x => { if (x[0] > x[1]) sA++; else if (x[1] > x[0]) sB++; });
+    [[m.a, gA, sA - sB], [m.b, !gA, sB - sA]].forEach(([eq, gana, d]) => (eq || []).forEach(u => { const r = T[u]; if (!r) return; r.pj++; if (gana) { r.pg++; r.pts += LP_GANA; } else r.pts += LP_PIERDE; r.ds += d; }));
+  });
+  return Object.values(T).sort((a, b) => b.pts - a.pts || b.ds - a.ds || b.pg - a.pg || (b.nivelPadel || 0) - (a.nivelPadel || 0));
+}
+const lpNom = (L, u) => { if (u === me.uid) return "Tú"; const p = (L.perfiles || []).find(x => x.uid === u); return p ? (p.nombre || "Jugador").split(" ")[0] : "Jugador"; };
+const lpEq = (L, eq) => (eq || []).map(u => lpNom(L, u)).join(" y ");
+function lpPersonal(L, m, ladoMio) {
+  // Guarda el partido también en el historial de quien juega (para su nivel), desde su lado
+  const sets = lpSets(m.s).map(x => ladoMio === "a" ? x : [x[1], x[0]]);
+  const mio = ladoMio === "a" ? m.a : m.b, otro = ladoMio === "a" ? m.b : m.a;
+  const jug = u => { const p = (L.perfiles || []).find(x => x.uid === u) || {}; return { uid: u, n: p.nombre || "Jugador" }; };
+  const compU = (mio || []).find(u => u !== me.uid);
+  const a = { id: uid("a"), deporte: "padel", fecha: new Date(m.t || Date.now()).toISOString(), dur: 5400, dist: 0, fuente: "liga", padel: { sets, comp: compU ? jug(compU) : null, riv: (otro || []).map(jug), club: L.nombre, tipo: "liga", lado: null, lpid: m.id } };
+  if (Object.values(state.act).some(x => x.padel && x.padel.lpid === m.id)) return;
+  fillPadelAct(a); saveItem("act", a); try { syncNivel(); } catch {}
+}
+function openLigaPartido(L) {
+  const otros = (L.perfiles || []).filter(p => p.uid !== me.uid);
+  if (!otros.length) { toast("Invita primero a tus rivales a la liga"); return; }
+  const sets = [[6, 4], [6, 4], [0, 0]];
+  const opt = ph => `<option value="">${ph}</option>` + otros.map(p => `<option value="${p.uid}">${esc(p.nombre || "Jugador")}</option>`).join("");
+  openSheet("Partido de liga", `
+    <div class="hint" style="margin-bottom:12px">✅<span>Cuenta para la clasificación cuando <b style="color:var(--ink)">uno de tus rivales lo confirme</b> desde la app.</span></div>
+    <div class="card" style="padding:12px;margin-bottom:10px">
+      <div class="small mute" style="margin-bottom:6px">Tú y…</div><select id="lpC"><option value="">Sin pareja de la liga</option>${otros.map(p => `<option value="${p.uid}">${esc(p.nombre || "Jugador")}</option>`).join("")}</select>
+      <div class="small mute" style="margin:12px 0 6px">Contra</div><div class="row" style="gap:8px"><select id="lpR1">${opt("Rival 1")}</select><select id="lpR2">${opt("Rival 2 (opcional)")}</select></div></div>
+    <div class="field" style="margin-bottom:10px">Resultado <span class="tiny mute">(tu equipo – rivales)</span><div id="lpS"></div></div>
+    <div class="err" id="lpE"></div><button class="btn block" id="lpOk" style="background:var(--ink);color:#fff;border:0">Enviar para confirmar</button>`, s => {
+    const drawSets = () => { $("#lpS", s).innerHTML = sets.map((st, i) => `<div class="setrow"><span class="tiny mute">Set ${i + 1}</span>${[0, 1].map(k => `<div class="stp"><button data-s="${i}" data-k="${k}" data-d="-1">−</button><b class="num">${st[k]}</b><button data-s="${i}" data-k="${k}" data-d="1">+</button></div>`).join(`<span class="mute">–</span>`)}</div>`).join("") + `<div class="tiny mute" style="margin-top:4px">Deja el 3.º set en 0–0 si no se jugó.</div>`;
+      $$("#lpS [data-s]", s).forEach(b => b.onclick = () => { const st = sets[+b.dataset.s]; st[+b.dataset.k] = Math.max(0, Math.min(7, st[+b.dataset.k] + +b.dataset.d)); drawSets(); }); };
+    drawSets();
+    let saving = false;
+    $("#lpOk", s).onclick = async () => {
+      if (saving) return;
+      const c = $("#lpC", s).value, r1 = $("#lpR1", s).value, r2 = $("#lpR2", s).value, E = $("#lpE", s);
+      const riv = [r1, r2].filter(Boolean);
+      if (!riv.length) { E.textContent = "Elige al menos un rival de la liga."; return; }
+      if (new Set([c, ...riv].filter(Boolean)).size !== [c, ...riv].filter(Boolean).length) { E.textContent = "Has elegido a la misma persona dos veces."; return; }
+      const played = sets.filter(x => x[0] + x[1] > 0); if (!played.length || setsWin(played) === null) { E.textContent = "Pon el resultado (tiene que haber un ganador)."; return; }
+      saving = true; const btn = $("#lpOk", s); btn.disabled = true; btn.textContent = "Enviando…"; E.textContent = "";
+      try {
+        const ref = FS().collection("posts").doc();
+        const m = { id: ref.id, uid: me.uid, tipo: "ligapartido", liga: L.id, nombre: (social.me && social.me.nombre) || "Jugador", a: [me.uid, ...(c ? [c] : [])], b: riv, s: played.map(x => x.join("-")).join(","), kudos: [], t: Date.now() };
+        await ref.set(m);
+        lpPersonal(L, m, "a");
+        riv.forEach(u => { try { aviso(u, { tipo: "comentario", texto: `ha apuntado un partido de la liga ${L.nombre} (${setsStr(played)}). Entra en la liga para confirmarlo.` }); } catch {} });
+        toast("Enviado. Cuenta cuando un rival lo confirme ✅"); closeSheet(); openLiga(L.id, false, "liga");
+      } catch (e) { console.warn(e); saving = false; btn.disabled = false; btn.textContent = "Enviar para confirmar"; E.textContent = "No se ha podido enviar. Inténtalo otra vez."; }
+    };
+  });
+}
+async function lpConfirmar(L, m, ok) {
+  try {
+    if (ok) { await FS().collection("posts").doc(m.id).update({ kudos: FV().arrayUnion(me.uid) }); lpPersonal(L, { ...m, kudos: [...(m.kudos || []), me.uid] }, "b"); toast("Resultado confirmado ✅"); }
+    else { const ref = FS().collection("posts").doc(); await ref.set({ id: ref.id, uid: me.uid, tipo: "ligarech", liga: L.id, ref: m.id, t: Date.now() }); try { aviso(m.uid, { tipo: "comentario", texto: `dice que el resultado del partido de la liga ${L.nombre} no es correcto. Bórralo y apúntalo de nuevo.` }); } catch {} toast("Hemos avisado a quien lo apuntó"); }
+  } catch (e) { console.warn(e); toast("No se ha podido. Inténtalo en un momento."); return; }
+  openLiga(L.id, false, "liga");
+}
+
 // ---------- Liga: clasificación + muro ----------
-function podioHTML(rows) {
+function podioHTML(rows, val = p => p.nivelPadel ? fmtNivel(p.nivelPadel) : "–") {
   const t = rows.slice(0, 3); if (!t.length) return "";
   const ord = [t[1], t[0], t[2]].filter(Boolean), alt = { 0: 92, 1: 120, 2: 72 };
-  return `<div class="podio">${ord.map(p => { const i = rows.indexOf(p); return `<div class="pod p${i + 1}" ${p.yo ? "" : `data-user="${p.uid}"`}>${i === 0 ? `<div class="crown">👑</div>` : ""}${avatar(p, i === 0 ? 56 : 46)}<div class="pn">${esc(p.yo ? "Tú" : (p.nombre || "").split(" ")[0])}</div><div class="pv num">${p.nivelPadel ? fmtNivel(p.nivelPadel) : "–"}</div><div class="pb" style="height:${alt[i]}px"><span>${i + 1}</span></div></div>`; }).join("")}</div>`;
+  return `<div class="podio">${ord.map(p => { const i = rows.indexOf(p); return `<div class="pod p${i + 1}" ${p.yo ? "" : `data-user="${p.uid}"`}>${i === 0 ? `<div class="crown">👑</div>` : ""}${avatar(p, i === 0 ? 56 : 46)}<div class="pn">${esc(p.yo ? "Tú" : (p.nombre || "").split(" ")[0])}</div><div class="pv num">${val(p)}</div><div class="pb" style="height:${alt[i]}px"><span>${i + 1}</span></div></div>`; }).join("")}</div>`;
 }
-async function openLiga(id, recienCreada) {
-  let L = null; try { L = await leerLiga(id); } catch (e) { console.warn(e); }
+async function openLiga(id, recienCreada, tab) {
+  let L = null, P = { muro: [], partidos: [], rech: [] };
+  try { [L, P] = await Promise.all([leerLiga(id), leerLigaPosts(id).catch(e => { console.warn(e); return P; })]); } catch (e) { console.warn(e); }
   if (!L) { toast("No se ha encontrado la liga"); return; }
-  const rows = await clasificacion(L); const pos = rows.findIndex(r => r.yo) + 1;
+  const rowsN = await clasificacion(L), rowsL = tablaLiga(L, P.partidos);
+  const hayLiga = P.partidos.some(m => m.estado === "ok");
+  const modo = tab || (hayLiga ? "liga" : "nivel");
+  const misPend = P.partidos.filter(m => m.estado === "pend" && (m.b || []).includes(me.uid) && !P.rech.some(r => r.ref === m.id && r.uid === me.uid));
   const invTxt = `🏆 Únete a mi liga de pádel "${L.nombre}" en Pádel+ y a ver quién va primero 😏\n\n👉 ${ligaLink(L.id)}\n\n(Código: ${L.id})`;
-  const fila = (p, i) => { const d = p.nivelPadel && p.nivel7 ? p.nivelPadel - p.nivel7 : 0; return `<button class="lgfila${p.yo ? " yo" : ""}" ${p.yo ? "" : `data-user="${p.uid}"`}><span class="lgpos">${i + 1}</span>${avatar(p, 34)}<span style="flex:1;min-width:0;text-align:left"><b>${esc(p.yo ? "Tú" : p.nombre || "Jugador")}</b><small>${p.nPadel ? `${p.nPadel} partidos · ${Math.round((p.wPadel || 0) / p.nPadel * 100)}% victorias` : "Sin partidos aún"}</small></span>${Math.abs(d) >= .01 ? `<span class="lgtr ${d > 0 ? "up" : "dn"}">${d > 0 ? "▲" : "▼"}${nf(Math.abs(d), 2)}</span>` : ""}<span class="num lgniv">${p.nivelPadel ? fmtNivel(p.nivelPadel) : "–"}</span></button>`; };
-  const yo = rows[pos - 1];
-  const msgPos = !yo || !yo.nivelPadel ? `Calcula tu nivel y apunta un partido para entrar en la clasificación.` : pos === 1 ? `Vas primero de la liga 👑 Que no te adelanten.` : `Vas ${pos}º. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
+  const filaN = (p, i) => { const d = p.nivelPadel && p.nivel7 ? p.nivelPadel - p.nivel7 : 0; return `<button class="lgfila${p.yo ? " yo" : ""}" ${p.yo ? "" : `data-user="${p.uid}"`}><span class="lgpos">${i + 1}</span>${avatar(p, 34)}<span style="flex:1;min-width:0;text-align:left"><b>${esc(p.yo ? "Tú" : p.nombre || "Jugador")}</b><small>${p.nPadel ? `${p.nPadel} partidos · ${Math.round((p.wPadel || 0) / p.nPadel * 100)}% victorias` : "Sin partidos aún"}</small></span>${Math.abs(d) >= .01 ? `<span class="lgtr ${d > 0 ? "up" : "dn"}">${d > 0 ? "▲" : "▼"}${nf(Math.abs(d), 2)}</span>` : ""}<span class="num lgniv">${p.nivelPadel ? fmtNivel(p.nivelPadel) : "–"}</span></button>`; };
+  const filaL = (p, i) => `<button class="lgfila${p.yo ? " yo" : ""}" ${p.yo ? "" : `data-user="${p.uid}"`}><span class="lgpos">${i + 1}</span>${avatar(p, 34)}<span style="flex:1;min-width:0;text-align:left"><b>${esc(p.yo ? "Tú" : p.nombre || "Jugador")}</b><small>${p.pj ? `${p.pj} jugado${p.pj === 1 ? "" : "s"} · ${p.pg} ganado${p.pg === 1 ? "" : "s"}` : "Sin partidos de liga"}</small></span><span class="num lgniv">${p.pts}<small style="display:inline;font-size:11px;font-weight:700;color:var(--mute)"> pts</small></span></button>`;
+  const rows = modo === "liga" ? rowsL : rowsN;
+  const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
+  const msgPos = modo === "liga"
+    ? (!yo || !yo.pj ? `Juega y apunta tu primer partido de liga para sumar puntos.` : pos === 1 ? `Vas primero de la liga 👑 Que no te adelanten.` : (() => { const dif = rows[pos - 2].pts - yo.pts, nom = esc((rows[pos - 2].nombre || "").split(" ")[0]); return `Vas ${pos}º con ${yo.pts} punto${yo.pts === 1 ? "" : "s"}. ` + (dif ? `Estás a <b style="color:var(--vt)">${dif}</b> punto${dif === 1 ? "" : "s"} de ${nom}.` : `Empatado a puntos con ${nom}: gana el siguiente y lo adelantas.`); })())
+    : (!yo || !yo.nivelPadel ? `Calcula tu nivel y apunta un partido para entrar en la clasificación.` : pos === 1 ? `Vas primero de la liga 👑 Que no te adelanten.` : `Vas ${pos}º. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`);
+  const est = { ok: `<span class="lpst ok">✅ Confirmado</span>`, pend: `<span class="lpst pend">⏳ Falta que confirme un rival</span>`, rech: `<span class="lpst rech">❌ Un rival dice que no es correcto</span>` };
+  const partidoHTML = m => { const sets = lpSets(m.s), gA = setsWin(sets); return `<div class="lpm"><div style="flex:1;min-width:0"><div class="small"><b${gA ? ` style="color:var(--vt)"` : ""}>${esc(lpEq(L, m.a))}</b> <span class="num">${esc(setsStr(sets))}</span> <b${gA === false ? ` style="color:var(--vt)"` : ""}>${esc(lpEq(L, m.b))}</b></div><div class="tiny mute" style="margin-top:3px">${est[m.estado]} · ${ago(m.t)}</div></div>${m.uid === me.uid && m.estado !== "ok" ? `<button class="link tiny" data-lpdel="${m.id}">Borrar</button>` : ""}</div>`; };
   openSheet(esc(L.nombre), `
     ${recienCreada ? `<div class="hint" style="margin-bottom:10px">🎉<span>¡Liga creada! Ahora invita a tu gente: cuantos más seáis, más emoción.</span></div>` : ""}
+    ${misPend.map(m => `<div class="lpconf"><div class="small"><b>${esc(lpNom(L, m.uid))}</b> ha apuntado un partido contra ti:</div><div style="margin:6px 0 10px;font-weight:800">${esc(lpEq(L, m.a))} <span class="num">${esc(setsStr(lpSets(m.s)))}</span> ${esc(lpEq(L, m.b))}</div><div class="row" style="gap:8px"><button class="btn" data-lpno="${m.id}" style="flex:1">No es correcto</button><button class="btn" data-lpok="${m.id}" style="flex:1;background:var(--ink);color:#fff;border:0">Confirmar</button></div></div>`).join("")}
     <div class="lgcab"><div><div class="tiny mute">${(L.miembros || []).length} jugador${(L.miembros || []).length === 1 ? "" : "es"}${L.sede ? " · " + esc(L.sede) : ""}</div><div class="small" style="margin-top:4px">${msgPos}</div></div></div>
     <div class="row" style="gap:8px;margin:12px 0"><button class="btn" id="lgInv" style="flex:1;background:var(--ink);color:#fff;border:0">Invitar por WhatsApp</button><button class="btn" id="lgCopy" style="flex:0 0 auto">Compartir</button></div>
-    ${podioHTML(rows)}
-    <div class="sec">Clasificación</div><div class="card" style="padding:4px 8px">${rows.map(fila).join("")}</div>
-    <button class="btn block" id="lgAdd" style="margin-top:10px">${svg("plus")}Apuntar un partido</button>
+    <div class="seg" id="lgModo" style="margin-bottom:4px"><button data-m="liga" class="${modo === "liga" ? "on" : ""}">🏆 Liga</button><button data-m="nivel" class="${modo === "nivel" ? "on" : ""}">📈 Nivel</button></div>
+    ${modo === "liga" && !hayLiga ? `<div class="hint" style="margin-top:10px">🎾<span>Aún no hay partidos de liga confirmados. Cada victoria suma <b style="color:var(--ink)">3 puntos</b> y cada derrota <b style="color:var(--ink)">1</b>, y cuentan cuando un rival confirma el resultado.</span></div>` : podioHTML(rows, modo === "liga" ? (p => `${p.pts} pts`) : undefined)}
+    <div class="sec">Clasificación</div><div class="card" style="padding:4px 8px">${rows.map(modo === "liga" ? filaL : filaN).join("")}</div>
+    <button class="btn block" id="lgAdd" style="margin-top:10px;background:var(--ink);color:#fff;border:0">${svg("plus")}Apuntar partido de liga</button>
+    ${P.partidos.length ? `<div class="sec">Partidos de la liga</div><div class="card" style="padding:4px 10px">${P.partidos.slice(0, 15).map(partidoHTML).join("")}</div>` : ""}
     <div class="sec">Muro de la liga</div>
-    <div class="lgcompose"><textarea id="lgMsg" rows="2" maxlength="500" placeholder="Reta a alguien, organiza el próximo partido o reta al líder…"></textarea><button class="btn" id="lgSend" style="background:var(--ink);color:#fff;border:0">Enviar</button></div>
+    <div class="lgcompose"><textarea id="lgMsg" rows="2" maxlength="500" placeholder="Organiza el próximo partido, busca pareja o desafía al líder…"></textarea><button class="btn" id="lgSend" style="background:var(--ink);color:#fff;border:0">Enviar</button></div>
     <div id="lgMuro"><p class="small mute" style="text-align:center;margin:12px 0">Cargando…</p></div>
     <p class="tiny mute" style="text-align:center;margin-top:14px">Código de la liga: <b style="letter-spacing:2px">${L.id}</b>${L.creador !== me.uid ? ` · <button class="link" id="lgOut" style="font-size:inherit">Salir de la liga</button>` : ` · <button class="link" id="lgDel" style="font-size:inherit;color:var(--red,#e11d48)">Eliminar liga</button>`}</p>`, s => {
     $$("[data-user]", s).forEach(b => b.onclick = () => openUser(b.dataset.user));
+    $$("#lgModo [data-m]", s).forEach(b => b.onclick = () => { if (b.dataset.m !== modo) openLiga(id, false, b.dataset.m); });
+    $$("[data-lpok]", s).forEach(b => b.onclick = () => { b.disabled = true; lpConfirmar(L, P.partidos.find(m => m.id === b.dataset.lpok), true); });
+    $$("[data-lpno]", s).forEach(b => b.onclick = () => confirmSheet("No es correcto", "Avisaremos a quien lo apuntó para que lo borre y lo apunte bien. No contará para la clasificación.", "Avisar", () => lpConfirmar(L, P.partidos.find(m => m.id === b.dataset.lpno), false), false));
+    $$("[data-lpdel]", s).forEach(b => b.onclick = async () => { b.disabled = true; try { await FS().collection("posts").doc(b.dataset.lpdel).delete(); } catch {} const a = Object.values(state.act).find(x => x.padel && x.padel.lpid === b.dataset.lpdel); if (a) { try { delItem("act", a.id); } catch {} } openLiga(id, false, modo); });
     $("#lgInv", s).onclick = () => { const tx = encodeURIComponent(invTxt); if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) location.href = `whatsapp://send?text=${tx}`; else window.open(`https://web.whatsapp.com/send?text=${tx}`, "_blank"); };
     $("#lgCopy", s).onclick = async () => { try { if (navigator.share) await navigator.share({ text: invTxt }); else { await navigator.clipboard.writeText(invTxt); toast("Enlace copiado"); } } catch {} };
-    $("#lgAdd", s).onclick = () => { closeSheet(); if ((state.perfil.padel || {}).nivel0) openPadelMatch(); else openNivelTest(); };
+    $("#lgAdd", s).onclick = () => openLigaPartido(L);
     const out = $("#lgOut", s); if (out) out.onclick = () => confirmSheet("Salir de la liga", `¿Seguro que quieres salir de “${esc(L.nombre)}”?`, "Salir", async () => { try { await PERF().doc(me.uid).set({ ligas: FV().arrayRemove(id), ligasInfo: { [id]: FV().delete() } }, { merge: true }); } catch {} quitarLigaLocal(id); closeSheet(); });
     const del = $("#lgDel", s); if (del) del.onclick = () => confirmSheet("Eliminar liga", `¿Seguro que quieres eliminar “${esc(L.nombre)}”? Desaparecerá para todos sus jugadores y no se puede deshacer.`, "Eliminar", async () => { const ok = $("#cOk"); if (ok) { if (ok.disabled) return; ok.disabled = true; ok.textContent = "Eliminando…"; } try { await PERF().doc(me.uid).set({ ligasInfo: { [id]: { borrada: true } } }, { merge: true }); } catch (e) { console.warn(e); toast("No se ha podido eliminar. Inténtalo en un momento."); return; } quitarLigaLocal(id); closeSheet(); toast("Liga eliminada"); });
     const muro = $("#lgMuro", s);
     const pinta = async () => {
       try {
-        const q = await FS().collection("posts").where("liga", "==", id).limit(80).get();
+        const q = await FS().collection("posts").where("liga", "==", id).limit(400).get();
         const M = q.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => m.tipo === "liga").sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 40);
         muro.innerHTML = M.length ? M.map(m => `<div class="lgm">${avatar({ nombre: m.nombre, color: m.color }, 32)}<div style="flex:1;min-width:0"><div class="tiny"><b>${esc(m.uid === me.uid ? "Tú" : m.nombre || "Jugador")}</b> <span class="mute">${ago(m.t)}</span></div><div style="line-height:1.4;white-space:pre-wrap">${esc(m.texto)}</div></div>${m.uid === me.uid ? `<button class="link tiny" data-dm="${m.id}">Borrar</button>` : ""}</div>`).join("") : `<p class="small mute" style="text-align:center;margin:12px 0">Todavía no hay mensajes. ¡Rompe el hielo! 🎾</p>`;
         $$("[data-dm]", muro).forEach(b => b.onclick = async () => { try { await FS().collection("posts").doc(b.dataset.dm).delete(); } catch {} pinta(); });
@@ -219,12 +320,13 @@ function rankingInicioHTML() {
   const yoR = yoRank(); const rows = rkInicio.rows.map(r => r.uid === me.uid ? { ...r, ...yoR } : r).sort((a, b) => (b.nivelPadel || 0) - (a.nivelPadel || 0)); const L = rkInicio.L;
   const pos = rows.findIndex(r => r.yo) + 1, yo = rows[pos - 1];
   const sub = !yo || !yo.nivelPadel ? "Apunta un partido para entrar en la clasificación." : pos === 1 ? "Vas primero 👑 Que no te adelanten." : `Vas ${pos}º de ${rows.length}. Te faltan <b style="color:var(--vt)">${nf(rows[pos - 2].nivelPadel - yo.nivelPadel, 2)}</b> para adelantar a ${esc((rows[pos - 2].nombre || "").split(" ")[0])}.`;
-  return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${esc(L.nombre)}</b><span>${sub}</span>${rows.length > 1 ? podioHTML(rows) : ""}
+  const pendTxt = rkInicio.pend ? `<span style="display:block;margin-top:6px;color:#b45309;font-weight:800">⏳ Tienes ${rkInicio.pend} resultado${rkInicio.pend === 1 ? "" : "s"} por confirmar. Entra en la liga.</span>` : "";
+  return `<div class="hrk">${nv}<div class="hrkl"><b>🏆 ${esc(L.nombre)}</b><span>${sub}${pendTxt}</span>${rows.length > 1 ? podioHTML(rows) : ""}
     <div class="hrkb">${btns}<button class="btn" id="hRkOpen">Ver la liga</button></div></div></div>`;
 }
 async function rkCargar() {
   try {
-    if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (!L) rkInicio = null; else { const rows = await clasificacion(L); rkInicio = { L: { id: L.id, nombre: L.nombre }, rows: rows.map(r => ({ uid: r.uid, nombre: r.nombre, color: r.color, foto: r.foto, nivelPadel: r.nivelPadel, yo: !!r.yo })) }; } }
+    if (misLigas && misLigas.length) { const L = await leerLiga(misLigas[0].id); if (!L) rkInicio = null; else { const rows = await clasificacion(L); let pend = 0; try { const P = await leerLigaPosts(L.id); pend = P.partidos.filter(m => m.estado === "pend" && (m.b || []).includes(me.uid) && !P.rech.some(r => r.ref === m.id && r.uid === me.uid)).length; } catch {} rkInicio = { pend, L: { id: L.id, nombre: L.nombre }, rows: rows.map(r => ({ uid: r.uid, nombre: r.nombre, color: r.color, foto: r.foto, nivelPadel: r.nivelPadel, yo: !!r.yo })) }; } }
     else rkInicio = null;
     try { localStorage.setItem("pm-rk", JSON.stringify(rkInicio)); localStorage.setItem("pm-rk-uid", me.uid); } catch {}
   } catch (e) { console.warn(e); }

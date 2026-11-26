@@ -1,4 +1,4 @@
-const V = "padelplus-v89";
+const V = "padelplus-v90";
 const SHELL = ["./", "index.html", "core.js", "views.js", "rec.js", "nutri.js", "social.js", "shoes.js", "padel.js", "gear.js", "learn.js", "share.js", "pistas.js", "opinar.js", "tablon.js", "tienda.js", "recpala.js", "ligas.js", "reczapa.js", "stats.js", "subir.js", "data.js", "icons.js", "config.js", "manifest.json", "icon-192.png", "privacidad.html", "fonts.css", "guia.html", "lib/leaflet.js", "lib/leaflet.css", "og.jpg", "img/land1.jpg", "img/land2.jpg", "img/land3.jpg", "icon-512.png", "apple-touch-icon.png"];
 // Instala la versión nueva descargándola fresca (sin caché del navegador)
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => fetch(new Request(u, { cache: "reload" })).then(r => { if (r.ok) return c.put(u, r); })))).then(() => self.skipWaiting())); });
