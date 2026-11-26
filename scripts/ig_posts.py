@@ -228,7 +228,7 @@ elif modo == "suelas":
         S(f'''{hd(i,N)}<div style="position:absolute;top:190px;left:72px;right:72px"><span class="tag">{lema}</span>
           <h1 style="font-size:130px;margin-top:30px"><em>{nom}</em></h1><p class="sub" style="margin-top:20px;max-width:900px">{txt}</p></div>
           <div class="blob" style="position:absolute;left:72px;right:72px;top:640px;height:440px"><img src="{f}"></div>
-          <div style="position:absolute;left:72px;right:72px;top:1110px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:34px;font-weight:800;color:#cbd5e1">{html.escape((p.get("m") or "") + " " + limpia(p))[:34]}</span><span class="price" style="font-size:60px;color:#d4ff3a">{eur(p["p"])}</span></div>{ft()}''')
+          <div style="position:absolute;left:72px;right:72px;top:1110px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:30px;font-weight:800;color:#cbd5e1;max-width:640px">{html.escape(re.sub(r" 20\d\d$", "", (p.get("m") or "") + " " + limpia(p)))[:44]}</span><span class="price" style="font-size:60px;color:#d4ff3a">{eur(p["p"])}</span></div>{ft()}''')
     S(f'''<div class="glow" style="top:200px;right:-200px"></div><div class="hd"><div class="logo"><img src="{icon}">Pádel<b>+</b></div><span class="num">5/5</span></div>
       <div style="position:absolute;top:300px;left:72px;right:72px;text-align:center"><h1 style="font-size:100px">¿Cuáles son<br><em>las tuyas?</em></h1>
       <p class="sub" style="margin-top:30px">Te lo decimos según tu pista y tu pie.<br>Y las compras desde la app.</p>
