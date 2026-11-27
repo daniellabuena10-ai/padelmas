@@ -305,7 +305,7 @@ a.btn,a.item{text-decoration:none;color:inherit}
 @media (min-width:960px){
 #auth.wide{max-width:1120px;padding:40px 48px}
 #auth.wide #land{display:grid;grid-template-columns:1.05fr 1fr;grid-template-areas:"l r" "c r" "f f";grid-template-rows:auto 1fr auto;column-gap:64px;align-items:start}
-#auth.wide .lcol{grid-area:l;padding-top:30px}#auth.wide .rcol{grid-area:r;padding-top:30px}#auth.wide .lcta{grid-area:c;max-width:420px;margin-top:30px;align-self:start}#auth.wide .lfoot{grid-area:f;margin-top:30px}#auth.wide #authForm{width:100%;max-width:420px;margin:0 auto}#auth.wide .logo{margin-bottom:6px}
+#auth.wide .lcol{grid-area:l;padding-top:30px}#auth.wide .rcol{grid-area:r;padding-top:30px}#auth.wide .lcta{grid-area:c;max-width:420px;margin-top:30px;align-self:start}#auth.wide .lfoot{grid-area:f;margin-top:30px}#auth.wide .lcta{display:none}#auth.wide .lcards{grid-area:c;align-self:start;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:34px;max-width:560px}#auth.wide #land{grid-template-areas:"l r" "c r" "f f"}#auth.wide #authForm{width:100%;max-width:420px;margin:0 auto}#auth.wide .logo{margin-bottom:6px}
 #auth.wide h1{font-size:60px;letter-spacing:-2.4px;line-height:1.02}
 #auth.wide .pitch{font-size:19px;max-width:520px}
 #auth.wide .lcol>p:last-child{font-size:24px!important}
@@ -477,12 +477,12 @@ body:has(#auth:not([hidden]) #land:not([hidden])){background:#0f172a!important}
       <figure><div class="fr"><img src="img/land2.jpg" alt="Test de zapatillas en la app"></div><figcaption><b>Tu equipación</b>Zapatillas, ropa y accesorios</figcaption></figure>
       <figure><div class="fr"><img src="img/land3.jpg" alt="Tu nivel y tu ranking en la app"></div><figcaption><b>Tu ranking</b>Tu nivel y tu liga con amigos</figcaption></figure>
     </div>
+    </div>
     <div class="lcards">
       <button class="lc" id="goZap"><span>👟</span><div><b>Tus zapatillas</b><small>Espiga u omni, según tu pista y tu pie</small></div><i>›</i></button>
       <div class="lc"><span>🔥</span><div><b>Ofertas de hasta -60%</b><small>Palas, zapatillas y paleteros, con el precio de hoy</small></div></div>
       <button class="lc" id="goRopa"><span>👕</span><div><b>Ropa de hombre y mujer</b><small>Camisetas, sudaderas, pantalones, faldas…</small></div><i>›</i></button>
       <button class="lc" id="goAcc"><span>🎒</span><div><b>Accesorios</b><small>Paleteros, overgrip, pelotas</small></div><i>›</i></button>
-    </div>
     </div>
     <div class="lcta">
     <button class="btn lime block big" id="goUp">Crear mi cuenta</button>
