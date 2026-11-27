@@ -203,6 +203,43 @@ elif modo == "ofertas":
       <div style="display:inline-block;margin-top:70px;background:#d4ff3a;color:#0f172a;font-weight:900;font-size:72px;padding:30px 60px;border-radius:999px;letter-spacing:-2px">padelmas.club</div>
       <p style="margin-top:34px;font-size:30px;font-weight:600;color:#94a3b8">Precios en Padel Market a {fecha}. Pueden cambiar.</p></div>''')
 
+elif modo == "presupuesto":
+    # Black Friday distinto al carrusel de ofertas: 2 palas por presupuesto, sin repetir las del carrusel de la semana
+    usadas = {x["n"] for x in ranking("pala", 25)[:8]}
+    tramos = [("Menos de 90 €", 0, 90), ("De 90 a 130 €", 90, 130), ("Más de 130 €", 130, 9999)]
+    sel = []
+    for t, lo, hi in tramos:
+        L = [x for x in ranking("pala", 20, lambda x, lo=lo, hi=hi: lo <= x["p"] < hi) if x["n"] not in usadas]
+        par = con_foto(L, 2)
+        if len(par) < 2: sys.exit("Sin palas suficientes en " + t)
+        sel.append((t, par))
+    N = len(sel) + 2; mx = max(dto(x) for _, par in sel for x, _ in par)
+    info.update(max=mx, tramos=[[t, [[x.get("m"), limpia(x), x["p"], dto(x)] for x, _ in par]] for t, par in sel])
+    BF = '<div style="position:absolute;inset:0;background:radial-gradient(circle at 85% 10%,rgba(255,90,54,.28),transparent 55%),#05070d"></div>'
+    def hdb(i): return BF + f'<div class="hd"><div class="logo"><img src="{icon}">Pádel<b>+</b></div><span class="num">{i}/{N}</span></div>'
+    chips = "".join(f'<div style="flex:1;border:2px solid #ff5a36;border-radius:24px;padding:22px 10px;text-align:center;font-weight:900;font-size:30px">{t}</div>' for t, _ in sel)
+    S(f"""{hdb(1)}<div style="position:absolute;top:230px;left:72px;right:72px">
+      <span class="tag" style="background:#ff5a36;color:#fff">🖤 Black Friday</span>
+      <h1 style="font-size:132px;margin-top:40px">Tu pala,<br><em style="color:#ff5a36">según tu<br>presupuesto.</em></h1>
+      <p class="sub" style="margin-top:44px;font-size:42px">Las mejores rebajas de hoy en <b>3 precios</b>.<br>Elige el tuyo y desliza 👉</p></div>
+      <div style="position:absolute;left:72px;right:72px;bottom:190px;display:flex;gap:18px">{chips}</div>{ft()}""")
+    for i, (t, par) in enumerate(sel, 2):
+        cards = ""
+        for x, f in par:
+            nm = limpia(x)
+            cards += f"""<div style="flex:1;position:relative"><div class="blob" style="height:520px;border-radius:36px"><img src="{f}"></div>
+              <div class="badge" style="top:-18px;right:-10px;font-size:46px;padding:12px 22px">-{dto(x)}%</div>
+              <div style="font-size:24px;font-weight:800;letter-spacing:2px;color:#94a3b8;text-transform:uppercase;margin-top:26px">{html.escape(x.get("m") or "")}</div>
+              <div style="font-size:{36 if len(nm) < 22 else 30}px;font-weight:900;line-height:1.1;margin-top:6px;min-height:80px">{html.escape(nm)}</div>
+              <div class="price" style="font-size:64px;color:#d4ff3a;margin-top:10px">{eur(x["p"])}</div><div class="old" style="font-size:32px">{eur(x["o"])}</div></div>"""
+        S(f"""{hdb(i)}<div style="position:absolute;top:180px;left:72px;right:72px"><div style="font-size:30px;font-weight:800;letter-spacing:3px;color:#ff5a36;text-transform:uppercase">Presupuesto</div>
+          <h1 style="font-size:96px;margin-top:8px">{html.escape(t)}</h1></div>
+          <div style="position:absolute;top:420px;left:72px;right:72px;display:flex;gap:36px">{cards}</div>{ft()}""")
+    S(f"""{hdb(N)}<div style="position:absolute;top:290px;left:72px;right:72px;text-align:center"><h1 style="font-size:100px">¿Y si no sabes<br><em style="color:#d4ff3a">cuál es la tuya?</em></h1>
+      <p class="sub" style="margin-top:34px">Haz el test de 1 minuto y te decimos<br>tu pala ideal. La compras desde la app.</p>
+      <div style="display:inline-block;margin-top:70px;background:#d4ff3a;color:#0f172a;font-weight:900;font-size:72px;padding:30px 60px;border-radius:999px;letter-spacing:-2px">padelmas.club</div>
+      <p style="margin-top:34px;font-size:30px;font-weight:600;color:#94a3b8">Precios en Padel Market a {fecha}. Pueden cambiar.</p></div>""")
+
 elif modo == "suelas":
     tipos = [("e", "Espiga", "La más habitual", "Agarre y deslizamiento. Para pistas con poca o media arena."),
              ("o", "Omni", "Máximo agarre", "Para pistas con mucha arena o que resbalan."),
